@@ -1,0 +1,40 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "mChat server implementation",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "seed": "tsx src/scripts/seed.ts"
+  },
+  "keywords": [
+    "socket.io",
+    "chat",
+    "real time"
+  ],
+  "author": "Aseer KT",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@socket.io/cluster-adapter": "^0.2.2",
+    "@socket.io/redis-adapter": "^8.3.0",
+    "@socket.io/sticky": "^1.0.4",
+    "argon2": "^0.40.3",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.3",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.14.5",
+    "tsx": "^4.15.6",
+    "typescript": "^5.2.2"
+  }
+}

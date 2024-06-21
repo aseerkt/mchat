@@ -1,0 +1,23 @@
+import { createBrowserRouter } from 'react-router-dom'
+import App from './App'
+import { lazy } from 'react'
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    Component: App,
+    children: [
+      { path: '/', lazy: () => import('./pages/Home') },
+      { path: '/login', lazy: () => import('./pages/Login') },
+      { path: '/signup', lazy: () => import('./pages/SignUp') },
+      {
+        path: '/chat',
+        Component: lazy(() => import('./layouts/ChatLayout')),
+        children: [
+          { path: '', lazy: () => import('./pages/Chat') },
+          { path: ':roomId', lazy: () => import('./pages/ChatRoom') },
+        ],
+      },
+    ],
+  },
+])

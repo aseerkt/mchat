@@ -1,0 +1,20 @@
+{
+  "name": "mchat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm run -r dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nx/web": "19.3.0",
+    "typescript": "^5.2.2"
+  },
+  "workspaces": [
+    "client",
+    "server"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "include": ["src", "global.d.ts"],
+  "compilerOptions": {
+    "target": "es6",
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["global.d.ts"]
+  }
+}
