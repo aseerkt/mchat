@@ -1,16 +1,16 @@
 {
   "name": "mchat",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Realtime messenger powered by socket.io",
+  "private": true,
   "scripts": {
-    "dev": "pnpm run -r dev"
+    "dev": "pnpm run -r dev",
+    "build": "pnpm run -r build"
   },
   "keywords": [],
-  "author": "",
+  "author": "Aseer KT",
   "license": "ISC",
   "devDependencies": {
-    "@nx/web": "19.3.0",
     "typescript": "^5.2.2"
   },
   "workspaces": [

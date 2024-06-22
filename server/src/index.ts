@@ -1,9 +1,16 @@
-import { createAdapter } from '@socket.io/redis-streams-adapter'
+import {
+  createAdapter as createClusterAdapter,
+  setupPrimary,
+} from '@socket.io/cluster-adapter'
+import { createAdapter as createRedisAdaptor } from '@socket.io/redis-streams-adapter'
+import { setupMaster, setupWorker } from '@socket.io/sticky'
 import 'colors'
 import cors from 'cors'
 import 'dotenv/config'
 import express from 'express'
+import cluster from 'node:cluster'
 import { createServer } from 'node:http'
+import { availableParallelism } from 'node:os'
 import { Server } from 'socket.io'
 import { config } from './config'
 import {
@@ -20,6 +27,32 @@ import { connectDB } from './utils/db'
 import { getRedisClient } from './utils/redis'
 
 const createApp = async () => {
+  if (cluster.isPrimary && config.isProd) {
+    console.log(`Master ${process.pid} is running`)
+    const numCPUs = availableParallelism()
+
+    const httpServer = createServer()
+
+    setupMaster(httpServer, { loadBalancingMethod: 'least-connection' })
+
+    setupPrimary()
+
+    httpServer.listen(config.port)
+
+    for (let i = 0; i < numCPUs; i++) {
+      cluster.fork()
+    }
+
+    cluster.on('exit', worker => {
+      console.log(`worker ${worker.process.pid} died`)
+      cluster.fork()
+    })
+
+    return
+  }
+
+  console.log(`Worker ${process.pid} started`)
+
   await connectDB()
 
   const redisClient = getRedisClient()
@@ -37,8 +70,14 @@ const createApp = async () => {
     SocketData
   >(server, {
     cors: { origin: config.corsOrigin },
-    adapter: createAdapter(redisClient),
   })
+
+  io.adapter(createRedisAdaptor(redisClient))
+
+  if (config.isProd) {
+    io.adapter(createClusterAdapter())
+    setupWorker(io)
+  }
 
   io.use(socketAuthMiddleware)
 
@@ -51,9 +90,11 @@ const createApp = async () => {
   app.use('/api/users', routes.users)
   app.use('/api/rooms', auth, routes.rooms)
 
-  server.listen(config.port, () => {
-    console.log(`server running at http://localhost:${config.port}`.blue.bold)
-  })
+  if (!config.isProd) {
+    server.listen(config.port, () => {
+      console.log(`Server running at http://localhost:${config.port}`.blue.bold)
+    })
+  }
 
   return { server }
 }

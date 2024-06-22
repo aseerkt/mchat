@@ -7,6 +7,7 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["global.d.ts"]
+    "typeRoots": ["global.d.ts"],
+    "outDir": "dist"
   }
 }

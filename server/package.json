@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "build": "tsc",
     "seed": "tsx src/scripts/seed.ts"
   },
   "keywords": [
@@ -15,7 +16,9 @@
   "author": "Aseer KT",
   "license": "UNLICENSED",
   "dependencies": {
+    "@socket.io/cluster-adapter": "^0.2.2",
     "@socket.io/redis-streams-adapter": "^0.2.2",
+    "@socket.io/sticky": "^1.0.4",
     "argon2": "^0.40.3",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
