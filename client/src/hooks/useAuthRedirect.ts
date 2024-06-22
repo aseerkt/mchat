@@ -21,7 +21,6 @@ export const useAuthRedirect = () => {
     }
 
     if (navigateTo) {
-      console.log('navigating to: ', navigateTo)
       navigate(navigateTo, { replace: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

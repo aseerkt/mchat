@@ -4,7 +4,7 @@ import {
   QueryCacheDispatchContext,
 } from '../contexts/QueryCacheContext'
 
-export const useQueryCache = (key: string) => {
+export const useQueryHasCache = (key: string) => {
   return useContext(QueryCacheContext)[key]
 }
 

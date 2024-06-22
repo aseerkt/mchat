@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { config } from '../config'
 import { getAuthHeaders } from '../utils/headers'
-import { useQueryCache, useSetQueryCache } from './useQueryCache'
+import { useQueryHasCache, useSetQueryCache } from './useQueryCache'
 
 export const useQuery = <TData = unknown, TError = Error>(
   path: string,
@@ -11,11 +11,12 @@ export const useQuery = <TData = unknown, TError = Error>(
   const [error, setError] = useState<TError>()
   const [loading, setLoading] = useState(true)
 
-  const isCached = useQueryCache(path)
+  const pathRef = useRef(path)
+  const isCached = useQueryHasCache(path)
   const setQueryCache = useSetQueryCache()
 
   useEffect(() => {
-    if (isCached) {
+    if (pathRef.current === path && isCached) {
       return
     }
     async function fetchData() {
@@ -27,6 +28,7 @@ export const useQuery = <TData = unknown, TError = Error>(
         })
         const data = await res.json()
         if (res.ok) {
+          pathRef.current = path
           setData(data)
           setQueryCache(path)
         } else {

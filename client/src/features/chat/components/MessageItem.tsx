@@ -12,10 +12,11 @@ export const MessageItem = ({ message, isCurrentUser }: MessageItemProps) => {
     <div
       className={cn(
         'w-fit rounded-xl border px-6 py-3 shadow',
-        isCurrentUser ? 'ml-auto text-right' : 'mr-auto text-left',
+        isCurrentUser ? 'ml-auto' : 'mr-auto bg-cyan-100',
       )}
+      style={{ maxWidth: 'calc(80% - 2rem)' }}
     >
-      <b>{message.sender.username}</b>
+      {!isCurrentUser && <b>{message.sender.username}</b>}
       <p>{message.text}</p>
       <small className='text-xs text-gray-500'>
         {formateChatDate(message.createdAt)}

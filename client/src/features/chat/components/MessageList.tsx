@@ -28,7 +28,10 @@ export const MessageList = ({ messages, loading }: MessageListProps) => {
     content = <div>Loading...</div>
   } else if (messages?.length) {
     content = (
-      <div className='flex flex-col justify-end gap-2'>
+      <div
+        ref={listRef}
+        className='flex h-full flex-col-reverse justify-start gap-2 overflow-y-auto p-3'
+      >
         {messages.map(message => (
           <MessageItem
             key={message._id}
@@ -41,9 +44,5 @@ export const MessageList = ({ messages, loading }: MessageListProps) => {
     )
   }
 
-  return (
-    <main className='h-full flex-1 overflow-y-auto p-3' ref={listRef}>
-      {content}
-    </main>
-  )
+  return <main className='flex-1 overflow-hidden'>{content}</main>
 }

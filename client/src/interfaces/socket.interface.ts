@@ -8,7 +8,10 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   joinRoom: (roomId: string) => void
-  createMessage: (args: { roomId: string; text: string }) => void
+  createMessage: (
+    args: { roomId: string; text: string },
+    callback: (response: { data?: Message; error?: unknown }) => void,
+  ) => void
   userStartedTyping: (args: {
     roomId: string
     userId: string

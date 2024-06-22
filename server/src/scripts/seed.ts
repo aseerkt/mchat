@@ -49,7 +49,7 @@ async function seedDatabase() {
 
     for (let i = 0; i < ROOM_COUNT; i++) {
       rooms.push({
-        name: faker.company.name(),
+        name: faker.hacker.noun(),
         createdBy: {
           _id: insertedUsers[i]._id,
           username: insertedUsers[i].username,
