@@ -34,35 +34,31 @@ export const registerSocketEvents = (io: TypedIOServer, redisClient: Redis) => {
     socket.on('joinRoom', (roomId: string) => {
       leaveAllRoom(socket)
       socket.join(roomId)
+    })
 
-      socket.removeAllListeners('userStartedTyping')
-      socket.removeAllListeners('userStoppedTyping')
-      socket.removeAllListeners('createMessage')
+    socket.on('userStartedTyping', async ({ roomId, username, userId }) => {
+      await redisClient.hset(redisKeys.TYPING_USERS(roomId), userId, username)
+      await emitTypingUsers(socket, redisClient, roomId)
+    })
 
-      socket.on('userStartedTyping', async ({ roomId, username, userId }) => {
-        await redisClient.hset(redisKeys.TYPING_USERS(roomId), userId, username)
-        await emitTypingUsers(socket, redisClient, roomId)
-      })
+    socket.on('userStoppedTyping', async ({ roomId, userId }) => {
+      await redisClient.hdel(redisKeys.TYPING_USERS(roomId), userId)
+      await emitTypingUsers(socket, redisClient, roomId)
+    })
 
-      socket.on('userStoppedTyping', async ({ roomId, userId }) => {
-        await redisClient.hdel(redisKeys.TYPING_USERS(roomId), userId)
-        await emitTypingUsers(socket, redisClient, roomId)
-      })
-
-      socket.on('createMessage', async ({ roomId, text }, cb) => {
-        try {
-          const message = new Message({
-            roomId,
-            text,
-            sender: socket.data.user,
-          })
-          await message.save()
-          cb({ data: message })
-          io.to(roomId).emit('newMessage', message)
-        } catch (error) {
-          cb({ error })
-        }
-      })
+    socket.on('createMessage', async ({ roomId, text }, cb) => {
+      try {
+        const message = new Message({
+          roomId,
+          text,
+          sender: socket.data.user,
+        })
+        await message.save()
+        cb({ data: message })
+        io.to(roomId).emit('newMessage', message)
+      } catch (error) {
+        cb({ error })
+      }
     })
 
     if (!config.isProd) {
