@@ -5,7 +5,7 @@ import { Room } from '../models/Room'
 import { findByPaginate } from '../utils/db'
 
 export const createRoom: RequestHandler = async (req, res) => {
-  const room = new Room({ name: req.body.name, createdBy: req.user?._id })
+  const room = new Room({ name: req.body.name, createdBy: req.user })
   await room.save()
   res.status(201).json(room)
 }
@@ -26,7 +26,6 @@ export const deleteRoom: RequestHandler = async (req, res) => {
 }
 
 export const createMessage: RequestHandler = async (req, res) => {
-  console.log('req.body', req.body)
   const message = new Message({
     roomId: req.params.roomId,
     text: req.body.text,

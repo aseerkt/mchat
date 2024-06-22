@@ -1,4 +1,5 @@
 import { cva, VariantProps } from 'cva'
+import { forwardRef } from 'react'
 import { cn } from '../utils/style'
 
 const inputVariants = cva('rounded w-full p-2 border', {
@@ -24,26 +25,22 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
     error?: string
   }
 
-export const Input = ({
-  className,
-  variant,
-  size,
-  label,
-  error,
-  ...props
-}: InputProps) => {
-  return (
-    <div className='h-20'>
-      {label && <label htmlFor={props.name}>{label}</label>}
-      <input
-        className={cn(inputVariants({ variant, size }), className)}
-        {...props}
-        id={props.name}
-        aria-invalid={Boolean(error)}
-      />
-      {error && (
-        <small className='mt-1 block text-xs text-red-500'>{error}</small>
-      )}
-    </div>
-  )
-}
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ className, variant, size, label, error, ...props }, ref) => {
+    return (
+      <div className='h-20'>
+        {label && <label htmlFor={props.name}>{label}</label>}
+        <input
+          ref={ref}
+          className={cn(inputVariants({ variant, size }), className)}
+          {...props}
+          id={props.name}
+          aria-invalid={Boolean(error)}
+        />
+        {error && (
+          <small className='mt-1 block text-xs text-red-500'>{error}</small>
+        )}
+      </div>
+    )
+  },
+)

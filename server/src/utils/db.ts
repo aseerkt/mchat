@@ -32,5 +32,6 @@ export const findByPaginate = <TRawDocType>(
     ...options,
     limit: Number(query.limit) || 10,
     skip: Number(query.offset) || 0,
+    sort: { createdAt: -1 },
   })
 }

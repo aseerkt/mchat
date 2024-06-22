@@ -1,7 +1,7 @@
 import { cva, VariantProps } from 'cva'
 import { cn } from '../utils/style'
 
-const buttonVariants = cva('rounded-lg border-2 border-black', {
+const buttonVariants = cva('rounded-lg  border-2 border-black', {
   variants: {
     variant: {
       primary: 'bg-black text-white',

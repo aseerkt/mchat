@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Socket } from 'socket.io-client'
 import { Button } from '../../../components/Button'
 import { useAuthState } from '../../../hooks/useAuth'
+import { useAutoFocus } from '../../../hooks/useAutoFocus'
 import { useToast } from '../../../hooks/useToast'
 import { getSocketIO } from '../../../utils/socket'
 
@@ -31,10 +32,7 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
     }, 2000)
   }
 
-  useEffect(() => {
-    textAreaRef.current?.focus()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId])
+  useAutoFocus(textAreaRef, [roomId])
 
   const handleSendMessage = async () => {
     if (!text.trim()) {

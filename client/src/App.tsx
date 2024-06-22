@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Toaster } from './components/Toaster'
 import { useAuthRedirect } from './hooks/useAuthRedirect'
+import { QueryCacheProvider } from './providers/QueryCacheProvider'
 import { UserProvider } from './providers/UserProvider'
 
 const AuthRedirect = () => {
@@ -12,7 +13,9 @@ function App() {
   return (
     <UserProvider>
       <AuthRedirect />
-      <Outlet />
+      <QueryCacheProvider>
+        <Outlet />
+      </QueryCacheProvider>
       <Toaster />
     </UserProvider>
   )
