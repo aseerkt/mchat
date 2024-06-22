@@ -1,3 +1,4 @@
+import { Server, Socket } from 'socket.io'
 import { IMessage } from '../models/Message'
 
 export interface ServerToClientEvents {
@@ -7,7 +8,10 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   joinRoom: (roomId: string) => void
-  createMessage: (args: { roomId: string; text: string }) => void
+  createMessage: (
+    args: { roomId: string; text: string },
+    callback: (response: { data?: IMessage; error?: unknown }) => void,
+  ) => void
   userStartedTyping: (args: {
     roomId: string
     userId: string
@@ -26,3 +30,17 @@ export interface SocketData {
     username: string
   }
 }
+
+export type TypedIOServer = Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>
+
+export type TypedSocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>

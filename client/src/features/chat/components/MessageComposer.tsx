@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import { Socket } from 'socket.io-client'
+import { useRef, useState } from 'react'
 import { Button } from '../../../components/Button'
 import { useAuthState } from '../../../hooks/useAuth'
+import { useAutoFocus } from '../../../hooks/useAutoFocus'
 import { useToast } from '../../../hooks/useToast'
 import { getSocketIO } from '../../../utils/socket'
 
@@ -14,52 +14,79 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
   const auth = useAuthState()
   const [text, setText] = useState('')
   const [disabled, setDisabled] = useState(false)
-  const socketRef = useRef<Socket>(getSocketIO())
+  const socketRef = useRef(getSocketIO())
   const timeoutRef = useRef<NodeJS.Timeout>()
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
+
+  useAutoFocus(textAreaRef, [roomId])
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value)
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     } else {
-      socketRef.current.emit('userStartedTyping', { roomId, ...auth })
+      socketRef.current.emit('userStartedTyping', {
+        roomId,
+        userId: auth!._id,
+        username: auth!.username,
+      })
     }
     timeoutRef.current = setTimeout(() => {
-      socketRef.current.emit('userStoppedTyping', { roomId, _id: auth?._id })
+      socketRef.current.emit('userStoppedTyping', { roomId, userId: auth!._id })
       timeoutRef.current = undefined
-    }, 2000)
+    }, 1000)
   }
 
-  useEffect(() => {
-    textAreaRef.current?.focus()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId])
-
-  const handleSendMessage = async () => {
+  const handleComposeMessage = async () => {
     if (!text.trim()) {
       return toast({ title: 'Please enter text', severity: 'error' })
     }
+    setDisabled(true)
     try {
-      setDisabled(true)
-      socketRef.current.emit('createMessage', { roomId, text })
+      const response = await socketRef.current
+        .timeout(5000)
+        .emitWithAck('createMessage', { roomId, text })
+
+      if (response.data) {
+        setText('')
+      } else if (response.error) {
+        throw response.error
+      }
     } catch (err) {
       toast({ title: (err as Error).message, severity: 'error' })
+    } finally {
+      setDisabled(false)
+    }
+  }
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    handleComposeMessage()
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+    }
+    if (event.key === 'Enter') {
+      if (!event.shiftKey) {
+        event.preventDefault()
+        handleComposeMessage()
+      }
     }
   }
 
   return (
-    <div className='flex shrink-0 gap-2 border-t p-3'>
+    <form className='flex shrink-0 gap-2 border-t p-3' onSubmit={handleSubmit}>
       <textarea
         ref={textAreaRef}
         className='flex-1 rounded border p-3'
         value={text}
         autoFocus
+        onKeyDown={handleKeyDown}
         onChange={handleChange}
       />
-      <Button type='button' disabled={disabled} onClick={handleSendMessage}>
-        Send
-      </Button>
-    </div>
+      <Button disabled={disabled}>Send</Button>
+    </form>
   )
 }

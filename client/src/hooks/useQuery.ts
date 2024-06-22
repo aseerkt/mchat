@@ -1,36 +1,36 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { config } from '../config'
 import { getAuthHeaders } from '../utils/headers'
-
-type UseQueryOptions = RequestInit & {
-  baseUrl?: string
-  pause?: boolean
-  cache?: boolean
-}
+import { useQueryHasCache, useSetQueryCache } from './useQueryCache'
 
 export const useQuery = <TData = unknown, TError = Error>(
   path: string,
-  options?: UseQueryOptions,
+  fetchOptions?: RequestInit,
 ) => {
   const [data, setData] = useState<TData>()
   const [error, setError] = useState<TError>()
   const [loading, setLoading] = useState(true)
 
-  const baseUrl = options?.baseUrl || config.backendUrl
+  const pathRef = useRef(path)
+  const isCached = useQueryHasCache(path)
+  const setQueryCache = useSetQueryCache()
 
   useEffect(() => {
+    if (pathRef.current === path && isCached) {
+      return
+    }
     async function fetchData() {
-      if (options?.pause) return
       setLoading(true)
       try {
-        const headers = getAuthHeaders()
-        const res = await fetch(`${baseUrl}${path}`, {
-          ...options,
-          headers: { ...options?.headers, ...headers },
+        const res = await fetch(`${config.backendUrl}${path}`, {
+          ...fetchOptions,
+          headers: { ...fetchOptions?.headers, ...getAuthHeaders() },
         })
         const data = await res.json()
         if (res.ok) {
+          pathRef.current = path
           setData(data)
+          setQueryCache(path)
         } else {
           setError(data)
         }
@@ -42,7 +42,7 @@ export const useQuery = <TData = unknown, TError = Error>(
     }
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path, options])
+  }, [isCached, path])
 
   return { data, loading, error }
 }

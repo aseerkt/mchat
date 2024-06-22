@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   MessageList,
@@ -13,6 +13,7 @@ import { getSocketIO } from '../utils/socket'
 export const Component = () => {
   const params = useParams()
   const roomRef = useRef<string>()
+  const socket = useRef(getSocketIO())
   const [typingUsers, setTypingUsers] = useState<
     Array<{ _id: string; username: string }>
   >([])
@@ -28,30 +29,28 @@ export const Component = () => {
     pageParams,
   )
 
-  const appendMessage = useCallback(
-    (message: Message) => {
-      setMessagesData(prevMessages => [...(prevMessages ?? []), message])
-    },
-    [setMessagesData],
-  )
-
   useEffect(() => {
     if (params.roomId && params.roomId !== roomRef.current) {
-      const socket = getSocketIO()
-
-      socket.emit('joinRoom', params.roomId)
+      socket.current.emit('joinRoom', params.roomId)
       roomRef.current = params.roomId
+    }
+  }, [params.roomId])
 
-      socket.on('typingUsers', setTypingUsers)
-      socket.on('newMessage', appendMessage)
-      return () => {
-        socket.off('typingUsers', setTypingUsers)
-        socket.off('newMessage', appendMessage)
-      }
+  useEffect(() => {
+    function updateMessage(message: Message) {
+      setMessagesData(prevMessages => [message, ...(prevMessages ?? [])])
     }
 
+    socket.current.on('typingUsers', setTypingUsers)
+    socket.current.on('newMessage', updateMessage)
+
+    return () => {
+      socket.current.off('typingUsers', setTypingUsers)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      socket.current.off('newMessage', updateMessage)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.roomId])
+  }, [])
 
   return (
     <>

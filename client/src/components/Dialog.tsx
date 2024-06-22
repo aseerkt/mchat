@@ -18,11 +18,16 @@ export const Dialog = ({ isOpen, onClose, children }: DialogProps) => {
     <div
       aria-label='dialog_overlay'
       className={cn(
-        'fixed flex h-screen w-screen items-center justify-center',
-        isOpen && 'hidden',
+        'fixed top-0 flex h-screen w-screen items-center justify-center bg-black bg-opacity-80',
+        !isOpen && 'hidden',
       )}
     >
-      <div ref={dialogRef} role='dialog' aria-modal='true'>
+      <div
+        ref={dialogRef}
+        role='dialog'
+        aria-modal='true'
+        className='border-3 rounded bg-white p-6 shadow-md'
+      >
         {children}
       </div>
     </div>,

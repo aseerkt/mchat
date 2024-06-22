@@ -2,12 +2,13 @@ import { faker } from '@faker-js/faker'
 import { hash } from 'argon2'
 import 'colors'
 import 'dotenv/config'
+import { Message } from '../models/Message'
 import { IRoom, Room } from '../models/Room'
 import { IUser, User } from '../models/User'
 import { connectDB } from '../utils/db'
 
-const USER_COUNT = 100
-const ROOM_COUNT = 20
+const USER_COUNT = 10
+const ROOM_COUNT = 5
 const USER_PASSWORD = 'bob@123'
 
 async function getHashedPassword() {
@@ -17,6 +18,12 @@ async function getHashedPassword() {
 async function seedDatabase() {
   try {
     await connectDB()
+
+    console.log('Dropping collections'.yellow.bold)
+
+    await Message.deleteMany({})
+    await Room.deleteMany({})
+    await User.deleteMany({})
 
     console.log('Seed started'.blue.bold)
 
@@ -42,15 +49,17 @@ async function seedDatabase() {
 
     for (let i = 0; i < ROOM_COUNT; i++) {
       rooms.push({
-        name: faker.company.name(),
-        createdBy: insertedUsers[i]._id,
+        name: faker.hacker.noun(),
+        createdBy: {
+          _id: insertedUsers[i]._id,
+          username: insertedUsers[i].username,
+        },
       })
     }
 
     await Room.create(rooms)
 
     console.log('Seed completed'.green.bold)
-    
   } catch (err) {
     console.log('Seed failed'.red.bold)
     console.error(err)
