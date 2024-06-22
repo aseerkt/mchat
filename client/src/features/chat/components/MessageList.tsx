@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Skeleton } from '../../../components/Skeleton'
 import { useAuthState } from '../../../hooks/useAuth'
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll'
 import { Message } from '../../../interfaces/message.interface'
@@ -25,7 +26,13 @@ export const MessageList = ({ messages, loading }: MessageListProps) => {
   let content
 
   if (loading) {
-    content = <div>Loading...</div>
+    content = (
+      <div className='flex flex-col-reverse justify-start gap-2 p-3'>
+        {new Array(5).map((_, index) => (
+          <Skeleton key={index} className='h-10' />
+        ))}
+      </div>
+    )
   } else if (messages?.length) {
     content = (
       <div

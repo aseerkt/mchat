@@ -31,7 +31,7 @@ export const isRoomOwner: RequestHandler = async (req, res, next) => {
 
     const room = await Room.findById(new Types.ObjectId(roomId))
 
-    if (room.createdBy._id.toString() !== req.user?._id) {
+    if (!room || room.createdBy._id.toString() !== req.user?._id) {
       throw new Error('Not authorized')
     }
 

@@ -16,11 +16,11 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
   const [disabled, setDisabled] = useState(false)
   const socketRef = useRef(getSocketIO())
   const timeoutRef = useRef<NodeJS.Timeout>()
-  const textAreaRef = useRef<HTMLTextAreaElement>(null)
+  const textAreaRef = useRef<HTMLInputElement>(null)
 
   useAutoFocus(textAreaRef, [roomId])
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value)
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
@@ -64,7 +64,7 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
     handleComposeMessage()
   }
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
     }
@@ -78,7 +78,7 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
 
   return (
     <form className='flex shrink-0 gap-2 border-t p-3' onSubmit={handleSubmit}>
-      <textarea
+      <input
         ref={textAreaRef}
         className='flex-1 rounded border p-3'
         value={text}

@@ -1,3 +1,4 @@
+import { createAdapter } from '@socket.io/redis-streams-adapter'
 import 'colors'
 import cors from 'cors'
 import 'dotenv/config'
@@ -16,9 +17,12 @@ import * as routes from './routes'
 import { registerSocketEvents } from './socket/events'
 import { socketAuthMiddleware } from './socket/middlewares'
 import { connectDB } from './utils/db'
+import { getRedisClient } from './utils/redis'
 
 const createApp = async () => {
   await connectDB()
+
+  const redisClient = getRedisClient()
 
   const app = express()
 
@@ -31,11 +35,14 @@ const createApp = async () => {
     ServerToClientEvents,
     InterServerEvents,
     SocketData
-  >(server, { cors: { origin: config.corsOrigin } })
+  >(server, {
+    cors: { origin: config.corsOrigin },
+    adapter: createAdapter(redisClient),
+  })
 
   io.use(socketAuthMiddleware)
 
-  registerSocketEvents(io)
+  registerSocketEvents(io, redisClient)
 
   app.get('/', (_, res) => {
     res.send('<h1>Welcome to mChat</h1>')

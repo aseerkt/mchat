@@ -16,7 +16,7 @@ export const useQuery = <TData = unknown, TError = Error>(
   const setQueryCache = useSetQueryCache()
 
   useEffect(() => {
-    if (pathRef.current === path && isCached) {
+    if (pathRef.current === path && isCached && data) {
       return
     }
     async function fetchData() {
