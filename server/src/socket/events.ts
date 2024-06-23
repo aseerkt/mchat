@@ -2,7 +2,7 @@ import { Redis } from 'ioredis'
 import { config } from '../config'
 import { TypedIOServer, TypedSocket } from '../interfaces/socket.inteface'
 import { Message } from '../models/Message'
-import { redisKeys } from '../utils/redis'
+import { addOnlineUser, redisKeys, removeOnlineUser } from '../utils/redis'
 
 async function emitTypingUsers(
   socket: TypedSocket,
@@ -30,7 +30,9 @@ function leaveAllRoom(socket: TypedSocket) {
 }
 
 export const registerSocketEvents = (io: TypedIOServer, redisClient: Redis) => {
-  io.on('connection', socket => {
+  io.on('connection', async socket => {
+    await addOnlineUser(socket.data.user._id)
+
     socket.on('joinRoom', (roomId: string) => {
       leaveAllRoom(socket)
       socket.join(roomId)
@@ -63,6 +65,10 @@ export const registerSocketEvents = (io: TypedIOServer, redisClient: Redis) => {
 
     socket.on('error', err => {
       console.log('socket error:', err)
+    })
+
+    socket.on('disconnect', async () => {
+      await removeOnlineUser(socket.data.user._id)
     })
 
     if (!config.isProd) {

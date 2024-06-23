@@ -5,10 +5,13 @@ import {
   RoomHeader,
   TypingIndicators,
 } from '../features/chat/components'
+import { MembersSidebar } from '../features/chat/components/MembersSidebar'
 import { MessageComposer } from '../features/chat/components/MessageComposer'
-import { useInfiniteQuery } from '../hooks/useInfiniteQuery'
+import { useDisclosure } from '../hooks/useDisclosure'
+import { useQuery } from '../hooks/useQuery'
 import { Message } from '../interfaces/message.interface'
 import { getSocketIO } from '../utils/socket'
+import { cn } from '../utils/style'
 
 export const Component = () => {
   const params = useParams()
@@ -18,15 +21,14 @@ export const Component = () => {
     Array<{ _id: string; username: string }>
   >([])
 
-  const [pageParams, setPageParams] = useState({ limit: 10, offset: 0 })
+  const { isOpen, toggle } = useDisclosure()
 
   const {
     data: messages,
     setData: setMessagesData,
     loading,
-  } = useInfiniteQuery<Message>(
+  } = useQuery<Message[]>(
     params.roomId ? `/api/rooms/${params.roomId}/messages` : '',
-    pageParams,
   )
 
   useEffect(() => {
@@ -56,10 +58,22 @@ export const Component = () => {
     <>
       {params.roomId && (
         <>
-          <RoomHeader roomId={params.roomId} />
-          <MessageList messages={messages ?? []} loading={loading} />
-          <TypingIndicators users={typingUsers} />
-          <MessageComposer roomId={params.roomId} />
+          <div
+            className={cn(
+              'flex h-full flex-1 flex-col overflow-hidden',
+              isOpen && 'hidden md:flex',
+            )}
+          >
+            <RoomHeader roomId={params.roomId} showMembers={toggle} />
+            <MessageList messages={messages ?? []} loading={loading} />
+            <TypingIndicators users={typingUsers} />
+            <MessageComposer roomId={params.roomId} />
+          </div>
+          <MembersSidebar
+            isOpen={isOpen}
+            onClose={toggle}
+            roomId={params.roomId}
+          />
         </>
       )}
     </>

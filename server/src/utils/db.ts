@@ -30,7 +30,8 @@ export const findByPaginate = <TRawDocType>(
 ) => {
   return model.find(filters, projection, {
     ...options,
-    limit: Number(query.limit) || 10,
+    lean: true,
+    limit: 100,
     skip: Number(query.offset) || 0,
     sort: { createdAt: -1 },
   })

@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose'
+import { Model, Schema, model } from 'mongoose'
 import { IUserDefinition, userDefinition } from './User'
 
 export interface IRoom {
@@ -6,7 +6,7 @@ export interface IRoom {
   createdBy: IUserDefinition
 }
 
-const RoomSchema = new Schema<IRoom>(
+const RoomSchema: Schema<IRoom, Model<IRoom>> = new Schema(
   {
     name: { type: String, required: true },
     createdBy: userDefinition,

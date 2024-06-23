@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import sendSvg from '../../../assets/send-svgrepo-com.svg'
 import { Button } from '../../../components/Button'
 import { useAuthState } from '../../../hooks/useAuth'
 import { useAutoFocus } from '../../../hooks/useAutoFocus'
@@ -80,13 +81,17 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
     <form className='flex shrink-0 gap-2 border-t p-3' onSubmit={handleSubmit}>
       <input
         ref={textAreaRef}
-        className='flex-1 rounded border p-3'
+        className='w-full flex-1 rounded border p-3'
         value={text}
+        style={{ minWidth: 'unset' }}
         autoFocus
+        placeholder='Send message...'
         onKeyDown={handleKeyDown}
         onChange={handleChange}
       />
-      <Button disabled={disabled}>Send</Button>
+      <Button disabled={disabled} aria-label='send message'>
+        <img src={sendSvg} alt='send' height={24} width={24} />
+      </Button>
     </form>
   )
 }

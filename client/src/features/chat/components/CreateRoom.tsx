@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/Button'
 import { Dialog } from '../../../components/Dialog'
 import { Input } from '../../../components/Input'
+import { useAuthState } from '../../../hooks/useAuth'
 import { useAutoFocus } from '../../../hooks/useAutoFocus'
 import { useDisclosure } from '../../../hooks/useDisclosure'
 import { useMutation } from '../../../hooks/useMutation'
@@ -14,6 +15,7 @@ const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState('')
   const { toast } = useToast()
   const navigate = useNavigate()
+  const auth = useAuthState()
   const inputRef = useRef<HTMLInputElement>(null)
   const invalidateQueryCache = useInvalidateQueryCache()
   const { mutate: createRoom, loading } = useMutation<Room, { name: string }>(
@@ -32,7 +34,7 @@ const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
       if (result._id) {
         toast({ title: `Room "${name}" created` })
         onComplete()
-        invalidateQueryCache('/api/rooms')
+        invalidateQueryCache(`/api/users/${auth!._id}/rooms`)
         navigate(`/chat/${result._id}`)
       }
     } catch (error) {
@@ -61,12 +63,12 @@ export const CreateRoom = () => {
 
   return (
     <>
-      <Button onClick={toggle}>+ Room</Button>
-      {isOpen && (
-        <Dialog isOpen={isOpen} onClose={toggle}>
-          <CreateRoomForm onComplete={toggle} />
-        </Dialog>
-      )}
+      <Button variant='secondary' onClick={toggle}>
+        Create Room
+      </Button>
+      <Dialog isOpen={isOpen} onClose={toggle}>
+        <CreateRoomForm onComplete={toggle} />
+      </Dialog>
     </>
   )
 }

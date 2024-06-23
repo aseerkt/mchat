@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && nx vite:build",
-    "lint": "nx eslint:lint --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "nx vite:preview"
+    "build": "tsc && vite build",
+    "lint": "tsc && eslint --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
   },
   "dependencies": {
     "clsx": "^2.1.1",

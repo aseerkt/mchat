@@ -1,44 +1,67 @@
 import { RequestHandler } from 'express'
 import { Types } from 'mongoose'
+import { Member } from '../models/Member'
 import { Message } from '../models/Message'
 import { Room } from '../models/Room'
+import { notAuthorized, notFound } from '../utils/api'
 import { findByPaginate } from '../utils/db'
+import { deleteRoomMembersRoles, setMemberRole } from '../utils/redis'
 
 export const createRoom: RequestHandler = async (req, res) => {
-  const room = new Room({ name: req.body.name, createdBy: req.user })
-  await room.save()
+  // TODO: db operations over transaction
+
+  const room = await Room.create({ name: req.body.name, createdBy: req.user })
+  await Member.create({ roomId: room._id, user: req.user, role: 'owner' })
+
+  await setMemberRole(room._id.toString(), req.user!._id, 'owner')
+
   res.status(201).json(room)
 }
 
 export const getRoom: RequestHandler = async (req, res) => {
   const room = await Room.findById(new Types.ObjectId(req.params.roomId))
+
+  if (!room) {
+    return notFound(res, 'Room')
+  }
+
   res.json(room)
 }
 
-export const listRooms: RequestHandler = async (req, res) => {
+export const listAllRooms: RequestHandler = async (req, res) => {
   const rooms = await findByPaginate(Room, req.query)
   res.json(rooms)
 }
 
 export const deleteRoom: RequestHandler = async (req, res) => {
-  const result = await Room.deleteOne({ _id: req.params.roomId })
-  res.json(result)
-}
+  const room = await Room.findById(new Types.ObjectId(req.params.roomId))
 
-export const createMessage: RequestHandler = async (req, res) => {
-  const message = new Message({
-    roomId: req.params.roomId,
-    text: req.body.text,
-    sender: req.user,
-  })
-  await message.save()
-  res.status(201).json(message)
-}
-
-export const listMessages: RequestHandler = async (req, res) => {
-  const filters = {
-    roomId: req.params.roomId,
+  if (!room) {
+    return notFound(res, 'Room')
   }
-  const messages = await findByPaginate(Message, req.query, filters)
-  res.json(messages)
+
+  await Room.deleteOne({ _id: room._id })
+
+  // TODO: move these db operations to queue
+  await Message.deleteMany({ roomId: room._id })
+  await Member.deleteMany({ roomId: room._id })
+  await deleteRoomMembersRoles(room._id.toString())
+
+  res.json({ message: 'Room deleted' })
+}
+
+export const listUserRooms: RequestHandler = async (req, res) => {
+  if (req.params.userId !== req.user?._id) {
+    return notAuthorized(res)
+  }
+  const roomIds = await findByPaginate(
+    Member,
+    req.query,
+    { 'user._id': new Types.ObjectId(req.user!._id) },
+    { roomId: 1 },
+  )
+  const rooms = await Room.find({
+    _id: { $in: roomIds.map(r => r.roomId) },
+  }).lean()
+  res.json(rooms)
 }

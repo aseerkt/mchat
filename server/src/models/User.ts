@@ -1,5 +1,5 @@
 import { hash, verify } from 'argon2'
-import { Schema, Types, model } from 'mongoose'
+import { Model, Schema, Types, model } from 'mongoose'
 
 export interface IUserDefinition {
   _id: typeof Types.ObjectId
@@ -7,16 +7,23 @@ export interface IUserDefinition {
 }
 
 export const userDefinition = {
-  _id: { type: Types.ObjectId, required: true },
-  username: { type: String, required: true },
-}
+  type: {
+    _id: { type: Types.ObjectId, required: true },
+    username: { type: String, required: true },
+  },
+  required: true,
+} as const
 
 export interface IUser {
   username: string
   password: string
 }
 
-const UserSchema = new Schema<IUser>(
+export interface IUserMethods {
+  verifyPassword(password: string): Promise<boolean>
+}
+
+const UserSchema: Schema<IUser, Model<IUser>, IUserMethods> = new Schema(
   {
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },

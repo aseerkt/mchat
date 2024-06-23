@@ -16,7 +16,7 @@ export const useQuery = <TData = unknown, TError = Error>(
   const setQueryCache = useSetQueryCache()
 
   useEffect(() => {
-    if (pathRef.current === path && isCached && data) {
+    if (!path || (pathRef.current === path && isCached && data)) {
       return
     }
     async function fetchData() {
@@ -44,5 +44,5 @@ export const useQuery = <TData = unknown, TError = Error>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCached, path])
 
-  return { data, loading, error }
+  return { data, setData, loading, error }
 }

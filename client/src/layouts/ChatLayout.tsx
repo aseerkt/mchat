@@ -2,6 +2,8 @@ import { Outlet, useParams } from 'react-router-dom'
 import { PageLoader } from '../components/PageLoader'
 import { ChatHeader, RoomList } from '../features/chat/components'
 import { ChatUser } from '../features/chat/components/ChatUser'
+import { CreateRoom } from '../features/chat/components/CreateRoom'
+import { JoinRooms } from '../features/chat/components/JoinRoom'
 import { useSocketConnect } from '../hooks/useSocketConnect'
 import { cn } from '../utils/style'
 
@@ -25,8 +27,12 @@ const ChatLayout = () => {
         >
           <ChatUser isConnected={isConnected} />
           <RoomList />
+          <div className='flex shrink-0 gap-3 border-t px-3 py-4'>
+            <JoinRooms />
+            <CreateRoom />
+          </div>
         </div>
-        <div className='flex h-full flex-1 flex-col overflow-hidden'>
+        <div className='flex h-full flex-1 overflow-hidden'>
           <Outlet />
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Schema, Types, model } from 'mongoose'
+import { Model, Schema, Types, model } from 'mongoose'
 import { IUserDefinition, userDefinition } from './User'
 
 export interface IMessage {
@@ -7,7 +7,7 @@ export interface IMessage {
   text: string
 }
 
-const MessageSchema = new Schema<IMessage>(
+const MessageSchema = new Schema<IMessage, Model<IMessage>>(
   {
     roomId: { type: Types.ObjectId, required: true, index: true },
     sender: userDefinition,

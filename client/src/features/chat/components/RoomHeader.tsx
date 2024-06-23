@@ -1,14 +1,16 @@
 import { NavLink } from 'react-router-dom'
 import backArrow from '../../../assets/back-svgrepo-com.svg'
+import usersSvg from '../../../assets/users-svgrepo-com.svg'
 import { Skeleton } from '../../../components/Skeleton'
 import { useQuery } from '../../../hooks/useQuery'
 import { Room } from '../../../interfaces/room.interface'
 
 interface RoomHeaderProps {
   roomId: string
+  showMembers: () => void
 }
 
-export const RoomHeader = ({ roomId }: RoomHeaderProps) => {
+export const RoomHeader = ({ roomId, showMembers }: RoomHeaderProps) => {
   const { data: room, loading, error } = useQuery<Room>(`/api/rooms/${roomId}`)
 
   let content
@@ -31,6 +33,9 @@ export const RoomHeader = ({ roomId }: RoomHeaderProps) => {
         <img className='h-4 w-4' src={backArrow} alt='back-arrow' />
       </NavLink>
       {content}
+      <button onClick={showMembers} className='ml-auto'>
+        <img src={usersSvg} alt='open member drawer' height={24} width={24} />
+      </button>
     </header>
   )
 }

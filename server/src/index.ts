@@ -89,6 +89,7 @@ const createApp = async () => {
 
   app.use('/api/users', routes.users)
   app.use('/api/rooms', auth, routes.rooms)
+  app.use('/api/members', auth, routes.members)
 
   if (!config.isProd) {
     server.listen(config.port, () => {

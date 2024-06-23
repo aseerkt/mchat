@@ -3,7 +3,6 @@ import { Button } from '../../../components/Button'
 import { Logo } from '../../../components/Logo'
 import { useAuthSetter } from '../../../hooks/useAuth'
 import { removeToken } from '../../../utils/token'
-import { CreateRoom } from './CreateRoom'
 
 export const ChatHeader = () => {
   const setAuth = useAuthSetter()
@@ -17,7 +16,6 @@ export const ChatHeader = () => {
     <header className='sticky inset-x-0 top-0 flex h-20 items-center justify-between border-b px-6 shadow'>
       <Logo />
       <div className='flex items-center gap-x-4'>
-        <CreateRoom />
         <Button
           aria-label='logout'
           title='Logout'

@@ -1,21 +1,23 @@
 import { Router } from 'express'
+import { getRoomMembers } from '../controllers/members'
+import { createMessage, listMessages } from '../controllers/messages'
 import {
-  createMessage,
   createRoom,
   deleteRoom,
   getRoom,
-  listMessages,
-  listRooms,
+  listAllRooms,
 } from '../controllers/rooms'
-import { isRoomOwner } from '../middlewares'
+import { hasRoomPermission } from '../middlewares'
 
 export const router = Router()
 
 router.post('/', createRoom)
-router.get('/', listRooms)
+router.get('/', listAllRooms)
 
-router.get('/:roomId', getRoom)
-router.delete('/:roomId', isRoomOwner, deleteRoom)
+router.get('/:roomId', hasRoomPermission('member'), getRoom)
+router.delete('/:roomId', hasRoomPermission('owner'), deleteRoom)
 
-router.get('/:roomId/messages', listMessages)
+router.get('/:roomId/members', hasRoomPermission('member'), getRoomMembers)
+
+router.get('/:roomId/messages', hasRoomPermission('member'), listMessages)
 router.post('/:roomId/messages', createMessage)

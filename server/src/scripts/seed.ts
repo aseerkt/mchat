@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import { hash } from 'argon2'
 import 'colors'
 import 'dotenv/config'
+import { Types } from 'mongoose'
 import { Message } from '../models/Message'
 import { IRoom, Room } from '../models/Room'
 import { IUser, User } from '../models/User'
@@ -31,12 +32,7 @@ async function seedDatabase() {
 
     const users: IUser[] = []
 
-    users.push({
-      username: 'bob',
-      password,
-    })
-
-    for (let i = 0; i < USER_COUNT - 1; i++) {
+    for (let i = 0; i < USER_COUNT; i++) {
       users.push({
         username: faker.internet.userName(),
         password,
@@ -51,7 +47,7 @@ async function seedDatabase() {
       rooms.push({
         name: faker.hacker.noun(),
         createdBy: {
-          _id: insertedUsers[i]._id,
+          _id: insertedUsers[i]._id as unknown as typeof Types.ObjectId,
           username: insertedUsers[i].username,
         },
       })
