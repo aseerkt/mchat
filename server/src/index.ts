@@ -2,7 +2,6 @@ import {
   createAdapter as createClusterAdapter,
   setupPrimary,
 } from '@socket.io/cluster-adapter'
-import { createAdapter as createRedisAdaptor } from '@socket.io/redis-streams-adapter'
 import { setupMaster, setupWorker } from '@socket.io/sticky'
 import 'colors'
 import cors from 'cors'
@@ -29,6 +28,7 @@ import { getRedisClient } from './utils/redis'
 const createApp = async () => {
   if (cluster.isPrimary && config.isProd) {
     console.log(`Master ${process.pid} is running`)
+
     const numCPUs = availableParallelism()
 
     const httpServer = createServer()
@@ -37,7 +37,9 @@ const createApp = async () => {
 
     setupPrimary()
 
-    httpServer.listen(config.port)
+    httpServer.listen(config.port, () => {
+      console.log(`Server running at http://localhost:${config.port}`.blue.bold)
+    })
 
     for (let i = 0; i < numCPUs; i++) {
       cluster.fork()
@@ -71,8 +73,6 @@ const createApp = async () => {
   >(server, {
     cors: { origin: config.corsOrigin },
   })
-
-  io.adapter(createRedisAdaptor(redisClient))
 
   if (config.isProd) {
     io.adapter(createClusterAdapter())

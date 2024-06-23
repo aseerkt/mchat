@@ -17,7 +17,6 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@socket.io/cluster-adapter": "^0.2.2",
-    "@socket.io/redis-streams-adapter": "^0.2.2",
     "@socket.io/sticky": "^1.0.4",
     "argon2": "^0.40.3",
     "colors": "^1.4.0",

@@ -54,11 +54,15 @@ export const registerSocketEvents = (io: TypedIOServer, redisClient: Redis) => {
           sender: socket.data.user,
         })
         await message.save()
-        cb({ data: message })
         io.to(roomId).emit('newMessage', message)
+        cb({ data: message })
       } catch (error) {
         cb({ error })
       }
+    })
+
+    socket.on('error', err => {
+      console.log('socket error:', err)
     })
 
     if (!config.isProd) {

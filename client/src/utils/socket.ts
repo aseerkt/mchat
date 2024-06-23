@@ -11,7 +11,6 @@ export const getSocketIO = () => {
 
   if (!token) {
     toast({ title: 'socket: no auth token', severity: 'error' })
-    throw new Error('socket: no auth token')
   }
 
   if (!socket) {

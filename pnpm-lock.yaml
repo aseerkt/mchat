@@ -90,9 +90,6 @@ importers:
       '@socket.io/cluster-adapter':
         specifier: ^0.2.2
         version: 0.2.2(socket.io-adapter@2.5.5)
-      '@socket.io/redis-streams-adapter':
-        specifier: ^0.2.2
-        version: 0.2.2(socket.io-adapter@2.5.5)
       '@socket.io/sticky':
         specifier: ^1.0.4
         version: 1.0.4
@@ -364,10 +361,6 @@ packages:
   '@mongodb-js/saslprep@1.1.7':
     resolution: {integrity: sha512-dCHW/oEX0KJ4NjDULBo3JiOaK5+6axtpBbS+ao2ZInoAL9/YRQLhXzSNAFz7hP4nzLkIqsfYAK/PDE3+XHny0Q==}
 
-  '@msgpack/msgpack@2.8.0':
-    resolution: {integrity: sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==}
-    engines: {node: '>= 10'}
-
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -480,12 +473,6 @@ packages:
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
-
-  '@socket.io/redis-streams-adapter@0.2.2':
-    resolution: {integrity: sha512-BMPa6oGC0wFgpMXoGksbJ75zMBwk+79pxjHc2YusdoK+X0BxN4fTsqEBuFV7yeXi9ekbi87rwlsT61+WZGVW9g==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      socket.io-adapter: ^2.5.4
 
   '@socket.io/sticky@1.0.4':
     resolution: {integrity: sha512-VuauT5CJLvzYtKIgouFSQ8rUaygseR+zRutnwh6ZA2QYcXx+8g52EoJ8V2SLxfo+Tfs3ELUDy08oEXxlWNrxaw==}
@@ -2242,8 +2229,6 @@ snapshots:
     dependencies:
       sparse-bitfield: 3.0.3
 
-  '@msgpack/msgpack@2.8.0': {}
-
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -2319,14 +2304,6 @@ snapshots:
       - supports-color
 
   '@socket.io/component-emitter@3.1.2': {}
-
-  '@socket.io/redis-streams-adapter@0.2.2(socket.io-adapter@2.5.5)':
-    dependencies:
-      '@msgpack/msgpack': 2.8.0
-      debug: 4.3.5
-      socket.io-adapter: 2.5.5
-    transitivePeerDependencies:
-      - supports-color
 
   '@socket.io/sticky@1.0.4': {}
 
