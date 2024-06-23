@@ -89,6 +89,8 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
         </label>
       </li>
     ))
+  } else if (Array.isArray(rooms)) {
+    content = <p>No more rooms to join</p>
   }
 
   return (
@@ -102,7 +104,7 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
       <ul className='mb-4 flex flex-1 flex-col overflow-y-auto border p-3'>
         {content}
       </ul>
-      <Button>Join rooms</Button>
+      <Button>Join room</Button>
     </form>
   )
 }
