@@ -24,5 +24,9 @@ export const MemberList = ({ roomId }: { roomId: string }) => {
     ))
   }
 
-  return <ul className='flex flex-col gap-2 p-3'>{content}</ul>
+  return (
+    <ul className='flex h-full flex-col gap-2 overflow-y-auto p-3'>
+      {content}
+    </ul>
+  )
 }
