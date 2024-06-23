@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: aseerkt
+      MONGO_INITDB_ROOT_PASSWORD: secret
+
+  redis:
+    image: redis:7.2-alpine
+    restart: always
+    ports:
+      - 6379:6379
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      VITE_BACKEND_URL: http://localhost:5000
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MONGO_URI: mongodb://aseerkt:secret@mongo:27017/mchat

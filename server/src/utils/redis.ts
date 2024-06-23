@@ -1,11 +1,15 @@
 import { Redis } from 'ioredis'
+import { config } from '../config'
 import { MemberRole } from '../models/Member'
 
 let redisClient: Redis
 
 export function getRedisClient() {
   if (!redisClient) {
-    redisClient = new Redis()
+    redisClient = new Redis({
+      host: config.redisHost,
+      port: Number(config.redisPort),
+    })
 
     redisClient.on('connect', () => {
       console.log('Redis connected'.yellow.bold)

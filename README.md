@@ -21,8 +21,7 @@
 docker compose up -d
 ```
 
-> Make sure these ports are not occupied
-> MongoDB => 27017 | Redis => 6379
+> Make sure that MongoDB and Redis ports are not already occupied
 
 - Install dependencies
 ```bash
