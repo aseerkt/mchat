@@ -1,8 +1,21 @@
-interface TypingIndicatorsProps {
-  users: { _id: string; username: string }[]
-}
+import { useEffect, useState } from 'react'
+import { getSocketIO } from '../../../utils/socket'
 
-export const TypingIndicators = ({ users }: TypingIndicatorsProps) => {
+export const TypingIndicator = () => {
+  const [users, setUsers] = useState<Array<{ _id: string; username: string }>>(
+    [],
+  )
+
+  useEffect(() => {
+    const socket = getSocketIO()
+    socket.on('typingUsers', setUsers)
+
+    return () => {
+      socket.off('typingUsers', setUsers)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   let content
 
   if (!users.length) {

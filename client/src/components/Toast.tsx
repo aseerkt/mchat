@@ -3,13 +3,13 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
 const toastVariants = cva(
-  'fixed flex bg-white justify-between gap-4 min-w-[200px] shadow-lg border rounded p-3 bottom-6 z-10 transition-all',
+  'fixed flex text-white justify-between gap-4  md:max-w-[250px] shadow-lg border rounded p-3 bottom-6 z-10 transition-all',
   {
     variants: {
       severity: {
-        error: 'text-red-700 border-red-300',
-        info: 'text-indigo-700',
-        success: 'text-green-800',
+        error: 'bg-red-800',
+        info: 'bg-blue-800',
+        success: 'bg-green-800',
       },
       state: {
         open: 'right-6',
@@ -59,7 +59,7 @@ export const Toast: React.FC<ToastProps> = ({
       <>{children}</>
       <button
         aria-label='close toast'
-        className='inline-flex h-5 w-5 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100'
+        className='inline-flex h-5 w-5 items-center justify-center rounded-full text-white hover:bg-gray-100'
         onClick={handleClose}
       >
         x

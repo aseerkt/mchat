@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { config } from '../config'
 import { getSocketIO } from '../utils/socket'
+import { removeToken } from '../utils/token'
 
 export const useSocketConnect = () => {
   const [isConnected, setIsConnected] = useState(false)
@@ -23,8 +24,11 @@ export const useSocketConnect = () => {
 
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
+
     socket.on('connect_error', err => {
       console.log('socket err: ', err)
+      removeToken()
+      window.location.href = '/'
     })
 
     if (config.isDev) {

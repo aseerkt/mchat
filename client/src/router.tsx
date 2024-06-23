@@ -14,7 +14,7 @@ export const router = createBrowserRouter([
         path: '/chat',
         Component: lazy(() => import('./layouts/ChatLayout')),
         children: [
-          { path: '', lazy: () => import('./pages/Chat') },
+          { path: '', lazy: () => import('./pages/ChatHome') },
           { path: ':roomId', lazy: () => import('./pages/ChatRoom') },
         ],
       },

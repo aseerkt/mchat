@@ -83,7 +83,6 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
         ref={textAreaRef}
         className='w-full flex-1 rounded border p-3'
         value={text}
-        style={{ minWidth: 'unset' }}
         autoFocus
         placeholder='Send message...'
         onKeyDown={handleKeyDown}

@@ -12,7 +12,7 @@ import { useToast } from '../../../hooks/useToast'
 import { Member } from '../../../interfaces/member.inteface'
 import { Room } from '../../../interfaces/room.interface'
 
-export const JoinRooms = () => {
+export const JoinRoom = () => {
   const { isOpen, toggle } = useDisclosure()
 
   return (
