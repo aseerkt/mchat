@@ -5,14 +5,14 @@ import {
   createRoom,
   deleteRoom,
   getRoom,
-  listAllRooms,
+  listRooms,
 } from '../controllers/rooms'
 import { hasRoomPermission } from '../middlewares'
 
 export const router = Router()
 
 router.post('/', createRoom)
-router.get('/', listAllRooms)
+router.get('/', listRooms)
 
 router.get('/:roomId', hasRoomPermission('member'), getRoom)
 router.delete('/:roomId', hasRoomPermission('owner'), deleteRoom)

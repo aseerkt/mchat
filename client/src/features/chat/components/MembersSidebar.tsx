@@ -12,7 +12,7 @@ interface MembersListProps {
 
 export const MembersSidebar = (props: MembersListProps) => {
   return props.isOpen ? (
-    <div className='w-full border-l md:w-[290px]'>
+    <div className='w-full border-l md:w-[260px]'>
       <header className='flex h-14 items-center border-b px-4'>
         <button
           onClick={props.onClose}

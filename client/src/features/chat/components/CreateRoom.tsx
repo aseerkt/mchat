@@ -63,7 +63,7 @@ export const CreateRoom = () => {
 
   return (
     <>
-      <Button variant='secondary' onClick={toggle}>
+      <Button variant='secondary' className='min-w-fit' onClick={toggle}>
         Create Room
       </Button>
       <Dialog isOpen={isOpen} onClose={toggle}>

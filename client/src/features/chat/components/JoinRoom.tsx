@@ -17,7 +17,9 @@ export const JoinRooms = () => {
 
   return (
     <>
-      <Button onClick={toggle}>Join Room</Button>
+      <Button className='min-w-fit' onClick={toggle}>
+        Join Room
+      </Button>
       <Dialog isOpen={isOpen} onClose={toggle}>
         <JoinRoomsForm onClose={toggle} />
       </Dialog>
