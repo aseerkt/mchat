@@ -52,6 +52,7 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
         toast({ title: 'Rooms joined successfully', severity: 'success' })
         navigate(`/chat/${result[0].roomId}`)
         invalidateQueryCache(`/api/users/${auth!._id}/rooms`)
+        invalidateQueryCache(`/api/rooms`)
         onClose()
       }
     } catch (error) {

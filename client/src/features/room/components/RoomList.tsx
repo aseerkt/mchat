@@ -27,7 +27,7 @@ export const RoomList = () => {
   }
 
   return (
-    <aside className='flex h-full flex-1 flex-col overflow-y-auto py-3'>
+    <aside className='flex h-full flex-1 flex-col overflow-y-auto'>
       {content}
     </aside>
   )
