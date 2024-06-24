@@ -7,7 +7,7 @@ export interface IMessage {
   text: string
 }
 
-const MessageSchema = new Schema<IMessage, Model<IMessage>>(
+const MessageSchema: Schema<IMessage, Model<IMessage>> = new Schema(
   {
     roomId: { type: Types.ObjectId, required: true, index: true },
     sender: userDefinition,

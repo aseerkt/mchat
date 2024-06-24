@@ -1,6 +1,7 @@
 import { Redis } from 'ioredis'
 import { config } from '../config'
 import { TypedIOServer, TypedSocket } from '../interfaces/socket.inteface'
+import { Member } from '../models/Member'
 import { Message } from '../models/Message'
 import { addOnlineUser, redisKeys, removeOnlineUser } from '../utils/redis'
 
@@ -50,13 +51,19 @@ export const registerSocketEvents = (io: TypedIOServer, redisClient: Redis) => {
 
     socket.on('createMessage', async ({ roomId, text }, cb) => {
       try {
-        const message = new Message({
+        const isMember = await Member.countDocuments({
+          roomId,
+          'user._id': socket.data.user._id,
+        })
+        if (!isMember) {
+          throw new Error('createMessage: Not authorized')
+        }
+        const message = await Message.create({
           roomId,
           text,
           sender: socket.data.user,
         })
-        await message.save()
-        io.to(roomId).emit('newMessage', message)
+        io.to(roomId).emit('newMessage', message.toJSON())
         cb({ data: message })
       } catch (error) {
         cb({ error })
