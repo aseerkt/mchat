@@ -12,16 +12,16 @@ import { createServer } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { Server } from 'socket.io'
 import { config } from './config'
+import { auth } from './middlewares'
+import * as routes from './routes'
+import { registerSocketEvents } from './socket/events'
+import { socketAuthMiddleware } from './socket/middlewares'
 import {
   ClientToServerEvents,
   InterServerEvents,
   ServerToClientEvents,
   SocketData,
-} from './interfaces/socket.inteface'
-import { auth } from './middlewares'
-import * as routes from './routes'
-import { registerSocketEvents } from './socket/events'
-import { socketAuthMiddleware } from './socket/middlewares'
+} from './socket/socket.inteface'
 import { connectDB } from './utils/db'
 import { getRedisClient } from './utils/redis'
 
@@ -81,7 +81,7 @@ const createApp = async () => {
 
   io.use(socketAuthMiddleware)
 
-  registerSocketEvents(io, redisClient)
+  registerSocketEvents(io)
 
   app.get('/', (_, res) => {
     res.send('<h1>Welcome to mChat</h1>')

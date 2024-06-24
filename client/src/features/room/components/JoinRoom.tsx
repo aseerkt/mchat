@@ -5,12 +5,11 @@ import { Dialog } from '../../../components/Dialog'
 import { Skeleton } from '../../../components/Skeleton'
 import { useAuthState } from '../../../hooks/useAuth'
 import { useDisclosure } from '../../../hooks/useDisclosure'
-import { useMutation } from '../../../hooks/useMutation'
 import { useQuery } from '../../../hooks/useQuery'
 import { useInvalidateQueryCache } from '../../../hooks/useQueryCache'
 import { useToast } from '../../../hooks/useToast'
-import { Member } from '../../../interfaces/member.inteface'
-import { Room } from '../../../interfaces/room.interface'
+import { IRoom } from '../../../interfaces/room.interface'
+import { getSocketIO } from '../../../utils/socket'
 
 export const JoinRoom = () => {
   const { isOpen, toggle } = useDisclosure()
@@ -32,11 +31,8 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
   const navigate = useNavigate()
   const auth = useAuthState()
   const invalidateQueryCache = useInvalidateQueryCache()
-  const { data: rooms, loading, error } = useQuery<Room[]>('/api/rooms')
+  const { data: rooms, loading, error } = useQuery<IRoom[]>('/api/rooms')
 
-  const { mutate: joinRooms } = useMutation<Member[], { roomIds: string[] }>(
-    '/api/members',
-  )
   const [checkedRooms, setCheckedRooms] = useState<Record<string, boolean>>({})
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -47,13 +43,16 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
       return
     }
     try {
-      const result = await joinRooms({ roomIds })
-      if (result?.length) {
+      const socket = getSocketIO()
+      const res = await socket.emitWithAck('memberJoin', roomIds)
+      if (res?.success) {
         toast({ title: 'Rooms joined successfully', severity: 'success' })
-        navigate(`/chat/${result[0].roomId}`)
+        navigate(`/chat/${roomIds[0]}`)
         invalidateQueryCache(`/api/users/${auth!._id}/rooms`)
         invalidateQueryCache(`/api/rooms`)
         onClose()
+      } else if (res.error) {
+        throw res.error
       }
     } catch (error) {
       toast({ title: (error as Error).message, severity: 'error' })

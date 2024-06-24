@@ -1,7 +1,7 @@
 import { Skeleton } from '../../../components/Skeleton'
 import { useAuthState } from '../../../hooks/useAuth'
 import { useQuery } from '../../../hooks/useQuery'
-import { Room } from '../../../interfaces/room.interface'
+import { IRoom } from '../../../interfaces/room.interface'
 import { RoomItem } from './RoomItem'
 
 export const RoomList = () => {
@@ -10,7 +10,7 @@ export const RoomList = () => {
     data: rooms,
     loading,
     error,
-  } = useQuery<Room[]>(auth?._id ? `/api/users/${auth._id}/rooms` : '')
+  } = useQuery<IRoom[]>(auth?._id ? `/api/users/${auth._id}/rooms` : '')
 
   let content
 

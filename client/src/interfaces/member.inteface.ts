@@ -1,4 +1,4 @@
-export interface Member {
+export interface IMember {
   roomId: string
   user: {
     _id: string

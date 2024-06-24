@@ -9,7 +9,7 @@ import { useDisclosure } from '../../../hooks/useDisclosure'
 import { useMutation } from '../../../hooks/useMutation'
 import { useInvalidateQueryCache } from '../../../hooks/useQueryCache'
 import { useToast } from '../../../hooks/useToast'
-import { Room } from '../../../interfaces/room.interface'
+import { IRoom } from '../../../interfaces/room.interface'
 
 const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState('')
@@ -18,7 +18,7 @@ const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
   const auth = useAuthState()
   const inputRef = useRef<HTMLInputElement>(null)
   const invalidateQueryCache = useInvalidateQueryCache()
-  const { mutate: createRoom, loading } = useMutation<Room, { name: string }>(
+  const { mutate: createRoom, loading } = useMutation<IRoom, { name: string }>(
     '/api/rooms',
   )
 

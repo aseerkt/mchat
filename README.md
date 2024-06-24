@@ -23,6 +23,7 @@
 docker compose -f docker-compose.prod.yml up
 ```
 - Go to [http://localhost:3000](http://localhost:3000)
+
 ### Development
 
 - Spin up MongoDB and Redis
@@ -48,6 +49,7 @@ pnpm dev
 ```bash
 pnpm --filter server seed
 ```
+
 ## Features Roadmap
 
 
@@ -62,10 +64,11 @@ pnpm --filter server seed
 - [x] socket.io cluster adapter integration
 - [x] global error handling
 - [x] redis implementation (typing users, online users)
-- [ ] online status (wip)
+- [x] online status
+- [x] realtime member list update
+- [ ] infinite scroll pagination (messages/rooms/members)
 - [ ] delete room (wip)
 - [ ] e2e encryption
-- [ ] infinite scroll pagination (messages/rooms/members)
 - [ ] read receipts
 - [ ] alert component
 - [ ] confirm dialog
@@ -81,7 +84,6 @@ pnpm --filter server seed
 - [ ] keploy api test generation
 - [ ] private rooms - invite
 - [ ] notifications
-- [ ] realtime room join/create
 
 ## Authors
 

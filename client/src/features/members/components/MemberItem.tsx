@@ -1,8 +1,8 @@
-import { Member } from '../../../interfaces/member.inteface'
+import { IMember } from '../../../interfaces/member.inteface'
 import { cn } from '../../../utils/style'
 
 interface MemberItemProps {
-  member: Member
+  member: IMember
 }
 
 export const MemberItem = ({ member }: MemberItemProps) => {
@@ -14,7 +14,7 @@ export const MemberItem = ({ member }: MemberItemProps) => {
       <div
         className={cn(
           'h-3 w-3 rounded-full',
-          member.online ? 'bg-green-800' : 'bg-gray-500',
+          member.online ? 'bg-green-600' : 'bg-gray-400',
         )}
       ></div>
       <b>{member.user.username}</b>

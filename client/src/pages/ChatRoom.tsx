@@ -11,13 +11,13 @@ import { cn } from '../utils/style'
 export const Component = () => {
   const params = useParams()
   const roomRef = useRef<string>()
-  const socket = useRef(getSocketIO())
 
   const { isOpen, toggle } = useDisclosure()
 
   useEffect(() => {
+    const socket = getSocketIO()
     if (params.roomId && params.roomId !== roomRef.current) {
-      socket.current.emit('joinRoom', params.roomId)
+      socket.emit('joinRoom', params.roomId)
       roomRef.current = params.roomId
     }
   }, [params.roomId])

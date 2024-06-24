@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Skeleton } from '../../../components/Skeleton'
 import { useAuthState } from '../../../hooks/useAuth'
 import { useQuery } from '../../../hooks/useQuery'
-import { Message } from '../../../interfaces/message.interface'
+import { IMessage } from '../../../interfaces/message.interface'
 import { getSocketIO } from '../../../utils/socket'
 import { MessageItem } from './MessageItem'
 
@@ -17,7 +17,7 @@ export const MessageList = ({ roomId }: MessageListProps) => {
     data: messages,
     setData: setMessagesData,
     loading,
-  } = useQuery<Message[]>(`/api/rooms/${roomId}/messages`)
+  } = useQuery<IMessage[]>(`/api/rooms/${roomId}/messages`)
 
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -28,7 +28,7 @@ export const MessageList = ({ roomId }: MessageListProps) => {
   }, [messages])
 
   useEffect(() => {
-    function updateMessage(message: Message) {
+    function updateMessage(message: IMessage) {
       setMessagesData(prevMessages => [message, ...(prevMessages ?? [])])
     }
     const socket = getSocketIO()

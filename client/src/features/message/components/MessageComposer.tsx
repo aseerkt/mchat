@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import sendSvg from '../../../assets/send-svgrepo-com.svg'
 import { Button } from '../../../components/Button'
-import { useAuthState } from '../../../hooks/useAuth'
 import { useAutoFocus } from '../../../hooks/useAutoFocus'
 import { useToast } from '../../../hooks/useToast'
 import { getSocketIO } from '../../../utils/socket'
@@ -12,7 +11,6 @@ interface MessageComposerProps {
 
 export const MessageComposer = ({ roomId }: MessageComposerProps) => {
   const { toast } = useToast()
-  const auth = useAuthState()
   const [text, setText] = useState('')
   const [disabled, setDisabled] = useState(false)
   const socketRef = useRef(getSocketIO())
@@ -26,14 +24,10 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     } else {
-      socketRef.current.emit('userStartedTyping', {
-        roomId,
-        userId: auth!._id,
-        username: auth!.username,
-      })
+      socketRef.current.emit('userStartedTyping', roomId)
     }
     timeoutRef.current = setTimeout(() => {
-      socketRef.current.emit('userStoppedTyping', { roomId, userId: auth!._id })
+      socketRef.current.emit('userStoppedTyping', roomId)
       timeoutRef.current = undefined
     }, 1000)
   }
@@ -48,7 +42,7 @@ export const MessageComposer = ({ roomId }: MessageComposerProps) => {
         .timeout(5000)
         .emitWithAck('createMessage', { roomId, text })
 
-      if (response.data) {
+      if (response.message) {
         setText('')
       } else if (response.error) {
         throw response.error

@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom'
-import { Room } from '../../../interfaces/room.interface'
+import { IRoom } from '../../../interfaces/room.interface'
 import { cn } from '../../../utils/style'
 
 interface RoomItemProps {
-  room: Room
+  room: IRoom
 }
 
 export const RoomItem = ({ room }: RoomItemProps) => {

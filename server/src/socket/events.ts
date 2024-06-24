@@ -1,23 +1,20 @@
-import { Redis } from 'ioredis'
+import { Types } from 'mongoose'
 import { config } from '../config'
-import { TypedIOServer, TypedSocket } from '../interfaces/socket.inteface'
 import { Member } from '../models/Member'
 import { Message } from '../models/Message'
-import { addOnlineUser, redisKeys, removeOnlineUser } from '../utils/redis'
+import {
+  addOnlineUser,
+  getTypingUsers,
+  removeOnlineUser,
+  removeTypingUser,
+  setMemberRole,
+  setTypingUser,
+} from '../utils/redis'
+import { TypedIOServer, TypedSocket } from './socket.inteface'
 
-async function emitTypingUsers(
-  socket: TypedSocket,
-  redisClient: Redis,
-  roomId: string,
-) {
-  const typingUsers = await redisClient.hgetall(redisKeys.TYPING_USERS(roomId))
-  socket.broadcast.to(roomId).emit(
-    'typingUsers',
-    Object.keys(typingUsers).map(key => ({
-      _id: key,
-      username: typingUsers[key],
-    })),
-  )
+async function emitTypingUsers(socket: TypedSocket, roomId: string) {
+  const typingUsers = await getTypingUsers(roomId)
+  socket.broadcast.to(roomId).emit('typingUsers', typingUsers)
 }
 
 function leaveAllRoom(socket: TypedSocket) {
@@ -30,23 +27,53 @@ function leaveAllRoom(socket: TypedSocket) {
   })
 }
 
-export const registerSocketEvents = (io: TypedIOServer, redisClient: Redis) => {
+export const registerSocketEvents = (io: TypedIOServer) => {
   io.on('connection', async socket => {
     await addOnlineUser(socket.data.user._id)
+    socket.broadcast.emit('userOnline', socket.data.user._id)
 
-    socket.on('joinRoom', (roomId: string) => {
+    socket.on('joinRoom', roomId => {
       leaveAllRoom(socket)
       socket.join(roomId)
     })
 
-    socket.on('userStartedTyping', async ({ roomId, username, userId }) => {
-      await redisClient.hset(redisKeys.TYPING_USERS(roomId), userId, username)
-      await emitTypingUsers(socket, redisClient, roomId)
+    socket.on('memberJoin', async (roomIds, cb) => {
+      try {
+        const members = await Member.create(
+          roomIds.map((roomId: string) => ({
+            roomId: new Types.ObjectId(roomId),
+            user: socket.data.user,
+            role: 'member',
+          })),
+        )
+        members.forEach(member => {
+          setMemberRole(
+            member.roomId.toString(),
+            socket.data.user._id,
+            'member',
+          )
+          socket.broadcast
+            .to(member.roomId.toString())
+            .emit('newMember', member.toJSON())
+        })
+        cb({ success: true })
+      } catch (error) {
+        cb({ success: false, error })
+      }
     })
 
-    socket.on('userStoppedTyping', async ({ roomId, userId }) => {
-      await redisClient.hdel(redisKeys.TYPING_USERS(roomId), userId)
-      await emitTypingUsers(socket, redisClient, roomId)
+    socket.on('userStartedTyping', async roomId => {
+      await setTypingUser(
+        roomId,
+        socket.data.user._id,
+        socket.data.user.username,
+      )
+      await emitTypingUsers(socket, roomId)
+    })
+
+    socket.on('userStoppedTyping', async roomId => {
+      await removeTypingUser(roomId, socket.data.user._id)
+      await emitTypingUsers(socket, roomId)
     })
 
     socket.on('createMessage', async ({ roomId, text }, cb) => {
@@ -64,7 +91,7 @@ export const registerSocketEvents = (io: TypedIOServer, redisClient: Redis) => {
           sender: socket.data.user,
         })
         io.to(roomId).emit('newMessage', message.toJSON())
-        cb({ data: message })
+        cb({ message: message })
       } catch (error) {
         cb({ error })
       }
@@ -76,6 +103,7 @@ export const registerSocketEvents = (io: TypedIOServer, redisClient: Redis) => {
 
     socket.on('disconnect', async () => {
       await removeOnlineUser(socket.data.user._id)
+      socket.broadcast.emit('userOffline', socket.data.user._id)
     })
 
     if (!config.isProd) {

@@ -5,12 +5,12 @@ import { useAuthSetter } from '../../../hooks/useAuth'
 import useForm from '../../../hooks/useForm'
 import { useMutation } from '../../../hooks/useMutation'
 import { useToast } from '../../../hooks/useToast'
-import { User } from '../../../interfaces/user.interface'
+import { IUser } from '../../../interfaces/user.interface'
 import { setToken } from '../../../utils/token'
 import { isRequired } from '../../../utils/validators'
 
 interface SignUpResponse {
-  user: User
+  user: IUser
   token: string
 }
 

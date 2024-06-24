@@ -1,9 +1,9 @@
-import { Message } from '../../../interfaces/message.interface'
+import { IMessage } from '../../../interfaces/message.interface'
 import { formateChatDate } from '../../../utils/date'
 import { cn } from '../../../utils/style'
 
 interface MessageItemProps {
-  message: Message
+  message: IMessage
   isCurrentUser: boolean
 }
 
