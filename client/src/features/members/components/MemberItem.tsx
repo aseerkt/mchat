@@ -14,7 +14,9 @@ export const MemberItem = ({ member }: MemberItemProps) => {
       <div
         className={cn(
           'h-3 w-3 rounded-full',
-          member.online ? 'bg-green-600' : 'bg-gray-400',
+          member.online
+            ? 'bg-green-600'
+            : 'border-2 border-gray-400 bg-gray-200',
         )}
       ></div>
       <b>{member.user.username}</b>

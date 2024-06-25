@@ -66,7 +66,7 @@ pnpm --filter server seed
 - [x] redis implementation (typing users, online users)
 - [x] online status
 - [x] realtime member list update
-- [ ] infinite scroll pagination (messages/rooms/members)
+- [x] infinite scroll pagination (messages/rooms/members)
 - [ ] delete room
 - [ ] e2e encryption
 - [ ] read receipts

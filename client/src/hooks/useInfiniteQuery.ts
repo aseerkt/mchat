@@ -81,7 +81,7 @@ export const useInfiniteQuery = <TData extends { _id: string }, TError = Error>(
   }, [path])
 
   useEffect(() => {
-    if (!isCached && data?.length) {
+    if (!isCached && Array.isArray(data)) {
       fetchInitialData()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
