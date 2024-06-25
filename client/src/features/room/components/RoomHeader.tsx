@@ -18,7 +18,14 @@ export const RoomHeader = ({ roomId, showMembers }: RoomHeaderProps) => {
   if (loading) {
     content = <Skeleton className='h-5 w-28' />
   } else if (room?._id) {
-    content = <h3 className='text-lg font-bold'>{room.name}</h3>
+    content = (
+      <>
+        <h3 className='text-lg font-bold'>{room.name}</h3>
+        <button onClick={showMembers} className='ml-auto'>
+          <img src={usersSvg} alt='open member drawer' height={24} width={24} />
+        </button>
+      </>
+    )
   } else if (error) {
     content = <div>Unable to fetch room metadata</div>
   }
@@ -33,9 +40,6 @@ export const RoomHeader = ({ roomId, showMembers }: RoomHeaderProps) => {
         <img className='h-4 w-4' src={backArrow} alt='back-arrow' />
       </NavLink>
       {content}
-      <button onClick={showMembers} className='ml-auto'>
-        <img src={usersSvg} alt='open member drawer' height={24} width={24} />
-      </button>
     </header>
   )
 }

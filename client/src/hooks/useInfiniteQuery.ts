@@ -7,13 +7,16 @@ const stringifyQueryParams = <TQueryParams extends Record<string, unknown>>(
   params: TQueryParams,
 ) => {
   const queryParams = new URLSearchParams()
-  Object.keys(params).forEach(key =>
-    queryParams.append(key, String(params[key])),
-  )
+  Object.keys(params).forEach(key => {
+    const value = String(params[key])
+    if (value) {
+      queryParams.append(key, value)
+    }
+  })
   return queryParams.toString()
 }
 
-export const useInfiniteQuery = <TData = unknown, TError = Error>(
+export const useInfiniteQuery = <TData extends { _id: string }, TError = Error>(
   path: string,
   fetchOptions?: RequestInit,
 ) => {
@@ -22,7 +25,7 @@ export const useInfiniteQuery = <TData = unknown, TError = Error>(
   const [loading, setLoading] = useState(false)
   const [isFetchingMore, setIsFetchingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
-  const queryParams = useRef({ limit: 15, offset: 0 })
+  const queryParams = useRef({ limit: 15, cursor: '' })
 
   const isCached = useQueryHasCache(path)
   const setQueryCache = useSetQueryCache()
@@ -40,38 +43,52 @@ export const useInfiniteQuery = <TData = unknown, TError = Error>(
     )
 
     const jsonData = await res.json()
-    if (res.ok) {
-      return jsonData
-    } else {
+
+    if (!res.ok) {
       throw jsonData
+    }
+
+    if (jsonData.data?.length) {
+      queryParams.current.cursor = jsonData.data[jsonData.data.length - 1]._id
+    }
+
+    return jsonData
+  }
+
+  async function fetchInitialData() {
+    if (!path) {
+      return
+    }
+    queryParams.current.cursor = ''
+
+    setLoading(true)
+    setHasMore(false)
+    try {
+      const result = await fetchData()
+      setData(result.data)
+      setHasMore(result.hasMore)
+      setQueryCache(path)
+    } catch (error) {
+      setError(error as TError)
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (!path || isCached) {
-      return
-    }
-    queryParams.current.offset = 0
-    async function fetchInitialData() {
-      setLoading(true)
-      try {
-        const result = await fetchData()
-        setData(result.data)
-        setHasMore(result.hasMore)
-        setQueryCache(path)
-      } catch (error) {
-        setError(error as TError)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchInitialData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path, isCached])
+  }, [path])
+
+  useEffect(() => {
+    if (!isCached && data?.length) {
+      fetchInitialData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCached])
 
   const fetchMore = async () => {
-    queryParams.current.offset++
+    if (!data?.length) return
     setIsFetchingMore(true)
     try {
       const result = await fetchData()

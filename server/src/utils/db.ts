@@ -4,6 +4,7 @@ import {
   Model,
   ProjectionType,
   QueryOptions,
+  Types,
   connect,
 } from 'mongoose'
 import { config } from '../config'
@@ -30,13 +31,18 @@ export async function findByPaginate<TRawDocType>(
   options?: QueryOptions<TRawDocType>,
 ) {
   const limit = Number(query.limit) || 15
-  const skip = (Number(query.offset) || 0) * limit
-  const results = await model.find(filters, projection, {
+
+  const cursor =
+    typeof query.cursor === 'string' && Types.ObjectId.isValid(query.cursor)
+      ? new Types.ObjectId(query.cursor)
+      : undefined
+  const offsetWhere = cursor ? { _id: { $lt: cursor, ...filters._id } } : {}
+
+  const results = await model.find({ ...filters, ...offsetWhere }, projection, {
     ...options,
     lean: true,
-    sort: { createdAt: -1 },
+    sort: { _id: -1 },
     limit,
-    skip,
   })
 
   return {

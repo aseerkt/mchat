@@ -5,7 +5,7 @@ import {
 } from '../contexts/QueryCacheContext'
 
 export const useQueryHasCache = (key: string) => {
-  return useContext(QueryCacheContext)[key]
+  return Boolean(useContext(QueryCacheContext)[key])
 }
 
 export const useSetQueryCache = () => {

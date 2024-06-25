@@ -1,14 +1,21 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
-export const useInfiniteScroll = (
-  rootRef: React.RefObject<HTMLDivElement>,
+export const useInfiniteScroll = <TElement extends HTMLElement>(
+  rootRef: React.RefObject<TElement>,
   onLoadMore: () => void,
   observe?: boolean,
 ) => {
   const intersectRef = useRef<HTMLDivElement>(null)
 
-  const watchElement = (
-    <div aria-label='scroll reference' ref={intersectRef}></div>
+  const watchElement = useMemo(
+    () => (
+      <div
+        aria-label='scroll reference'
+        className='p-1'
+        ref={intersectRef}
+      ></div>
+    ),
+    [],
   )
 
   useEffect(() => {
@@ -16,32 +23,31 @@ export const useInfiniteScroll = (
       return
     }
 
-    function trackIntersection() {
-      const observer = new IntersectionObserver(
-        entries => {
-          console.log(entries)
-          if (entries[0].isIntersecting) {
-            if (observe) {
-              console.log('intersected')
-              onLoadMore()
-            }
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          if (observe) {
+            console.log('intersected')
+            onLoadMore()
           }
-        },
-        {
-          root: rootRef.current,
-          threshold: 0.3,
-        },
-      )
+        }
+      },
+      {
+        root: rootRef.current,
+        threshold: 0.3,
+      },
+    )
 
-      observer.observe(intersectRef.current!)
-      return observer
-    }
+    const element = intersectRef.current
+    observer.observe(element)
 
-    const observer = trackIntersection()
     return () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      observer.unobserve(intersectRef.current!)
+      if (element) {
+        observer.unobserve(element)
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rootRef, observe])
 
   return watchElement

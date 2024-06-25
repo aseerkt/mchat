@@ -1,32 +1,38 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Skeleton } from '../../../components/Skeleton'
-import { useQuery } from '../../../hooks/useQuery'
+import { useInfiniteQuery } from '../../../hooks/useInfiniteQuery'
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll'
 import { IMember } from '../../../interfaces/member.inteface'
 import { getSocketIO } from '../../../utils/socket'
 import { MemberItem } from './MemberItem'
 
 export const MemberList = ({ roomId }: { roomId: string }) => {
+  const listRef = useRef<HTMLUListElement>(null)
   const {
     data: members,
     setData: setMembers,
+    hasMore,
+    fetchMore,
     loading,
     error,
-  } = useQuery<IMember[]>(`/api/rooms/${roomId}/members`)
+  } = useInfiniteQuery<IMember>(`/api/rooms/${roomId}/members`)
 
-  function setUserOnlineStatus(userId: string, online: boolean) {
-    const memberIndex = members!.findIndex(m => m.user._id === userId)
-
-    if (memberIndex !== -1) {
-      setMembers(members =>
-        members!.map((member, index) =>
-          index === memberIndex ? { ...member, online } : member,
-        ),
-      )
-    }
-  }
+  const watchElement = useInfiniteScroll(listRef, fetchMore, hasMore)
 
   useEffect(() => {
     const socket = getSocketIO()
+
+    function setUserOnlineStatus(userId: string, online: boolean) {
+      const memberIndex = members!.findIndex(m => m.user._id === userId)
+
+      if (memberIndex !== -1) {
+        setMembers(members =>
+          members!.map((member, index) =>
+            index === memberIndex ? { ...member, online } : member,
+          ),
+        )
+      }
+    }
 
     function handleNewMember(member: IMember) {
       setMembers(members => [...(members || []), { ...member, online: true }])
@@ -68,8 +74,12 @@ export const MemberList = ({ roomId }: { roomId: string }) => {
   }
 
   return (
-    <ul className='flex h-full flex-col gap-2 overflow-y-auto p-3'>
+    <ul
+      ref={listRef}
+      className='flex h-full flex-1 flex-col gap-2 overflow-y-auto p-3'
+    >
       {content}
+      {watchElement}
     </ul>
   )
 }

@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/Button'
 import { Dialog } from '../../../components/Dialog'
 import { Skeleton } from '../../../components/Skeleton'
 import { useAuthState } from '../../../hooks/useAuth'
 import { useDisclosure } from '../../../hooks/useDisclosure'
-import { useQuery } from '../../../hooks/useQuery'
+import { useInfiniteQuery } from '../../../hooks/useInfiniteQuery'
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll'
 import { useInvalidateQueryCache } from '../../../hooks/useQueryCache'
 import { useToast } from '../../../hooks/useToast'
 import { IRoom } from '../../../interfaces/room.interface'
@@ -31,7 +32,16 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
   const navigate = useNavigate()
   const auth = useAuthState()
   const invalidateQueryCache = useInvalidateQueryCache()
-  const { data: rooms, loading, error } = useQuery<IRoom[]>('/api/rooms')
+  const {
+    data: rooms,
+    loading,
+    fetchMore,
+    hasMore,
+    error,
+  } = useInfiniteQuery<IRoom>('/api/rooms')
+  const listRef = useRef(null)
+
+  const watchElement = useInfiniteScroll(listRef, fetchMore, hasMore)
 
   const [checkedRooms, setCheckedRooms] = useState<Record<string, boolean>>({})
 
@@ -78,7 +88,7 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
           <input
             id={room._id}
             type='checkbox'
-            checked={checkedRooms[room._id]}
+            checked={Boolean(checkedRooms[room._id])}
             onChange={e => {
               setCheckedRooms(rooms => ({
                 ...rooms,
@@ -101,8 +111,12 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
       <header className='mb-3 px-6'>
         <h3 className='text-xl font-semibold'>Select rooms to join</h3>
       </header>
-      <ul className='mb-4 flex flex-1 flex-col overflow-y-auto border p-3'>
+      <ul
+        ref={listRef}
+        className='mb-4 flex flex-1 flex-col overflow-y-auto border p-3'
+      >
         {content}
+        {watchElement}
       </ul>
       <Button>Join room</Button>
     </form>

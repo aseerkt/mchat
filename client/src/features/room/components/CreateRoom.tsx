@@ -32,7 +32,7 @@ const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
     try {
       const result = await createRoom({ name })
       if (result._id) {
-        toast({ title: `Room "${name}" created` })
+        toast({ title: `Room "${name}" created`, severity: 'success' })
         onComplete()
         invalidateQueryCache(`/api/users/${auth!._id}/rooms`)
         navigate(`/chat/${result._id}`)
