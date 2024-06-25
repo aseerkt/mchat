@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { Skeleton } from '../../../components/Skeleton'
 import { useAuthState } from '../../../hooks/useAuth'
-import { useQuery } from '../../../hooks/useQuery'
+import { useInfiniteQuery } from '../../../hooks/useInfiniteQuery'
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll'
 import { IMessage } from '../../../interfaces/message.interface'
 import { getSocketIO } from '../../../utils/socket'
 import { MessageItem } from './MessageItem'
@@ -15,31 +16,33 @@ export const MessageList = ({ roomId }: MessageListProps) => {
 
   const {
     data: messages,
+    hasMore,
+    fetchMore,
     setData: setMessagesData,
     loading,
-  } = useQuery<IMessage[]>(`/api/rooms/${roomId}/messages`)
+  } = useInfiniteQuery<IMessage>(`/api/rooms/${roomId}/messages`)
 
   const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (listRef.current) {
-      listRef.current.scrollTo(0, listRef.current?.scrollHeight)
-    }
-  }, [messages])
-
-  useEffect(() => {
-    function updateMessage(message: IMessage) {
-      setMessagesData(prevMessages => [message, ...(prevMessages ?? [])])
-    }
     const socket = getSocketIO()
 
-    socket.on('newMessage', updateMessage)
+    function updateMessage(message: IMessage) {
+      function scrollToBottom() {
+        listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
+      }
+      setMessagesData(prevMessages => [message, ...(prevMessages ?? [])])
+      setTimeout(scrollToBottom, 100)
+    }
 
+    socket.on('newMessage', updateMessage)
     return () => {
       socket.off('newMessage', updateMessage)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const scrollElement = useInfiniteScroll(listRef, fetchMore, hasMore)
 
   let content
 
@@ -66,7 +69,7 @@ export const MessageList = ({ roomId }: MessageListProps) => {
         className='flex h-full flex-col-reverse justify-start gap-2 overflow-y-auto p-3'
       >
         {content}
-        <div aria-label='scroll ref'></div>
+        {scrollElement}
       </div>
     </main>
   )

@@ -4,6 +4,7 @@ import { Member } from '../models/Member'
 import { Message } from '../models/Message'
 import { Room } from '../models/Room'
 import { notAuthorized, notFound } from '../utils/api'
+import { findByPaginate } from '../utils/db'
 import { deleteRoomMembersRoles, setMemberRole } from '../utils/redis'
 
 export const createRoom: RequestHandler = async (req, res, next) => {
@@ -34,16 +35,12 @@ export const listRooms: RequestHandler = async (req, res, next) => {
   try {
     const userId = new Types.ObjectId(req.user!._id)
     const roomIds = await Member.distinct('roomId', { 'user._id': userId })
-    const rooms = await Room.aggregate([
-      {
-        $match: {
-          _id: {
-            $nin: roomIds,
-          },
-        },
+    const result = await findByPaginate(Room, req.query, {
+      _id: {
+        $nin: roomIds,
       },
-    ])
-    res.json(rooms)
+    })
+    res.json(result)
   } catch (error) {
     next(error)
   }
@@ -57,10 +54,10 @@ export const deleteRoom: RequestHandler = async (req, res, next) => {
     }
     await Room.deleteOne({ _id: room._id })
 
+    await deleteRoomMembersRoles(room._id.toString())
     // TODO: move these db operations to queue
     await Message.deleteMany({ roomId: room._id })
     await Member.deleteMany({ roomId: room._id })
-    await deleteRoomMembersRoles(room._id.toString())
 
     res.json({ message: 'Room deleted' })
   } catch (error) {
@@ -75,16 +72,12 @@ export const listUserRooms: RequestHandler = async (req, res, next) => {
     }
     const userId = new Types.ObjectId(req.user!._id)
     const roomIds = await Member.distinct('roomId', { 'user._id': userId })
-    const rooms = await Room.aggregate([
-      {
-        $match: {
-          _id: {
-            $in: roomIds,
-          },
-        },
+    const result = await findByPaginate(Room, req.query, {
+      _id: {
+        $in: roomIds,
       },
-    ])
-    res.json(rooms)
+    })
+    res.json(result)
   } catch (error) {
     next(error)
   }

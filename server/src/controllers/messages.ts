@@ -21,8 +21,8 @@ export const listMessages: RequestHandler = async (req, res, next) => {
     const filters = {
       roomId: req.params.roomId,
     }
-    const messages = await findByPaginate(Message, req.query, filters)
-    res.json(messages)
+    const result = await findByPaginate(Message, req.query, filters)
+    res.json(result)
   } catch (error) {
     next(error)
   }

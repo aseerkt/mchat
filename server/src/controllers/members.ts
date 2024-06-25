@@ -32,23 +32,24 @@ export const createMembers: RequestHandler = async (req, res, next) => {
 
 export const getRoomMembers: RequestHandler = async (req, res, next) => {
   try {
-    const members = await findByPaginate(Member, req.query, {
+    const result = await findByPaginate(Member, req.query, {
       roomId: new Types.ObjectId(req.params.roomId),
     })
 
-    if (!members?.length) {
+    if (!result.data?.length) {
       return res.json([])
     }
 
-    const memberIds = members.map(m => m.user._id.toString())
+    const memberIds = result.data.map(m => m.user._id.toString())
+
     const onlineMembers = await getOnlineUsers(memberIds)
 
-    const membersWithOnlineStatus = members.map(member => ({
+    const membersWithOnlineStatus = result.data.map(member => ({
       ...member,
       online: onlineMembers.has(member.user._id.toString()),
     }))
 
-    res.json(membersWithOnlineStatus)
+    res.json({ data: membersWithOnlineStatus, hasMore: result.hasMore })
   } catch (error) {
     next(error)
   }

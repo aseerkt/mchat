@@ -1,6 +1,8 @@
+import { useRef } from 'react'
 import { Skeleton } from '../../../components/Skeleton'
 import { useAuthState } from '../../../hooks/useAuth'
-import { useQuery } from '../../../hooks/useQuery'
+import { useInfiniteQuery } from '../../../hooks/useInfiniteQuery'
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll'
 import { IRoom } from '../../../interfaces/room.interface'
 import { RoomItem } from './RoomItem'
 
@@ -9,8 +11,14 @@ export const RoomList = () => {
   const {
     data: rooms,
     loading,
+    hasMore,
+    fetchMore,
     error,
-  } = useQuery<IRoom[]>(auth?._id ? `/api/users/${auth._id}/rooms` : '')
+  } = useInfiniteQuery<IRoom>(auth?._id ? `/api/users/${auth._id}/rooms` : '')
+
+  const listRef = useRef<HTMLDivElement>(null)
+
+  const watchElement = useInfiniteScroll(listRef, fetchMore, hasMore)
 
   let content
 
@@ -27,8 +35,12 @@ export const RoomList = () => {
   }
 
   return (
-    <aside className='flex h-full flex-1 flex-col overflow-y-auto'>
+    <aside
+      ref={listRef}
+      className='flex h-full flex-1 flex-col overflow-y-auto'
+    >
       {content}
+      {watchElement}
     </aside>
   )
 }

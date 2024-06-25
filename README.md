@@ -16,7 +16,7 @@
 
 ## Get Started
 
-### Final build using docker compose
+### Run final build using docker compose
 
 - Spin up entire stack (redis, mongo, client, server)
 ```bash
@@ -67,7 +67,7 @@ pnpm --filter server seed
 - [x] online status
 - [x] realtime member list update
 - [ ] infinite scroll pagination (messages/rooms/members)
-- [ ] delete room (wip)
+- [ ] delete room
 - [ ] e2e encryption
 - [ ] read receipts
 - [ ] alert component
