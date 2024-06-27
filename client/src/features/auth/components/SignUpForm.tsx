@@ -32,7 +32,7 @@ export const SignUpForm = () => {
       if (data.user && data.token) {
         setToken(data.token)
         setAuth(data.user)
-        toast({ title: 'Login success', severity: 'success' })
+        toast({ title: 'Sign up success', severity: 'success' })
       }
     },
     onError(error) {

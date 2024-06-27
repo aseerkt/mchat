@@ -9,7 +9,9 @@
     "prepare": "husky install",
     "commitlint": "commitlint --edit"
   },
-  "keywords": [],
+  "keywords": [
+    "chat", "realtime", "socket.io", "react", "node.js", "react-query"
+  ],
   "author": "Aseer KT",
   "license": "ISC",
   "devDependencies": {

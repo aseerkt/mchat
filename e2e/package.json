@@ -1,0 +1,22 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:codegen": "playwright codegen",
+    "clean": "rimraf test-results playwright-report playwright"
+  },
+  "keywords": [],
+  "author": "Aseer KT",
+  "license": "ISC",
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@playwright/test": "^1.45.0",
+    "@types/node": "^20.14.5",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.2.2"
+  }
+}
