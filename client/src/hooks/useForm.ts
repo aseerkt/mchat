@@ -35,7 +35,9 @@ const useForm = <TValues>({ initialValues }: { initialValues: TValues }) => {
     [],
   )
 
-  const handleSubmit = (onSubmit: (values: TValues) => Promise<void>) => {
+  const handleSubmit = (
+    onSubmit: (values: TValues) => void | Promise<void>,
+  ) => {
     return (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
       const isValid = Object.values(errors).every(error => !error)

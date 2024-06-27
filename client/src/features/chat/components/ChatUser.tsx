@@ -1,5 +1,5 @@
-import { useAuthState } from '../../../hooks/useAuth'
-import { cn } from '../../../utils/style'
+import { useAuthState } from '@/hooks/useAuth'
+import { cn } from '@/utils/style'
 
 export const ChatUser = ({ isConnected }: { isConnected: boolean }) => {
   const auth = useAuthState()

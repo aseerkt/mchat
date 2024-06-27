@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 
-export const useInfiniteScroll = <TElement extends HTMLElement>(
+export const useInView = <TElement extends HTMLElement>(
   rootRef: React.RefObject<TElement>,
   onLoadMore: () => void,
   observe?: boolean,

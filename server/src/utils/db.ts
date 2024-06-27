@@ -45,8 +45,11 @@ export async function findByPaginate<TRawDocType>(
     limit,
   })
 
+  const hasMore = results?.length === limit
+
   return {
     data: results,
-    hasMore: results?.length === limit,
+    hasMore,
+    cursor: hasMore ? results[results.length - 1]._id : '',
   }
 }

@@ -1,9 +1,9 @@
+import backArrow from '@/assets/back-svgrepo-com.svg'
+import usersSvg from '@/assets/users-svgrepo-com.svg'
+import { Skeleton } from '@/components/Skeleton'
+import { useQuery } from '@tanstack/react-query'
 import { NavLink } from 'react-router-dom'
-import backArrow from '../../../assets/back-svgrepo-com.svg'
-import usersSvg from '../../../assets/users-svgrepo-com.svg'
-import { Skeleton } from '../../../components/Skeleton'
-import { useQuery } from '../../../hooks/useQuery'
-import { IRoom } from '../../../interfaces/room.interface'
+import { fetchRoom } from '../room.service'
 
 interface RoomHeaderProps {
   roomId: string
@@ -11,11 +11,18 @@ interface RoomHeaderProps {
 }
 
 export const RoomHeader = ({ roomId, showMembers }: RoomHeaderProps) => {
-  const { data: room, loading, error } = useQuery<IRoom>(`/api/rooms/${roomId}`)
+  const {
+    data: room,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['currentRoom', roomId],
+    queryFn: ({ queryKey }) => fetchRoom(queryKey[1]),
+  })
 
   let content
 
-  if (loading) {
+  if (isLoading) {
     content = <Skeleton className='h-5 w-28' />
   } else if (room?._id) {
     content = (

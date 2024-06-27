@@ -1,26 +1,34 @@
+import { Button } from '@/components/Button'
+import { Dialog } from '@/components/Dialog'
+import { Input } from '@/components/Input'
+import { useAutoFocus } from '@/hooks/useAutoFocus'
+import { useDisclosure } from '@/hooks/useDisclosure'
+import { useToast } from '@/hooks/useToast'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '../../../components/Button'
-import { Dialog } from '../../../components/Dialog'
-import { Input } from '../../../components/Input'
-import { useAuthState } from '../../../hooks/useAuth'
-import { useAutoFocus } from '../../../hooks/useAutoFocus'
-import { useDisclosure } from '../../../hooks/useDisclosure'
-import { useMutation } from '../../../hooks/useMutation'
-import { useInvalidateQueryCache } from '../../../hooks/useQueryCache'
-import { useToast } from '../../../hooks/useToast'
-import { IRoom } from '../../../interfaces/room.interface'
+import { createNewRoom } from '../room.service'
 
 const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState('')
   const { toast } = useToast()
   const navigate = useNavigate()
-  const auth = useAuthState()
   const inputRef = useRef<HTMLInputElement>(null)
-  const invalidateQueryCache = useInvalidateQueryCache()
-  const { mutate: createRoom, loading } = useMutation<IRoom, { name: string }>(
-    '/api/rooms',
-  )
+  const queryClient = useQueryClient()
+  const { mutate: createRoom, isPending } = useMutation({
+    mutationFn: createNewRoom,
+    onSuccess: result => {
+      if (result._id) {
+        toast({ title: `Room "${name}" created`, severity: 'success' })
+        onComplete()
+        queryClient.invalidateQueries({ queryKey: ['userRooms'] })
+        navigate(`/chat/${result._id}`)
+      }
+    },
+    onError: error => {
+      toast({ title: (error as Error).message, severity: 'error' })
+    },
+  })
 
   useAutoFocus(inputRef, [])
 
@@ -29,17 +37,7 @@ const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
     if (!name.trim()) {
       return toast({ title: 'Room name is required', severity: 'error' })
     }
-    try {
-      const result = await createRoom({ name })
-      if (result._id) {
-        toast({ title: `Room "${name}" created`, severity: 'success' })
-        onComplete()
-        invalidateQueryCache(`/api/users/${auth!._id}/rooms`)
-        navigate(`/chat/${result._id}`)
-      }
-    } catch (error) {
-      toast({ title: (error as Error).message, severity: 'error' })
-    }
+    createRoom({ name })
   }
 
   return (
@@ -53,7 +51,7 @@ const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
         autoFocus
         onChange={e => setName(e.target.value)}
       />
-      <Button disabled={loading}>Create</Button>
+      <Button disabled={isPending}>Create</Button>
     </form>
   )
 }

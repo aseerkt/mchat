@@ -1,10 +1,15 @@
-import { useEffect, useRef } from 'react'
-import { Skeleton } from '../../../components/Skeleton'
-import { useAuthState } from '../../../hooks/useAuth'
-import { useInfiniteQuery } from '../../../hooks/useInfiniteQuery'
-import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll'
-import { IMessage } from '../../../interfaces/message.interface'
-import { getSocketIO } from '../../../utils/socket'
+import { Skeleton } from '@/components/Skeleton'
+import {
+  IMessage,
+  TMessageInfiniteData,
+} from '@/features/message/message.interface'
+import { useAuthState } from '@/hooks/useAuth'
+import { useInView } from '@/hooks/useInView'
+import { getSocketIO } from '@/utils/socket'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { produce } from 'immer'
+import { Fragment, useEffect, useRef } from 'react'
+import { fetchRoomMessages } from '../message.service'
 import { MessageItem } from './MessageItem'
 
 interface MessageListProps {
@@ -14,13 +19,17 @@ interface MessageListProps {
 export const MessageList = ({ roomId }: MessageListProps) => {
   const auth = useAuthState()
 
-  const {
-    data: messages,
-    hasMore,
-    fetchMore,
-    setData: setMessagesData,
-    loading,
-  } = useInfiniteQuery<IMessage>(`/api/rooms/${roomId}/messages`)
+  const queryClient = useQueryClient()
+
+  const { data, hasNextPage, fetchNextPage, isLoading, error, isSuccess } =
+    useInfiniteQuery({
+      queryKey: ['messages', roomId],
+      queryFn: ({ pageParam }) =>
+        fetchRoomMessages({ roomId, limit: 15, cursor: pageParam }),
+      initialPageParam: '',
+      getNextPageParam: lastPage =>
+        lastPage.cursor ? lastPage.cursor : undefined,
+    })
 
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -31,7 +40,19 @@ export const MessageList = ({ roomId }: MessageListProps) => {
       function scrollToBottom() {
         listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
       }
-      setMessagesData(prevMessages => [message, ...(prevMessages ?? [])])
+      queryClient.setQueriesData<TMessageInfiniteData>(
+        { queryKey: ['messages', roomId] },
+        data => {
+          if (!data) {
+            return data
+          }
+
+          const updatedData = produce(data, draft => {
+            draft?.pages[0].data.unshift(message)
+          })
+          return updatedData
+        },
+      )
       setTimeout(scrollToBottom, 100)
     }
 
@@ -42,23 +63,29 @@ export const MessageList = ({ roomId }: MessageListProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const scrollElement = useInfiniteScroll(listRef, fetchMore, hasMore)
+  const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 
   let content
 
-  if (loading) {
+  if (error) {
+    content = <p className='text-red-500'>{error.message}</p>
+  } else if (isLoading) {
     content = new Array(5).map((_, index) => (
       <Skeleton key={index} className='h-10' />
     ))
-  } else if (messages?.length) {
-    content = messages.map(message => (
-      <MessageItem
-        key={message._id}
-        message={message}
-        isCurrentUser={auth?._id === message.sender._id}
-      />
+  } else if (data?.pages.length) {
+    content = data.pages.map((page, i) => (
+      <Fragment key={i}>
+        {page.data.map(message => (
+          <MessageItem
+            key={message._id}
+            message={message}
+            isCurrentUser={message.sender._id === auth?._id}
+          />
+        ))}
+      </Fragment>
     ))
-  } else if (Array.isArray(messages)) {
+  } else if (isSuccess) {
     content = <p className='p-3 text-gray-700'>Be the first one to message</p>
   }
 

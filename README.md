@@ -20,7 +20,7 @@
 
 - Spin up entire stack (redis, mongo, client, server)
 ```bash
-docker compose -f docker-compose.prod.yml up
+docker compose -f docker-compose.prod.yml up --build
 ```
 - Go to [http://localhost:3000](http://localhost:3000)
 

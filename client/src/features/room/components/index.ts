@@ -1,5 +1,5 @@
 export { CreateRoom } from './CreateRoom'
 export { JoinRoom } from './JoinRoom'
 export { RoomHeader } from './RoomHeader'
-export { RoomItem } from './RoomItem'
-export { RoomList } from './RoomList'
+export { UserRoomItem as RoomItem } from './UserRoomItem'
+export { RoomList } from './UserRoomList'

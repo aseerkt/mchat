@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io-client'
-import { IMember } from './member.inteface'
-import { IMessage } from './message.interface'
+import { IMember } from '../features/member/member.interface'
+import { IMessage } from '../features/message/message.interface'
 
 export interface ServerToClientEvents {
   userOnline: (userId: string) => void

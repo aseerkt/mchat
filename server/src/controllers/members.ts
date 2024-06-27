@@ -49,7 +49,7 @@ export const getRoomMembers: RequestHandler = async (req, res, next) => {
       online: onlineMembers.has(member.user._id.toString()),
     }))
 
-    res.json({ data: membersWithOnlineStatus, hasMore: result.hasMore })
+    res.json({ ...result, data: membersWithOnlineStatus })
   } catch (error) {
     next(error)
   }

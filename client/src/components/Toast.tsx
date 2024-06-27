@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
 const toastVariants = cva(
-  'fixed flex text-white justify-between gap-4  md:max-w-[250px] shadow-lg border rounded p-3 bottom-6 z-10 transition-all',
+  'fixed flex text-white justify-between gap-4 md:min-w-[250px] shadow-lg border rounded p-3 bottom-6 z-10 transition-all',
   {
     variants: {
       severity: {

@@ -1,20 +1,7 @@
-import { useEffect, useState } from 'react'
-import { getSocketIO } from '../../../utils/socket'
+import { useTypingUsers } from '../hooks/useTypingUsers'
 
 export const TypingIndicator = () => {
-  const [users, setUsers] = useState<Array<{ _id: string; username: string }>>(
-    [],
-  )
-
-  useEffect(() => {
-    const socket = getSocketIO()
-    socket.on('typingUsers', setUsers)
-
-    return () => {
-      socket.off('typingUsers', setUsers)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const { users } = useTypingUsers()
 
   let content
 

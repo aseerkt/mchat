@@ -1,6 +1,6 @@
-import { IMessage } from '../../../interfaces/message.interface'
 import { formateChatDate } from '../../../utils/date'
 import { cn } from '../../../utils/style'
+import { IMessage } from '../message.interface'
 
 interface MessageItemProps {
   message: IMessage

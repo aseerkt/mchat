@@ -1,12 +1,12 @@
+import { TypingIndicator } from '@/features/chat/components'
+import { MembersSidebar } from '@/features/member/components'
+import { MessageComposer, MessageList } from '@/features/message/components'
+import { RoomHeader } from '@/features/room/components'
+import { useDisclosure } from '@/hooks/useDisclosure'
+import { getSocketIO } from '@/utils/socket'
+import { cn } from '@/utils/style'
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { TypingIndicator } from '../features/chat/components'
-import { MembersSidebar } from '../features/members/components'
-import { MessageComposer, MessageList } from '../features/message/components'
-import { RoomHeader } from '../features/room/components'
-import { useDisclosure } from '../hooks/useDisclosure'
-import { getSocketIO } from '../utils/socket'
-import { cn } from '../utils/style'
 
 export const Component = () => {
   const params = useParams<{ roomId: string }>()

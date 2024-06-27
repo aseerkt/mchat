@@ -1,7 +1,7 @@
-import logoutSvg from '../../../assets/logout-2-svgrepo-com.svg'
-import { Logo } from '../../../components/Logo'
-import { useAuthSetter } from '../../../hooks/useAuth'
-import { removeToken } from '../../../utils/token'
+import logoutSvg from '@/assets/logout-2-svgrepo-com.svg'
+import { Logo } from '@/components/Logo'
+import { useAuthSetter } from '@/hooks/useAuth'
+import { removeToken } from '@/utils/token'
 
 export const ChatHeader = () => {
   const setAuth = useAuthSetter()

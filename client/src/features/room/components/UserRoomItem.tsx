@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { IRoom } from '../../../interfaces/room.interface'
 import { cn } from '../../../utils/style'
+import { IRoom } from '../room.interface'
 
-interface RoomItemProps {
+interface UserRoomItemProps {
   room: IRoom
 }
 
-export const RoomItem = ({ room }: RoomItemProps) => {
+export const UserRoomItem = ({ room }: UserRoomItemProps) => {
   return (
     <NavLink
       to={`/chat/${room._id}`}

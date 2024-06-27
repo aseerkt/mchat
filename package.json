@@ -5,12 +5,17 @@
   "private": true,
   "scripts": {
     "dev": "pnpm run -r dev",
-    "build": "pnpm run -r build"
+    "build": "pnpm run -r build",
+    "prepare": "husky install",
+    "commitlint": "commitlint --edit"
   },
   "keywords": [],
   "author": "Aseer KT",
   "license": "ISC",
   "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "husky": "^8.0.0",
     "typescript": "^5.2.2"
   },
   "workspaces": [

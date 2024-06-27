@@ -1,5 +1,5 @@
-import { IMember } from '../../../interfaces/member.inteface'
 import { cn } from '../../../utils/style'
+import { IMember } from '../member.interface'
 
 interface MemberItemProps {
   member: IMember

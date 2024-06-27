@@ -1,23 +1,14 @@
+import { useMutation } from '@tanstack/react-query'
 import { NavLink } from 'react-router-dom'
 import { Button } from '../../../components/Button'
 import { Input } from '../../../components/Input'
 import { useAuthSetter } from '../../../hooks/useAuth'
 import useForm from '../../../hooks/useForm'
-import { useMutation } from '../../../hooks/useMutation'
 import { useToast } from '../../../hooks/useToast'
-import { IUser } from '../../../interfaces/user.interface'
 import { setToken } from '../../../utils/token'
 import { isRequired } from '../../../utils/validators'
-
-interface SignUpResponse {
-  user: IUser
-  token: string
-}
-
-interface SignUpVariables {
-  username: string
-  password: string
-}
+import { IAuthMutationVariables, IUserResponse } from '../auth.interface'
+import { signup } from '../auth.service'
 
 const validators = {
   username: [isRequired('Username is required')],
@@ -31,23 +22,25 @@ export const SignUpForm = () => {
     initialValues: { username: '', password: '' },
   })
 
-  const { mutate: signup, loading } = useMutation<
-    SignUpResponse,
-    SignUpVariables
-  >('/api/users', { method: 'POST' })
-
-  const onSubmit = handleSubmit(async values => {
-    try {
-      const result = await signup(values)
-      if (result?.user && result.token) {
-        setToken(result.token)
-        setAuth(result.user)
+  const { mutate: signupUser, isPending } = useMutation<
+    IUserResponse,
+    Error,
+    IAuthMutationVariables
+  >({
+    mutationFn: signup,
+    onSuccess: data => {
+      if (data.user && data.token) {
+        setToken(data.token)
+        setAuth(data.user)
         toast({ title: 'Login success', severity: 'success' })
       }
-    } catch (error) {
+    },
+    onError(error) {
       toast({ title: (error as Error).message, severity: 'error' })
-    }
+    },
   })
+
+  const onSubmit = handleSubmit(signupUser)
 
   return (
     <form className='flex flex-col gap-4' onSubmit={onSubmit}>
@@ -65,7 +58,7 @@ export const SignUpForm = () => {
         {...register('password', validators.password)}
         error={errors.password}
       />
-      <Button type='submit' disabled={loading}>
+      <Button type='submit' disabled={isPending}>
         Create account
       </Button>
       <small>
