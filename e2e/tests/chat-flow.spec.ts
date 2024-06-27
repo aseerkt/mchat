@@ -24,64 +24,66 @@ async function createRoom(page: Page) {
   ).toBeVisible()
 }
 
-test('create room', async ({ page }) => {
-  await page.goto('http://localhost:3000/chat')
+test.describe('chat flow', () => {
+  test('create room', async ({ page }) => {
+    await page.goto('http://localhost:3000/chat')
 
-  for (let i = 0; i < roomCount; i++) {
+    for (let i = 0; i < roomCount; i++) {
+      await createRoom(page)
+    }
+  })
+
+  test('send message', async ({ page }) => {
+    await page.goto('http://localhost:3000/chat')
+
     await createRoom(page)
-  }
-})
 
-test('send message', async ({ page }) => {
-  await page.goto('http://localhost:3000/chat')
+    async function sendMessage() {
+      const message = faker.word.words(3)
+      await page.getByPlaceholder('Send message...').fill(message)
+      await page.getByPlaceholder('Send message...').press('Enter')
 
-  await createRoom(page)
+      await page.waitForTimeout(2000)
 
-  async function sendMessage() {
-    const message = faker.word.words(3)
-    await page.getByPlaceholder('Send message...').fill(message)
-    await page.getByPlaceholder('Send message...').press('Enter')
+      await expect(page.getByText(`${message}Today`)).toBeVisible()
+    }
 
-    await page.waitForTimeout(2000)
+    for (let i = 0; i < messageCount; i++) {
+      await sendMessage()
+    }
+  })
 
-    await expect(page.getByText(`${message}Today`)).toBeVisible()
-  }
+  test('member list drawer', async ({ page }) => {
+    await page.goto('http://localhost:3000/chat')
 
-  for (let i = 0; i < messageCount; i++) {
-    await sendMessage()
-  }
-})
+    await createRoom(page)
+    // MEMBER LIST
+    await page.getByRole('button', { name: 'open member drawer' }).click()
+    // add assertion here
+    await expect(
+      page.getByRole('listitem').getByText(user.username),
+    ).toBeVisible()
+  })
 
-test('member list drawer', async ({ page }) => {
-  await page.goto('http://localhost:3000/chat')
+  test('join room', async ({ page }) => {
+    await page.goto('http://localhost:3000/chat')
 
-  await createRoom(page)
-  // MEMBER LIST
-  await page.getByRole('button', { name: 'open member drawer' }).click()
-  // add assertion here
-  await expect(
-    page.getByRole('listitem').getByText(user.username),
-  ).toBeVisible()
-})
+    await page.getByRole('button', { name: 'Join Room' }).click()
+    const roomLabels = await page.locator('label').all()
 
-test('join room', async ({ page }) => {
-  await page.goto('http://localhost:3000/chat')
+    async function joinRoom(label: Locator) {
+      await label.click()
+      return label.innerText()
+    }
 
-  await page.getByRole('button', { name: 'Join Room' }).click()
-  const roomLabels = await page.locator('label').all()
+    const roomNames = await Promise.all(
+      roomLabels.slice(0, roomCount).map(joinRoom),
+    )
 
-  async function joinRoom(label: Locator) {
-    await label.click()
-    return label.innerText()
-  }
+    await page.getByRole('button', { name: 'Join room', exact: true }).click()
 
-  const roomNames = await Promise.all(
-    roomLabels.slice(0, roomCount).map(joinRoom),
-  )
-
-  await page.getByRole('button', { name: 'Join room', exact: true }).click()
-
-  for (const name of roomNames) {
-    await expect(page.getByRole('link', { name: name })).toBeVisible()
-  }
+    for (const name of roomNames) {
+      await expect(page.getByRole('link', { name: name })).toBeVisible()
+    }
+  })
 })

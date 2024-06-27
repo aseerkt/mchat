@@ -51,6 +51,21 @@ pnpm dev
 pnpm --filter server seed
 ```
 
+### E2E testing
+
+- Run playwright e2e tests
+```bash
+pnpm --filter e2e test
+```
+- Run playwright e2e tests in UI mode
+```bash
+pnpm --filter e2e test:ui
+```
+- Run playwright e2e test generator
+```bash
+pnpm --filter e2e test:codegen
+```
+
 ## Features Roadmap
 
 
@@ -68,23 +83,23 @@ pnpm --filter server seed
 - [x] online status
 - [x] realtime member list update
 - [x] infinite scroll pagination (messages/rooms/members)
+- [x] tanstack react-query integration 
+- [ ] alert component
+- [ ] confirm dialog
 - [ ] delete room
 - [ ] e2e encryption
 - [ ] read receipts
-- [ ] alert component
-- [ ] confirm dialog
-- [ ] query cache - invalidation/refetch
 - [ ] extract db operation to dao
 
 ### extras
 
+- [x] playwright e2e tests for chat
 - [ ] swagger ui
-- [ ] playwright e2e tests for chat
-- [ ] socket.io redis streams adapter integration
 - [ ] switch to postgresql (support transaction)
 - [ ] keploy api test generation
 - [ ] private rooms - invite
 - [ ] notifications
+- [ ] socket.io redis streams adapter integration
 
 ## Authors
 
