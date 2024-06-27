@@ -1,7 +1,13 @@
 name: mChat Server CI
 
 on:
-  push: 
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/server-ci.yml
+      - server/*
+  pull_request:
     branches:
       - main
     paths:

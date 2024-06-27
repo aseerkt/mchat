@@ -1,7 +1,13 @@
 name: mChat Client CI
 
 on:
-  push: 
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/client-ci.yml
+      - client/*
+  pull_request:
     branches:
       - main
     paths:
