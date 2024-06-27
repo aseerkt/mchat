@@ -1,4 +1,4 @@
-name: mChat Server CI
+name: mChat Client CI
 
 on:
   push: 
