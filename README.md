@@ -19,7 +19,7 @@
 
 ### Run final build using docker compose
 
-- Spin up entire stack (redis, mongo, client, server)
+- Spin up entire stack (redis, mongo, web, server)
 ```bash
 docker compose -f docker-compose.prod.yml up --build
 ```
@@ -39,7 +39,7 @@ docker compose up -d
 pnpm i
 ```
 
-- Run development server (client & server)
+- Run development server (web & server)
 ```bash
 pnpm dev
 ```

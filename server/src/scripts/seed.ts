@@ -9,12 +9,13 @@ import { IRoom, Room } from '../models/Room'
 import { IUser, User } from '../models/User'
 import { connectDB } from '../utils/db'
 
+const USER_PASSWORD = 'bob@123'
+
 const USER_COUNT = 1000
 const ROOM_COUNT_PER_USER = 5
 const MEMBER_COUNT_PER_ROOM = 35
 const MESSAGE_PER_MEMBER = 5
-const USER_PASSWORD = 'bob@123'
-const BATCH_SIZE = 100 // Adjust batch size as needed
+const BATCH_SIZE = 100
 
 async function getHashedPassword() {
   return hash(USER_PASSWORD)
@@ -80,21 +81,21 @@ async function seedDatabase() {
       const members: IMember[] = []
       const messages: IMessage[] = []
 
-      function getUserWhoIsNotOwner() {
+      function getUserWhoIsNotMember() {
         const randomUser = faker.helpers.arrayElement(insertedUsers)
         const roomMemberSetKey = `${room._id.toString()}:${randomUser._id.toString()}`
         if (
           roomMemberSet[roomMemberSetKey] ||
           randomUser._id.toString() === room.createdBy._id.toString()
         ) {
-          return getUserWhoIsNotOwner()
+          return getUserWhoIsNotMember()
         }
         roomMemberSet[roomMemberSetKey] = true
         return randomUser
       }
 
       for (let j = 0; j < MEMBER_COUNT_PER_ROOM; j++) {
-        const user = getUserWhoIsNotOwner()
+        const user = getUserWhoIsNotMember()
 
         members.push({
           role: 'member',

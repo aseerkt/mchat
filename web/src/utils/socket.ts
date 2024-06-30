@@ -2,7 +2,7 @@ import { io } from 'socket.io-client'
 import { config } from '../config'
 import { toast } from '../hooks/useToast'
 import { TypedSocket } from '../interfaces/socket.interface'
-import { getToken } from '../utils/token'
+import { getToken } from './token'
 
 let socket: TypedSocket
 

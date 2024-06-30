@@ -1,4 +1,4 @@
-name: mChat Client CI
+name: mChat Web CI
 
 on:
   push:
@@ -6,13 +6,13 @@ on:
       - main
     paths:
       - .github/workflows/client-ci.yml
-      - client/*
+      - web/*
   pull_request:
     branches:
       - main
     paths:
       - .github/workflows/client-ci.yml
-      - client/*
+      - web/*
 
 
 jobs:
@@ -33,13 +33,13 @@ jobs:
           cache: 'pnpm'
 
       - name: Install deps
-        run: pnpm i --filter client
+        run: pnpm i --filter web
 
       - name: Lint
-        run: pnpm --filter client lint
+        run: pnpm --filter web lint
 
       - name: Build
-        run: pnpm --filter client build
+        run: pnpm --filter web build
       
         
     

@@ -16,9 +16,9 @@ services:
     ports:
       - 6379:6379
 
-  client:
+  web:
     build:
-      context: ./client
+      context: ./web
       dockerfile: Dockerfile
     ports:
       - 3000:3000
