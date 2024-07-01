@@ -42,7 +42,7 @@ export const JoinRoomList = ({
         {page.data.map(group => (
           <JoinRoomItem
             key={group.id}
-            room={group}
+            group={group}
             isChecked={isRoomChecked(group.id)}
             toggleRoomCheck={toggleRoomCheck}
           />

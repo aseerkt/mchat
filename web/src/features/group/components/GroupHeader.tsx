@@ -17,7 +17,7 @@ export const RoomHeader = ({ groupId, showMembers }: RoomHeaderProps) => {
     error,
   } = useQuery({
     queryKey: ['currentRoom', groupId],
-    queryFn: ({ queryKey }) => fetchRoom(queryKey[1]),
+    queryFn: ({ queryKey }) => fetchRoom(queryKey[1] as number),
   })
 
   let content

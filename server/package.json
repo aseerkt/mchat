@@ -7,6 +7,7 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
+    "lint": "tsc && eslint -c eslint.config.js",
     "migrate:gen": "drizzle-kit generate",
     "migrate:run": "tsx src/scripts/migrate.ts",
     "seed": "tsx src/scripts/seed.ts"

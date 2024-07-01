@@ -9,18 +9,20 @@ import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 export const Component = () => {
-  const params = useParams<{ groupId: number }>()
+  const params = useParams<{ groupId: string }>()
+
+  const groupId = Number(params.groupId)
 
   const { isOpen, toggle } = useDisclosure()
 
   useEffect(() => {
     const socket = getSocketIO()
-    if (params.groupId) {
-      socket.emit('joinRoom', params.groupId)
+    if (groupId) {
+      socket.emit('joinRoom', Number(groupId))
     }
-  }, [params.groupId])
+  }, [groupId])
 
-  if (!params.groupId) return null
+  if (!groupId) return null
 
   return (
     <>
@@ -30,16 +32,12 @@ export const Component = () => {
           isOpen && 'hidden md:flex',
         )}
       >
-        <RoomHeader groupId={params.groupId} showMembers={toggle} />
-        <MessageList groupId={params.groupId} />
+        <RoomHeader groupId={groupId} showMembers={toggle} />
+        <MessageList groupId={groupId} />
         <TypingIndicator />
-        <MessageComposer groupId={params.groupId} />
+        <MessageComposer groupId={groupId} />
       </div>
-      <MembersSidebar
-        isOpen={isOpen}
-        onClose={toggle}
-        groupId={params.groupId}
-      />
+      <MembersSidebar isOpen={isOpen} onClose={toggle} groupId={groupId} />
     </>
   )
 }
