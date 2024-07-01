@@ -20,7 +20,7 @@ export const stringifyQueryParams = <
 ) => {
   const queryParams = new URLSearchParams()
   Object.keys(params).forEach(key => {
-    const value = String(params[key])
+    const value = params[key] ? String(params[key]) : undefined
     if (value) {
       queryParams.append(key, value)
     }

@@ -1,6 +1,6 @@
+import { MemberRole } from '@/modules/members/members.schema'
 import { Redis } from 'ioredis'
 import { config } from '../config'
-import { MemberRole } from '../models/Member'
 
 let redisClient: Redis
 
@@ -29,61 +29,61 @@ getRedisClient()
 
 export const redisKeys = {
   ONLINE_USERS: 'online_users',
-  TYPING_USERS: (roomId: string) => `room:${roomId}:typing_users`,
-  MEMBER_ROLES: (roomId: string) => `room:${roomId}:member_roles`,
+  TYPING_USERS: (groupId: number) => `room:${groupId}:typing_users`,
+  MEMBER_ROLES: (groupId: number) => `room:${groupId}:member_roles`,
 }
 
 // MEMBER
 
 export const setMemberRole = async (
-  roomId: string,
-  userId: string,
+  groupId: number,
+  userId: number,
   role: MemberRole,
 ) => {
-  const cacheKey = redisKeys.MEMBER_ROLES(roomId)
+  const cacheKey = redisKeys.MEMBER_ROLES(groupId)
   await redisClient.hset(cacheKey, userId, role)
   await redisClient.expire(cacheKey, 3600)
 }
-export const getMemberRole = (roomId: string, userId: string) => {
-  const cacheKey = redisKeys.MEMBER_ROLES(roomId)
-  return redisClient.hget(cacheKey, userId)
+export const getMemberRole = (groupId: number, userId: number) => {
+  const cacheKey = redisKeys.MEMBER_ROLES(groupId)
+  return redisClient.hget(cacheKey, userId.toString())
 }
 
-export const deleteRoomMembersRoles = (roomId: string) => {
-  const cacheKey = redisKeys.MEMBER_ROLES(roomId)
+export const deleteRoomMembersRoles = (groupId: number) => {
+  const cacheKey = redisKeys.MEMBER_ROLES(groupId)
   return redisClient.hdel(cacheKey)
 }
 
 // ONLINE USER
 
-export const getOnlineUsers = async (userIds: string[]) => {
+export const getOnlineUsers = async () => {
   const onlineUsers = await redisClient.smembers(redisKeys.ONLINE_USERS)
   return new Set(onlineUsers)
 }
-export const addOnlineUser = (userId: string) => {
+export const addOnlineUser = (userId: number) => {
   return redisClient.sadd(redisKeys.ONLINE_USERS, userId)
 }
-export const removeOnlineUser = (userId: string) => {
+export const removeOnlineUser = (userId: number) => {
   return redisClient.srem(redisKeys.ONLINE_USERS, userId)
 }
 
 // TYPING USERS
 
-export const getTypingUsers = async (roomId: string) => {
-  const typingUsers = await redisClient.hgetall(redisKeys.TYPING_USERS(roomId))
+export const getTypingUsers = async (groupId: number) => {
+  const typingUsers = await redisClient.hgetall(redisKeys.TYPING_USERS(groupId))
 
   return Object.keys(typingUsers).map(key => ({
-    _id: key,
+    id: Number(key),
     username: typingUsers[key],
   }))
 }
 export const setTypingUser = async (
-  roomId: string,
-  userId: string,
+  groupId: number,
+  userId: number,
   username: string,
 ) => {
-  await redisClient.hset(redisKeys.TYPING_USERS(roomId), userId, username)
+  await redisClient.hset(redisKeys.TYPING_USERS(groupId), userId, username)
 }
-export const removeTypingUser = async (roomId: string, userId: string) => {
-  await redisClient.hdel(redisKeys.TYPING_USERS(roomId), userId)
+export const removeTypingUser = async (groupId: number, userId: number) => {
+  await redisClient.hdel(redisKeys.TYPING_USERS(groupId), userId.toString())
 }

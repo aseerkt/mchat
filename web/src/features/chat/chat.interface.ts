@@ -1,4 +1,4 @@
 export interface ITypingUser {
-  _id: string
+  id: number
   username: string
 }

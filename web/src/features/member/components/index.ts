@@ -1,1 +1,1 @@
-export { MembersSidebar } from './MembersSidebar'
+export { GroupInfo as MembersSidebar } from './GroupInfo'

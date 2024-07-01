@@ -7,10 +7,11 @@ import useForm from '../../../hooks/useForm'
 import { useToast } from '../../../hooks/useToast'
 import { setToken } from '../../../utils/token'
 import { isRequired } from '../../../utils/validators'
-import { IAuthMutationVariables, IUserResponse } from '../auth.interface'
+import { ISignUpVariables, IUserResponse } from '../auth.interface'
 import { signup } from '../auth.service'
 
 const validators = {
+  fullName: [isRequired('Full name is required')],
   username: [isRequired('Username is required')],
   password: [isRequired('Password is required')],
 }
@@ -19,13 +20,13 @@ export const SignUpForm = () => {
   const { toast } = useToast()
   const setAuth = useAuthSetter()
   const { register, handleSubmit, errors } = useForm({
-    initialValues: { username: '', password: '' },
+    initialValues: { fullName: '', username: '', password: '' },
   })
 
   const { mutate: signupUser, isPending } = useMutation<
     IUserResponse,
     Error,
-    IAuthMutationVariables
+    ISignUpVariables
   >({
     mutationFn: signup,
     onSuccess: data => {
@@ -44,6 +45,12 @@ export const SignUpForm = () => {
 
   return (
     <form className='flex flex-col gap-4' onSubmit={onSubmit}>
+      <Input
+        type='text'
+        label='Full name'
+        {...register('fullName', validators.fullName)}
+        error={errors.fullName}
+      />
       <Input
         type='text'
         label='Username'

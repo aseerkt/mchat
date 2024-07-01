@@ -2,7 +2,7 @@ import { Outlet, useParams } from 'react-router-dom'
 import { PageLoader } from '../components/PageLoader'
 import { ChatHeader } from '../features/chat/components'
 import { ChatUser } from '../features/chat/components/ChatUser'
-import { CreateRoom, JoinRoom, RoomList } from '../features/room/components'
+import { CreateRoom, JoinRoom, RoomList } from '../features/group/components'
 import { useSocketConnect } from '../hooks/useSocketConnect'
 import { cn } from '../utils/style'
 
@@ -21,7 +21,7 @@ const ChatLayout = () => {
         <div
           className={cn(
             'flex w-full flex-shrink-0 flex-col md:w-[266px] md:border-r-2',
-            params.roomId && 'hidden md:flex',
+            params.groupId && 'hidden md:flex',
           )}
         >
           <ChatUser isConnected={isConnected} />

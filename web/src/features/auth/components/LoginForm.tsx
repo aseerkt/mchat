@@ -7,7 +7,7 @@ import useForm from '../../../hooks/useForm'
 import { useToast } from '../../../hooks/useToast'
 import { setToken } from '../../../utils/token'
 import { isRequired } from '../../../utils/validators'
-import { IAuthMutationVariables, IUserResponse } from '../auth.interface'
+import { ILoginVariables, IUserResponse } from '../auth.interface'
 import { login } from '../auth.service'
 
 const validators = {
@@ -25,7 +25,7 @@ export const LoginForm = () => {
   const { mutate: loginUser, isPending } = useMutation<
     IUserResponse,
     Error,
-    IAuthMutationVariables
+    ILoginVariables
   >({
     mutationFn: login,
     onSuccess(data) {

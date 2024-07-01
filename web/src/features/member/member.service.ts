@@ -3,7 +3,7 @@ import { fetcher, stringifyQueryParams } from '@/utils/api'
 import { IGetRoomMembersArgs, IMember } from './member.interface'
 
 export const fetchRoomMembers = async ({
-  roomId,
+  groupId,
   ...params
 }: IGetRoomMembersArgs): Promise<IPaginatedResult<IMember>> =>
-  fetcher(`rooms/${roomId}/members?${stringifyQueryParams(params)}`)
+  fetcher(`groups/${groupId}/members?${stringifyQueryParams(params)}`)

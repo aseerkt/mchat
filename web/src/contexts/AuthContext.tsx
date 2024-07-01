@@ -2,7 +2,7 @@ import { createContext } from 'react'
 
 export type Auth =
   | {
-      _id: string
+      id: number
       username: string
     }
   | undefined

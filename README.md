@@ -73,8 +73,8 @@ pnpm --filter e2e test:codegen
 
 - [x] sign up, login and logout
 - [x] jwt user authentication/authorization
-- [x] create room
-- [x] join room
+- [x] create group
+- [x] join groups
 - [x] realtime messaging
 - [x] typing indicators
 - [x] socket.io cluster adapter integration
@@ -82,11 +82,11 @@ pnpm --filter e2e test:codegen
 - [x] redis implementation (typing users, online users)
 - [x] online status
 - [x] realtime member list update
-- [x] infinite scroll pagination (messages/rooms/members)
+- [x] infinite scroll pagination (messages/groups/members)
 - [x] tanstack react-query integration 
 - [ ] alert component
 - [ ] confirm dialog
-- [ ] delete room
+- [ ] delete group
 - [ ] e2e encryption
 - [ ] read receipts
 - [ ] extract db operation to dao
@@ -97,7 +97,7 @@ pnpm --filter e2e test:codegen
 - [ ] swagger ui
 - [ ] switch to postgresql (support transaction)
 - [ ] keploy api test generation
-- [ ] private rooms - invite
+- [ ] private groups - invite
 - [ ] notifications
 - [ ] socket.io redis streams adapter integration
 

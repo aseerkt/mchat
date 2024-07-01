@@ -5,13 +5,13 @@ import {
 import { setupMaster, setupWorker } from '@socket.io/sticky'
 import 'colors'
 import cors from 'cors'
-import 'dotenv/config'
 import express from 'express'
 import cluster from 'node:cluster'
 import { createServer } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { Server } from 'socket.io'
 import { config } from './config'
+import { connectDB } from './database'
 import { auth } from './middlewares'
 import * as routes from './routes'
 import { registerSocketEvents } from './socket/events'
@@ -22,8 +22,6 @@ import {
   ServerToClientEvents,
   SocketData,
 } from './socket/socket.inteface'
-import { connectDB } from './utils/db'
-import { getRedisClient } from './utils/redis'
 
 const createApp = async () => {
   if (cluster.isPrimary && config.isProd) {
@@ -57,8 +55,6 @@ const createApp = async () => {
 
   await connectDB()
 
-  const redisClient = getRedisClient()
-
   const app = express()
 
   app.use(cors({ origin: config.corsOrigin }), express.json())
@@ -87,9 +83,9 @@ const createApp = async () => {
     res.send('<h1>Welcome to mChat</h1>')
   })
 
-  app.use('/api/users', routes.users)
-  app.use('/api/rooms', auth, routes.rooms)
-  app.use('/api/members', auth, routes.members)
+  app.use('/api/users', routes.userRoutes)
+  app.use('/api/groups', auth, routes.groupRoutes)
+  app.use('/api/members', auth, routes.memberRoutes)
 
   if (!config.isProd) {
     server.listen(config.port, () => {

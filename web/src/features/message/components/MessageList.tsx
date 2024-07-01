@@ -13,20 +13,20 @@ import { fetchRoomMessages } from '../message.service'
 import { MessageItem } from './MessageItem'
 
 interface MessageListProps {
-  roomId: string
+  groupId: number
 }
 
-export const MessageList = ({ roomId }: MessageListProps) => {
+export const MessageList = ({ groupId }: MessageListProps) => {
   const auth = useAuthState()
 
   const queryClient = useQueryClient()
 
   const { data, hasNextPage, fetchNextPage, isLoading, error, isSuccess } =
     useInfiniteQuery({
-      queryKey: ['messages', roomId],
+      queryKey: ['messages', groupId],
       queryFn: ({ pageParam }) =>
-        fetchRoomMessages({ roomId, limit: 15, cursor: pageParam }),
-      initialPageParam: '',
+        fetchRoomMessages({ groupId, limit: 15, cursor: pageParam }),
+      initialPageParam: null as number | null,
       getNextPageParam: lastPage =>
         lastPage.cursor ? lastPage.cursor : undefined,
     })
@@ -41,7 +41,7 @@ export const MessageList = ({ roomId }: MessageListProps) => {
         listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
       }
       queryClient.setQueriesData<TMessageInfiniteData>(
-        { queryKey: ['messages', roomId] },
+        { queryKey: ['messages', groupId] },
         data => {
           if (!data) {
             return data
@@ -78,9 +78,9 @@ export const MessageList = ({ roomId }: MessageListProps) => {
       <Fragment key={i}>
         {page.data.map(message => (
           <MessageItem
-            key={message._id}
+            key={message.id}
             message={message}
-            isCurrentUser={message.sender._id === auth?._id}
+            isCurrentUser={message.senderId === auth?.id}
           />
         ))}
       </Fragment>

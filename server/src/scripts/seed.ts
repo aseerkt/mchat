@@ -1,25 +1,19 @@
+import { connectDB, db } from '@/database'
+import { NewGroup, groups } from '@/modules/groups/groups.schema'
+import { NewMember, members } from '@/modules/members/members.schema'
+import { NewMessage, messages } from '@/modules/messages/messages.schema'
+import { NewUser, users } from '@/modules/users/users.schema'
 import { faker } from '@faker-js/faker'
 import { hash } from 'argon2'
 import 'colors'
-import 'dotenv/config'
-import { Types } from 'mongoose'
-import { IMember, Member } from '../models/Member'
-import { IMessage, Message } from '../models/Message'
-import { IRoom, Room } from '../models/Room'
-import { IUser, User } from '../models/User'
-import { connectDB } from '../utils/db'
 
 const USER_PASSWORD = 'bob@123'
 
 const USER_COUNT = 1000
-const ROOM_COUNT_PER_USER = 5
-const MEMBER_COUNT_PER_ROOM = 35
+const GROUP_COUNT_PER_USER = 5
+const MEMBER_COUNT_PER_GROUP = 35
 const MESSAGE_PER_MEMBER = 5
 const BATCH_SIZE = 100
-
-async function getHashedPassword() {
-  return hash(USER_PASSWORD)
-}
 
 async function seedDatabase() {
   try {
@@ -28,10 +22,10 @@ async function seedDatabase() {
     console.time('seed')
     console.log('Dropping collections'.yellow.bold)
 
-    await Message.deleteMany({})
-    await Member.deleteMany({})
-    await Room.deleteMany({})
-    await User.deleteMany({})
+    await db.delete(messages)
+    await db.delete(members)
+    await db.delete(groups)
+    await db.delete(users)
 
     console.log('Seed started'.blue.bold)
 
@@ -39,94 +33,87 @@ async function seedDatabase() {
 
     // Batch insert users
     for (let i = 0; i < USER_COUNT; i += BATCH_SIZE) {
-      const users: IUser[] = []
+      const userValues: NewUser[] = []
       for (let j = 0; j < BATCH_SIZE && i + j < USER_COUNT; j++) {
-        users.push({
+        userValues.push({
           username: faker.internet.userName().toLowerCase(),
           password,
+          fullName: faker.person.fullName(),
         })
       }
-      await User.insertMany(users)
+      await db.insert(users).values(userValues)
     }
 
-    const insertedUsers = await User.find({})
+    const insertedUsers = await db.select().from(users)
 
-    // Batch insert rooms
-    for (let i = 0; i < USER_COUNT * ROOM_COUNT_PER_USER; i += BATCH_SIZE) {
-      const rooms: IRoom[] = []
+    // Batch insert groups
+    for (let i = 0; i < USER_COUNT * GROUP_COUNT_PER_USER; i += BATCH_SIZE) {
+      const groupValues: NewGroup[] = []
       for (
         let j = 0;
-        j < BATCH_SIZE && i + j < USER_COUNT * ROOM_COUNT_PER_USER;
+        j < BATCH_SIZE && i + j < USER_COUNT * GROUP_COUNT_PER_USER;
         j++
       ) {
-        const userIndex = Math.floor((i + j) / ROOM_COUNT_PER_USER)
-        rooms.push({
+        const userIndex = Math.floor((i + j) / GROUP_COUNT_PER_USER)
+        groupValues.push({
           name: faker.hacker.noun(),
-          createdBy: {
-            _id: insertedUsers[userIndex]
-              ._id as unknown as typeof Types.ObjectId,
-            username: insertedUsers[userIndex].username,
-          },
+          ownerId: insertedUsers[userIndex].id,
         })
       }
-      await Room.insertMany(rooms)
+      await db.insert(groups).values(groupValues)
     }
 
-    const insertedRooms = await Room.find({})
+    const insertedGroups = await db.select().from(groups)
 
     // Batch insert members and messages
-    for (let i = 0; i < insertedRooms.length; i++) {
-      const room = insertedRooms[i]
-      const roomMemberSet: Record<string, boolean> = {}
-      const members: IMember[] = []
-      const messages: IMessage[] = []
+    for (let i = 0; i < insertedGroups.length; i++) {
+      const group = insertedGroups[i]
+      const groupMemberSet: Record<string, boolean> = {}
+      const memberValues: NewMember[] = []
+      const messageValues: NewMessage[] = []
 
       function getUserWhoIsNotMember() {
         const randomUser = faker.helpers.arrayElement(insertedUsers)
-        const roomMemberSetKey = `${room._id.toString()}:${randomUser._id.toString()}`
+        const groupMemberSetKey = `${group.id}:${randomUser.id}`
         if (
-          roomMemberSet[roomMemberSetKey] ||
-          randomUser._id.toString() === room.createdBy._id.toString()
+          groupMemberSet[groupMemberSetKey] ||
+          randomUser.id === group.ownerId
         ) {
           return getUserWhoIsNotMember()
         }
-        roomMemberSet[roomMemberSetKey] = true
+        groupMemberSet[groupMemberSetKey] = true
         return randomUser
       }
 
-      for (let j = 0; j < MEMBER_COUNT_PER_ROOM; j++) {
+      for (let j = 0; j < MEMBER_COUNT_PER_GROUP; j++) {
         const user = getUserWhoIsNotMember()
 
-        members.push({
+        memberValues.push({
           role: 'member',
-          roomId: room._id as unknown as typeof Types.ObjectId,
-          user: {
-            _id: user._id as unknown as typeof Types.ObjectId,
-            username: user.username,
-          },
+          groupId: group.id,
+          userId: user.id,
         })
 
         for (let k = 0; k < MESSAGE_PER_MEMBER; k++) {
-          messages.push({
-            roomId: room._id as unknown as typeof Types.ObjectId,
-            sender: {
-              _id: user._id as unknown as typeof Types.ObjectId,
-              username: user.username,
-            },
-            text: faker.word.words(5),
+          messageValues.push({
+            groupId: group.id,
+            senderId: user.id,
+            content: faker.word.words(5),
           })
         }
       }
 
       // Insert members and messages in batches
-      for (let k = 0; k < members.length; k += BATCH_SIZE) {
-        await Member.insertMany(members.slice(k, k + BATCH_SIZE))
-        await Message.insertMany(
-          messages.slice(
-            k * MESSAGE_PER_MEMBER,
-            (k + BATCH_SIZE) * MESSAGE_PER_MEMBER,
-          ),
-        )
+      for (let k = 0; k < memberValues.length; k += BATCH_SIZE) {
+        await db.insert(members).values(memberValues.slice(k, k + BATCH_SIZE))
+        await db
+          .insert(messages)
+          .values(
+            messageValues.slice(
+              k * MESSAGE_PER_MEMBER,
+              (k + BATCH_SIZE) * MESSAGE_PER_MEMBER,
+            ),
+          )
       }
     }
 

@@ -1,7 +1,7 @@
+import { and, eq } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { Types } from 'mongoose'
-import { Member, MemberRole, memberRoles } from './models/Member'
-import { Room } from './models/Room'
+import { db } from './database'
+import { MemberRole, members } from './modules/members/members.schema'
 import { notAuthenticated, notAuthorized } from './utils/api'
 import { verifyToken } from './utils/jwt'
 import { getMemberRole, setMemberRole } from './utils/redis'
@@ -24,56 +24,39 @@ export const auth: RequestHandler = (req, res, next) => {
   }
 }
 
-export const isRoomOwner: RequestHandler = async (req, res, next) => {
-  try {
-    const roomId = req.params.roomId || req.query.roomId || req.body.roomId
-
-    if (typeof roomId !== 'string') {
-      throw new Error('Not authorized')
-    }
-
-    const room = await Room.findById(new Types.ObjectId(roomId))
-
-    if (!room) {
-      return res.status(404).json({ message: 'Room not found' })
-    }
-
-    if (room.createdBy._id.toString() !== req.user?._id) {
-      throw new Error('Not authorized')
-    }
-
-    next()
-  } catch (error) {
-    res.status(403).json({ message: 'Not authenticated' })
-  }
-}
+const memberRoles: MemberRole[] = ['member', 'admin', 'owner']
 
 export const hasRoomPermission =
   (role: MemberRole): RequestHandler =>
   async (req, res, next) => {
     try {
-      const roomId = req.params.roomId || req.query.roomId || req.body.roomId
+      const groupId = Number(
+        req.params.groupId || req.query.groupId || req.body.groupId,
+      )
 
-      if (typeof roomId !== 'string') {
+      if (Number.isNaN(groupId)) {
         return notAuthorized(res)
       }
 
       let memberRole = (await getMemberRole(
-        roomId,
-        req.user!._id,
+        groupId,
+        req.user!.id,
       )) as MemberRole | null
 
       if (!memberRole) {
-        const member = await Member.findOne({
-          roomId: new Types.ObjectId(roomId),
-          'user._id': new Types.ObjectId(req.user!._id),
-        })
+        const [member] = await db
+          .select()
+          .from(members)
+          .where(
+            and(eq(members.groupId, groupId), eq(members.userId, req.user!.id)),
+          )
+          .limit(1)
 
         if (!member) {
           return notAuthorized(res)
         }
 
-        await setMemberRole(roomId, req.user!._id, member.role)
+        await setMemberRole(groupId, req.user!.id, member.role)
         memberRole = member.role
       }
 

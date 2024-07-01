@@ -3,7 +3,7 @@ import { fetcher, stringifyQueryParams } from '@/utils/api'
 import { IGetRoomMessagesArgs, IMessage } from './message.interface'
 
 export const fetchRoomMessages = async ({
-  roomId,
+  groupId,
   ...params
 }: IGetRoomMessagesArgs): Promise<IPaginatedResult<IMessage>> =>
-  fetcher(`rooms/${roomId}/messages?${stringifyQueryParams(params)}`)
+  fetcher(`groups/${groupId}/messages?${stringifyQueryParams(params)}`)

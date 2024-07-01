@@ -9,7 +9,7 @@ export const MemberItem = ({ member }: MemberItemProps) => {
   return (
     <li
       className='inline-flex items-center gap-2 bg-gray-100 p-3'
-      key={member.user._id}
+      key={member.userId}
     >
       <div
         className={cn(
@@ -19,7 +19,7 @@ export const MemberItem = ({ member }: MemberItemProps) => {
             : 'border-2 border-gray-400 bg-gray-200',
         )}
       ></div>
-      <b>{member.user.username}</b>
+      <b className='text-sm'>{member.username}</b>
     </li>
   )
 }

@@ -16,8 +16,8 @@ export const MessageItem = ({ message, isCurrentUser }: MessageItemProps) => {
       )}
       style={{ maxWidth: 'calc(80% - 2rem)' }}
     >
-      {!isCurrentUser && <b>{message.sender.username}</b>}
-      <p>{message.text}</p>
+      {!isCurrentUser && <b>{message.username}</b>}
+      <p>{message.content}</p>
       <small className='text-xs text-gray-500'>
         {formateChatDate(message.createdAt)}
       </small>

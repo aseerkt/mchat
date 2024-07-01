@@ -3,25 +3,25 @@ import { IMember } from '../features/member/member.interface'
 import { IMessage } from '../features/message/message.interface'
 
 export interface ServerToClientEvents {
-  userOnline: (userId: string) => void
-  userOffline: (userId: string) => void
+  userOnline: (userId: number) => void
+  userOffline: (userId: number) => void
   newMessage: (message: IMessage) => void
   newMember: (member: IMember) => void
-  typingUsers: (users: { _id: string; username: string }[]) => void
+  typingUsers: (users: { id: number; username: string }[]) => void
 }
 
 export interface ClientToServerEvents {
-  joinRoom: (roomId: string) => void
+  joinRoom: (groupId: number) => void
   memberJoin: (
-    roomIds: string[],
+    groupIds: number[],
     cb: (res: { success: boolean; error?: unknown }) => void,
   ) => void
   createMessage: (
-    args: { roomId: string; text: string },
+    args: { groupId: number; text: string },
     callback: (response: { message?: IMessage; error?: unknown }) => void,
   ) => void
-  userStartedTyping: (roomId: string) => void
-  userStoppedTyping: (roomId: string) => void
+  userStartedTyping: (groupId: number) => void
+  userStoppedTyping: (groupId: number) => void
 }
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>

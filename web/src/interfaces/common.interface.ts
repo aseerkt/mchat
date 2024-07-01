@@ -1,10 +1,10 @@
 export interface IPaginatedResult<TData> {
   data: TData[]
   hasMore: boolean
-  cursor: string
+  cursor: number | null
 }
 
 export type TPaginatedParams = {
   limit: number
-  cursor: string
+  cursor: number | null
 }

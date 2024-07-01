@@ -1,7 +1,7 @@
 import { TypingIndicator } from '@/features/chat/components'
+import { RoomHeader } from '@/features/group/components'
 import { MembersSidebar } from '@/features/member/components'
 import { MessageComposer, MessageList } from '@/features/message/components'
-import { RoomHeader } from '@/features/room/components'
 import { useDisclosure } from '@/hooks/useDisclosure'
 import { getSocketIO } from '@/utils/socket'
 import { cn } from '@/utils/style'
@@ -9,18 +9,18 @@ import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 export const Component = () => {
-  const params = useParams<{ roomId: string }>()
+  const params = useParams<{ groupId: number }>()
 
   const { isOpen, toggle } = useDisclosure()
 
   useEffect(() => {
     const socket = getSocketIO()
-    if (params.roomId) {
-      socket.emit('joinRoom', params.roomId)
+    if (params.groupId) {
+      socket.emit('joinRoom', params.groupId)
     }
-  }, [params.roomId])
+  }, [params.groupId])
 
-  if (!params.roomId) return null
+  if (!params.groupId) return null
 
   return (
     <>
@@ -30,12 +30,16 @@ export const Component = () => {
           isOpen && 'hidden md:flex',
         )}
       >
-        <RoomHeader roomId={params.roomId} showMembers={toggle} />
-        <MessageList roomId={params.roomId} />
+        <RoomHeader groupId={params.groupId} showMembers={toggle} />
+        <MessageList groupId={params.groupId} />
         <TypingIndicator />
-        <MessageComposer roomId={params.roomId} />
+        <MessageComposer groupId={params.groupId} />
       </div>
-      <MembersSidebar isOpen={isOpen} onClose={toggle} roomId={params.roomId} />
+      <MembersSidebar
+        isOpen={isOpen}
+        onClose={toggle}
+        groupId={params.groupId}
+      />
     </>
   )
 }

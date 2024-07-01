@@ -1,6 +1,7 @@
 interface UserPayload {
-  _id: string
+  id: number
   username: string
+  fullName: string
 }
 
 declare namespace Express {
@@ -8,5 +9,3 @@ declare namespace Express {
     user?: UserPayload
   }
 }
-
-

@@ -1,13 +1,13 @@
 import { faker } from '@faker-js/faker'
 import { Locator, Page, expect, test } from '@playwright/test'
-import { user } from './helpers'
+import { getAuthFromPageContext } from './helpers'
 
 const roomCount = 2
 const messageCount = 5
 
 async function createRoom(page: Page) {
   const roomName = faker.company.name()
-  await page.getByRole('button', { name: 'Create Room' }).click()
+  await page.getByRole('button', { name: 'New group' }).click()
   await page.getByLabel('Room name').fill(roomName)
   await page.getByRole('button', { name: 'Create', exact: true }).click()
 
@@ -53,22 +53,10 @@ test.describe('chat flow', () => {
     }
   })
 
-  test('member list drawer', async ({ page }) => {
-    await page.goto('http://localhost:3000/chat')
-
-    await createRoom(page)
-    // MEMBER LIST
-    await page.getByRole('button', { name: 'open member drawer' }).click()
-    // add assertion here
-    await expect(
-      page.getByRole('listitem').getByText(user.username),
-    ).toBeVisible()
-  })
-
   test('join room', async ({ page }) => {
     await page.goto('http://localhost:3000/chat')
 
-    await page.getByRole('button', { name: 'Join Room' }).click()
+    await page.getByRole('button', { name: 'Join group' }).click()
     const roomLabels = await page.locator('label').all()
 
     async function joinRoom(label: Locator) {
@@ -80,10 +68,24 @@ test.describe('chat flow', () => {
       roomLabels.slice(0, roomCount).map(joinRoom),
     )
 
-    await page.getByRole('button', { name: 'Join room', exact: true }).click()
+    await page.getByRole('button', { name: 'Join', exact: true }).click()
 
     for (const name of roomNames) {
-      await expect(page.getByRole('link', { name: name })).toBeVisible()
+      await expect(page.getByRole('link', { name })).toBeVisible()
     }
+  })
+
+  test('member list drawer', async ({ page }) => {
+    await page.goto('http://localhost:3000/chat')
+
+    const auth = await getAuthFromPageContext(page)
+
+    await createRoom(page)
+    // MEMBER LIST
+    await page.getByRole('button', { name: 'open member drawer' }).click()
+    // add assertion here
+    await expect(
+      page.getByRole('listitem').getByText(auth.username),
+    ).toBeVisible()
   })
 })

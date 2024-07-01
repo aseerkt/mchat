@@ -1,9 +1,9 @@
 export interface IUser {
-  _id: string
+  id: number
   username: string
+  fullName: string
   password: string
   createdAt: string
-  updatedAt: string
 }
 
 export interface IUserResponse {
@@ -11,7 +11,11 @@ export interface IUserResponse {
   token: string
 }
 
-export interface IAuthMutationVariables {
+export interface ILoginVariables {
   username: string
   password: string
+}
+
+export interface ISignUpVariables extends ILoginVariables {
+  fullName: string
 }

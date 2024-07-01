@@ -1,7 +1,5 @@
 import { expect, test as setup } from '@playwright/test'
-import { user } from './helpers'
-
-const authFile = 'playwright/.auth/user.json'
+import { authFile, user } from './helpers'
 
 setup('authenticate', async ({ page }) => {
   async function checkForChatPage() {
