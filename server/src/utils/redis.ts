@@ -29,8 +29,8 @@ getRedisClient()
 
 export const redisKeys = {
   ONLINE_USERS: 'online_users',
-  TYPING_USERS: (groupId: number) => `room:${groupId}:typing_users`,
-  MEMBER_ROLES: (groupId: number) => `room:${groupId}:member_roles`,
+  TYPING_USERS: (groupId: number) => `group:${groupId}:typing_users`,
+  MEMBER_ROLES: (groupId: number) => `group:${groupId}:member_roles`,
 }
 
 // MEMBER
@@ -49,7 +49,7 @@ export const getMemberRole = (groupId: number, userId: number) => {
   return redisClient.hget(cacheKey, userId.toString())
 }
 
-export const deleteRoomMembersRoles = (groupId: number) => {
+export const deleteGroupMembersRoles = (groupId: number) => {
   const cacheKey = redisKeys.MEMBER_ROLES(groupId)
   return redisClient.hdel(cacheKey)
 }

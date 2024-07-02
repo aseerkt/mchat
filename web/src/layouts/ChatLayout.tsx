@@ -1,8 +1,8 @@
+import { CreateGroup, GroupList, JoinGroup } from '@/features/group/components'
 import { Outlet, useParams } from 'react-router-dom'
 import { PageLoader } from '../components/PageLoader'
 import { ChatHeader } from '../features/chat/components'
 import { ChatUser } from '../features/chat/components/ChatUser'
-import { CreateRoom, JoinRoom, RoomList } from '../features/group/components'
 import { useSocketConnect } from '../hooks/useSocketConnect'
 import { cn } from '../utils/style'
 
@@ -25,10 +25,10 @@ const ChatLayout = () => {
           )}
         >
           <ChatUser isConnected={isConnected} />
-          <RoomList />
+          <GroupList />
           <div className='flex shrink-0 justify-center gap-3 border-t px-3 py-4'>
-            <JoinRoom />
-            <CreateRoom />
+            <JoinGroup />
+            <CreateGroup />
           </div>
         </div>
         <div className='flex h-full flex-1 overflow-hidden'>

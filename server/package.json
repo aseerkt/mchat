@@ -4,7 +4,7 @@
   "description": "mChat server implementation",
   "private": true,
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "lint": "tsc && eslint src/**/*.ts",
@@ -48,5 +48,8 @@
     "tsx": "^4.15.6",
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.15.0"
+  },
+  "_moduleAliases": {
+    "@": "src"
   }
 }

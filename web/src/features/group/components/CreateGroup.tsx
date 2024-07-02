@@ -7,21 +7,21 @@ import { useToast } from '@/hooks/useToast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createNewRoom } from '../group.service'
+import { createNewGroup } from '../group.service'
 
-const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
+const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState('')
   const { toast } = useToast()
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
-  const { mutate: createRoom, isPending } = useMutation({
-    mutationFn: createNewRoom,
+  const { mutate: createGroup, isPending } = useMutation({
+    mutationFn: createNewGroup,
     onSuccess: result => {
       if (result.id) {
-        toast({ title: `Room "${name}" created`, severity: 'success' })
+        toast({ title: `Group "${name}" created`, severity: 'success' })
         onComplete()
-        queryClient.invalidateQueries({ queryKey: ['userRooms'] })
+        queryClient.invalidateQueries({ queryKey: ['userGroups'] })
         navigate(`/chat/${result.id}`)
       }
     },
@@ -35,19 +35,19 @@ const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!name.trim()) {
-      return toast({ title: 'Room name is required', severity: 'error' })
+      return toast({ title: 'Group name is required', severity: 'error' })
     }
-    createRoom({ name })
+    createGroup({ name })
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      <h4 className='mb-3 text-xl font-semibold'>Create room</h4>
+      <h4 className='mb-3 text-xl font-semibold'>Create group</h4>
       <Input
         ref={inputRef}
         name='name'
         value={name}
-        label='Room name'
+        label='Group name'
         autoFocus
         onChange={e => setName(e.target.value)}
       />
@@ -56,7 +56,7 @@ const CreateRoomForm = ({ onComplete }: { onComplete: () => void }) => {
   )
 }
 
-export const CreateRoom = () => {
+export const CreateGroup = () => {
   const { isOpen, toggle } = useDisclosure()
 
   return (
@@ -65,7 +65,7 @@ export const CreateRoom = () => {
         New group
       </Button>
       <Dialog isOpen={isOpen} onClose={toggle}>
-        <CreateRoomForm onComplete={toggle} />
+        <CreateGroupForm onComplete={toggle} />
       </Dialog>
     </>
   )

@@ -19,15 +19,23 @@
 
 ### Run final build using docker compose
 
-- Spin up entire stack (redis, mongo, web, server)
+- Spin up the entire stack (redis, postgres, web, server)
 ```bash
-docker compose -f docker-compose.prod.yml up --build
+pnpm docker:build
+```
+- Run migrations
+```bash
+pnpm docker:db:migrate
+```
+- Seed database
+```bash
+pnpm docker:db:seed
 ```
 - Go to [http://localhost:3000](http://localhost:3000)
 
 ### Development
 
-- Spin up MongoDB and Redis
+- Spin up PostgreSQL and Redis
 ```bash
 docker compose up -d
 ```
@@ -39,6 +47,16 @@ docker compose up -d
 pnpm i
 ```
 
+- Run migrations
+```bash
+pnpm --filter server migration:run
+```
+
+- (Optional) Seed database
+```bash
+pnpm --filter server seed
+```
+
 - Run development server (web & server)
 ```bash
 pnpm dev
@@ -46,10 +64,6 @@ pnpm dev
 
 - Go to [http://localhost:3000](http://localhost:3000)
 
-- (Optional) Seed database
-```bash
-pnpm --filter server seed
-```
 
 ### E2E testing
 
@@ -68,7 +82,6 @@ pnpm --filter e2e test:codegen
 
 ## Features Roadmap
 
-
 ### primary goals
 
 - [x] sign up, login and logout
@@ -78,28 +91,25 @@ pnpm --filter e2e test:codegen
 - [x] realtime messaging
 - [x] typing indicators
 - [x] socket.io cluster adapter integration
-- [x] global error handling
 - [x] redis implementation (typing users, online users)
-- [x] online status
+- [x] member online status
 - [x] realtime member list update
-- [x] infinite scroll pagination (messages/groups/members)
+- [x] infinite scroll cursor pagination (messages/groups/members)
 - [x] tanstack react-query integration 
 - [ ] alert component
 - [ ] confirm dialog
 - [ ] delete group
 - [ ] e2e encryption
 - [ ] read receipts
-- [ ] extract db operation to dao
 
 ### extras
 
 - [x] playwright e2e tests for chat
+- [x] switch to postgresql (support transaction)
 - [ ] swagger ui
-- [ ] switch to postgresql (support transaction)
 - [ ] keploy api test generation
-- [ ] private groups - invite
+- [ ] private groups - invite/add/delete members
 - [ ] notifications
-- [ ] socket.io redis streams adapter integration
 
 ## Authors
 

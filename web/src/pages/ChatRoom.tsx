@@ -1,5 +1,5 @@
 import { TypingIndicator } from '@/features/chat/components'
-import { RoomHeader } from '@/features/group/components'
+import { GroupHeader } from '@/features/group/components'
 import { MembersSidebar } from '@/features/member/components'
 import { MessageComposer, MessageList } from '@/features/message/components'
 import { useDisclosure } from '@/hooks/useDisclosure'
@@ -18,7 +18,7 @@ export const Component = () => {
   useEffect(() => {
     const socket = getSocketIO()
     if (groupId) {
-      socket.emit('joinRoom', Number(groupId))
+      socket.emit('joinGroup', Number(groupId))
     }
   }, [groupId])
 
@@ -32,7 +32,7 @@ export const Component = () => {
           isOpen && 'hidden md:flex',
         )}
       >
-        <RoomHeader groupId={groupId} showMembers={toggle} />
+        <GroupHeader groupId={groupId} showMembers={toggle} />
         <MessageList groupId={groupId} />
         <TypingIndicator />
         <MessageComposer groupId={groupId} />

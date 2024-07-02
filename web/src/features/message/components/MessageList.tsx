@@ -9,7 +9,7 @@ import { getSocketIO } from '@/utils/socket'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { produce } from 'immer'
 import { Fragment, useEffect, useRef } from 'react'
-import { fetchRoomMessages } from '../message.service'
+import { fetchGroupMessages } from '../message.service'
 import { MessageItem } from './MessageItem'
 
 interface MessageListProps {
@@ -25,7 +25,7 @@ export const MessageList = ({ groupId }: MessageListProps) => {
     useInfiniteQuery({
       queryKey: ['messages', groupId],
       queryFn: ({ pageParam }) =>
-        fetchRoomMessages({ groupId, limit: 15, cursor: pageParam }),
+        fetchGroupMessages({ groupId, limit: 15, cursor: pageParam }),
       initialPageParam: null as number | null,
       getNextPageParam: lastPage =>
         lastPage.cursor ? lastPage.cursor : undefined,
@@ -61,7 +61,7 @@ export const MessageList = ({ groupId }: MessageListProps) => {
       socket.off('newMessage', updateMessage)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [groupId])
 
   const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 

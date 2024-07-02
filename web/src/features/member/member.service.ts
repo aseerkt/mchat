@@ -1,9 +1,9 @@
 import { IPaginatedResult } from '@/interfaces/common.interface'
 import { fetcher, stringifyQueryParams } from '@/utils/api'
-import { IGetRoomMembersArgs, IMember } from './member.interface'
+import { IGetGroupMembersArgs, IMember } from './member.interface'
 
-export const fetchRoomMembers = async ({
+export const fetchGroupMembers = async ({
   groupId,
   ...params
-}: IGetRoomMembersArgs): Promise<IPaginatedResult<IMember, string>> =>
+}: IGetGroupMembersArgs): Promise<IPaginatedResult<IMember, string>> =>
   fetcher(`groups/${groupId}/members?${stringifyQueryParams(params)}`)

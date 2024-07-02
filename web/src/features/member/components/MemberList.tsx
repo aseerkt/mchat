@@ -11,7 +11,7 @@ import {
 import { produce } from 'immer'
 import { Fragment, useEffect, useRef } from 'react'
 import { IMember } from '../member.interface'
-import { fetchRoomMembers } from '../member.service'
+import { fetchGroupMembers } from '../member.service'
 import { MemberItem } from './MemberItem'
 
 type MemberInfiniteData = InfiniteData<IPaginatedResult<IMember>, string>
@@ -29,7 +29,7 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
     useInfiniteQuery({
       queryKey: ['members', groupId],
       queryFn: ({ queryKey, pageParam }) =>
-        fetchRoomMembers({
+        fetchGroupMembers({
           groupId: queryKey[1] as number,
           limit: 15,
           cursor: pageParam,

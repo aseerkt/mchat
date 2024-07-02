@@ -1,13 +1,13 @@
 import { IGroup } from '../group.interface'
 
-export const JoinRoomItem = ({
+export const JoinGroupItem = ({
   group,
   isChecked,
-  toggleRoomCheck,
+  toggleGroupCheck,
 }: {
   group: IGroup
   isChecked: boolean
-  toggleRoomCheck: (id: number, isChecked: boolean) => void
+  toggleGroupCheck: (id: number, isChecked: boolean) => void
 }) => (
   <li key={group.id}>
     <label
@@ -20,7 +20,7 @@ export const JoinRoomItem = ({
         type='checkbox'
         checked={isChecked}
         onChange={e => {
-          toggleRoomCheck(group.id, e.target.checked)
+          toggleGroupCheck(group.id, e.target.checked)
         }}
       />
     </label>

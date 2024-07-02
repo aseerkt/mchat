@@ -6,9 +6,9 @@ import { Dialog } from '../../../components/Dialog'
 import { useDisclosure } from '../../../hooks/useDisclosure'
 import { useToast } from '../../../hooks/useToast'
 import { getSocketIO } from '../../../utils/socket'
-import { JoinRoomList } from './JoinGroupList'
+import { JoinGroupList } from './JoinGroupList'
 
-export const JoinRoom = () => {
+export const JoinGroup = () => {
   const { isOpen, toggle } = useDisclosure()
 
   return (
@@ -17,13 +17,13 @@ export const JoinRoom = () => {
         Join group
       </Button>
       <Dialog isOpen={isOpen} onClose={toggle}>
-        <JoinRoomsForm onClose={toggle} />
+        <JoinGroupsForm onClose={toggle} />
       </Dialog>
     </>
   )
 }
 
-const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
+const JoinGroupsForm = ({ onClose }: { onClose: () => void }) => {
   const { toast } = useToast()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -45,7 +45,7 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
       if (res?.success) {
         toast({ title: 'Joined groups successfully', severity: 'success' })
         navigate(`/chat/${groupIds[0]}`)
-        queryClient.invalidateQueries({ queryKey: ['userRooms'] })
+        queryClient.invalidateQueries({ queryKey: ['userGroups'] })
         queryClient.invalidateQueries({ queryKey: ['groupsToJoin'] })
         onClose()
       } else if (res.error) {
@@ -64,9 +64,9 @@ const JoinRoomsForm = ({ onClose }: { onClose: () => void }) => {
       <header className='mb-3 px-6'>
         <h3 className='text-xl font-semibold'>Select groups to join</h3>
       </header>
-      <JoinRoomList
-        isRoomChecked={groupId => Boolean(selectedGroups[groupId])}
-        toggleRoomCheck={(groupId, checked) =>
+      <JoinGroupList
+        isGroupChecked={groupId => Boolean(selectedGroups[groupId])}
+        toggleGroupCheck={(groupId, checked) =>
           setSelectedGroups(groups => ({ ...groups, [groupId]: checked }))
         }
       />

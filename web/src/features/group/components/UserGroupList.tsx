@@ -3,16 +3,16 @@ import { Fragment, useRef } from 'react'
 import { Skeleton } from '../../../components/Skeleton'
 import { useAuthState } from '../../../hooks/useAuth'
 import { useInView } from '../../../hooks/useInView'
-import { fetchUserRooms } from '../group.service'
-import { UserRoomItem } from './UserGroupItem'
+import { fetchUserGroups } from '../group.service'
+import { UserGroupItem } from './UserGroupItem'
 
 export const GroupList = () => {
   const auth = useAuthState()
   const { data, isLoading, isSuccess, hasNextPage, fetchNextPage, error } =
     useInfiniteQuery({
-      queryKey: ['userRooms', auth],
+      queryKey: ['userGroups', auth],
       queryFn: async ({ pageParam }) => {
-        return fetchUserRooms({
+        return fetchUserGroups({
           userId: auth!.id,
           limit: 15,
           cursor: pageParam,
@@ -40,10 +40,10 @@ export const GroupList = () => {
   } else if (data?.pages.length) {
     content = (
       <ul ref={listRef} className='flex h-full flex-col overflow-y-auto'>
-        {data.pages.map((room, i) => (
+        {data.pages.map((page, i) => (
           <Fragment key={i}>
-            {room.data.map(room => (
-              <UserRoomItem key={room.id} room={room} />
+            {page.data.map(group => (
+              <UserGroupItem key={group.id} group={group} />
             ))}
           </Fragment>
         ))}

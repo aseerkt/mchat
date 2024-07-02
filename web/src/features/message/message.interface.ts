@@ -8,12 +8,12 @@ export interface IMessage {
   id: number
   groupId: number
   senderId: number
-  username: string;
+  username: string
   content: string
   createdAt: string
 }
 
-export interface IGetRoomMessagesArgs extends TPaginatedParams {
+export interface IGetGroupMessagesArgs extends TPaginatedParams {
   groupId: number
 }
 

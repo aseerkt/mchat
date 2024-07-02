@@ -2,41 +2,41 @@ import { faker } from '@faker-js/faker'
 import { Locator, Page, expect, test } from '@playwright/test'
 import { getAuthFromPageContext } from './helpers'
 
-const roomCount = 2
+const groupCount = 2
 const messageCount = 5
 
-async function createRoom(page: Page) {
-  const roomName = faker.company.name()
+async function createGroup(page: Page) {
+  const groupName = faker.company.name()
   await page.getByRole('button', { name: 'New group' }).click()
-  await page.getByLabel('Room name').fill(roomName)
+  await page.getByLabel('Group name').fill(groupName)
   await page.getByRole('button', { name: 'Create', exact: true }).click()
 
-  const successToast = page.getByText(`Room "${roomName}" created`)
+  const successToast = page.getByText(`Group "${groupName}" created`)
 
   await expect(successToast).toBeInViewport()
   await expect(successToast).not.toBeInViewport()
 
   await page.waitForTimeout(2000)
 
-  await expect(page.getByRole('link', { name: roomName })).toBeVisible()
+  await expect(page.getByRole('link', { name: groupName })).toBeVisible()
   await expect(
-    page.locator('header').filter({ hasText: roomName }),
+    page.locator('header').filter({ hasText: groupName }),
   ).toBeVisible()
 }
 
 test.describe('chat flow', () => {
-  test('create room', async ({ page }) => {
+  test('create group', async ({ page }) => {
     await page.goto('http://localhost:3000/chat')
 
-    for (let i = 0; i < roomCount; i++) {
-      await createRoom(page)
+    for (let i = 0; i < groupCount; i++) {
+      await createGroup(page)
     }
   })
 
   test('send message', async ({ page }) => {
     await page.goto('http://localhost:3000/chat')
 
-    await createRoom(page)
+    await createGroup(page)
 
     async function sendMessage() {
       const message = faker.word.words(3)
@@ -53,24 +53,24 @@ test.describe('chat flow', () => {
     }
   })
 
-  test('join room', async ({ page }) => {
+  test('join group', async ({ page }) => {
     await page.goto('http://localhost:3000/chat')
 
     await page.getByRole('button', { name: 'Join group' }).click()
-    const roomLabels = await page.locator('label').all()
+    const groupLabels = await page.locator('label').all()
 
-    async function joinRoom(label: Locator) {
+    async function joinGroup(label: Locator) {
       await label.click()
       return label.innerText()
     }
 
-    const roomNames = await Promise.all(
-      roomLabels.slice(0, roomCount).map(joinRoom),
+    const groupNames = await Promise.all(
+      groupLabels.slice(0, groupCount).map(joinGroup),
     )
 
     await page.getByRole('button', { name: 'Join', exact: true }).click()
 
-    for (const name of roomNames) {
+    for (const name of groupNames) {
       await expect(page.getByRole('link', { name })).toBeVisible()
     }
   })
@@ -80,7 +80,7 @@ test.describe('chat flow', () => {
 
     const auth = await getAuthFromPageContext(page)
 
-    await createRoom(page)
+    await createGroup(page)
     // MEMBER LIST
     await page.getByRole('button', { name: 'open member drawer' }).click()
     // add assertion here

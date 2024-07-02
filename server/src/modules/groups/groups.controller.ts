@@ -1,7 +1,7 @@
 import { db } from '@/database'
 import { withPagination } from '@/database/helpers'
 import { notFound } from '@/utils/api'
-import { deleteRoomMembersRoles, setMemberRole } from '@/utils/redis'
+import { deleteGroupMembersRoles, setMemberRole } from '@/utils/redis'
 import { eq, getTableColumns, ne } from 'drizzle-orm'
 import { RequestHandler } from 'express'
 import { members } from '../members/members.schema'
@@ -74,7 +74,7 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
     }
 
     // TODO: move these db operations to queue
-    await deleteRoomMembersRoles(groupId)
+    await deleteGroupMembersRoles(groupId)
     await db.delete(messages).where(eq(messages.groupId, groupId))
     await db.delete(members).where(eq(members.groupId, groupId))
 

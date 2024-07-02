@@ -7,10 +7,10 @@ export interface IGroup {
   createdAt: string
 }
 
-export type TGetUserRoomsQueryVariables = TPaginatedParams & {
+export type TGetUserGroupsQueryVariables = TPaginatedParams & {
   userId: number
 }
 
-export interface ICreateRoomArgs {
+export interface ICreateGroupArgs {
   name: string
 }

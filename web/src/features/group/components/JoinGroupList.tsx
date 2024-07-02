@@ -2,23 +2,23 @@ import { Skeleton } from '@/components/Skeleton'
 import { useInView } from '@/hooks/useInView'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Fragment, useRef } from 'react'
-import { fetchRoomsToJoin } from '../group.service'
-import { JoinRoomItem } from './JoinGroupItem'
+import { fetchGroupsToJoin } from '../group.service'
+import { JoinGroupItem } from './JoinGroupItem'
 
-interface JoinRoomListProps {
-  isRoomChecked: (id: number) => boolean
-  toggleRoomCheck: (id: number, checked: boolean) => void
+interface JoinGroupListProps {
+  isGroupChecked: (id: number) => boolean
+  toggleGroupCheck: (id: number, checked: boolean) => void
 }
 
-export const JoinRoomList = ({
-  isRoomChecked,
-  toggleRoomCheck,
-}: JoinRoomListProps) => {
+export const JoinGroupList = ({
+  isGroupChecked,
+  toggleGroupCheck,
+}: JoinGroupListProps) => {
   const { data, isLoading, error, isSuccess, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ['groupsToJoin'],
       queryFn: ({ pageParam }) =>
-        fetchRoomsToJoin({ limit: 15, cursor: pageParam }),
+        fetchGroupsToJoin({ limit: 15, cursor: pageParam }),
       initialPageParam: null as number | null,
       getNextPageParam: lastPage =>
         lastPage.cursor ? lastPage.cursor : undefined,
@@ -40,11 +40,11 @@ export const JoinRoomList = ({
     content = data.pages.map((page, i) => (
       <Fragment key={i}>
         {page.data.map(group => (
-          <JoinRoomItem
+          <JoinGroupItem
             key={group.id}
             group={group}
-            isChecked={isRoomChecked(group.id)}
-            toggleRoomCheck={toggleRoomCheck}
+            isChecked={isGroupChecked(group.id)}
+            toggleGroupCheck={toggleGroupCheck}
           />
         ))}
       </Fragment>

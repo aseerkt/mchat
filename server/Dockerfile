@@ -12,12 +12,8 @@ COPY .env.docker .env
 
 COPY . .
 
-RUN pnpm build
-
-RUN rm -rf src
-
 ENV NODE_ENV production
 
 EXPOSE 5000
 
-CMD ["node", "dist/index.js"]
+CMD ["pnpm", "start"]

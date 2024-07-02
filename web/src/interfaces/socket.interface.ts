@@ -11,7 +11,7 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-  joinRoom: (groupId: number) => void
+  joinGroup: (groupId: number) => void
   memberJoin: (
     groupIds: number[],
     cb: (res: { success: boolean; error?: unknown }) => void,

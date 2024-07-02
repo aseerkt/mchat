@@ -33,7 +33,7 @@ export const registerSocketEvents = (io: TypedIOServer) => {
     await addOnlineUser(socket.data.user.id)
     socket.broadcast.emit('userOnline', socket.data.user.id)
 
-    socket.on('joinRoom', groupId => {
+    socket.on('joinGroup', groupId => {
       leaveAllRoom(socket)
       socket.join(String(groupId))
     })

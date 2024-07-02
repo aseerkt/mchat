@@ -3,38 +3,38 @@ import usersSvg from '@/assets/users-svgrepo-com.svg'
 import { Skeleton } from '@/components/Skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { NavLink } from 'react-router-dom'
-import { fetchRoom } from '../group.service'
+import { fetchGroup } from '../group.service'
 
-interface RoomHeaderProps {
+interface GroupHeaderProps {
   groupId: number
   showMembers: () => void
 }
 
-export const RoomHeader = ({ groupId, showMembers }: RoomHeaderProps) => {
+export const GroupHeader = ({ groupId, showMembers }: GroupHeaderProps) => {
   const {
-    data: room,
+    data: group,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['currentRoom', groupId],
-    queryFn: ({ queryKey }) => fetchRoom(queryKey[1] as number),
+    queryKey: ['currentGroup', groupId],
+    queryFn: ({ queryKey }) => fetchGroup(queryKey[1] as number),
   })
 
   let content
 
   if (isLoading) {
     content = <Skeleton className='h-5 w-28' />
-  } else if (room?.id) {
+  } else if (group?.id) {
     content = (
       <>
-        <h3 className='text-lg font-bold'>{room.name}</h3>
+        <h3 className='text-lg font-bold'>{group.name}</h3>
         <button onClick={showMembers} className='ml-auto'>
           <img src={usersSvg} alt='open member drawer' height={24} width={24} />
         </button>
       </>
     )
   } else if (error) {
-    content = <div>Unable to fetch room metadata</div>
+    content = <div>Unable to fetch group</div>
   }
 
   return (

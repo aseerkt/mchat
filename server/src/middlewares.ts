@@ -26,7 +26,7 @@ export const auth: RequestHandler = (req, res, next) => {
 
 const memberRoles: MemberRole[] = ['member', 'admin', 'owner']
 
-export const hasRoomPermission =
+export const hasGroupPermission =
   (role: MemberRole): RequestHandler =>
   async (req, res, next) => {
     try {
