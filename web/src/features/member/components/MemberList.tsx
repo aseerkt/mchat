@@ -34,7 +34,7 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
           limit: 15,
           cursor: pageParam,
         }),
-      initialPageParam: null as null | number,
+      initialPageParam: null as string | null,
       getNextPageParam: lastPage =>
         lastPage.cursor ? lastPage.cursor : undefined,
     })

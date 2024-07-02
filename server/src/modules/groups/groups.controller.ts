@@ -51,10 +51,11 @@ export const listGroups: RequestHandler = async (req, res, next) => {
         .from(groups)
         .innerJoin(members, eq(members.groupId, groups.id))
         .$dynamic(),
-      req.query,
-      groups.id,
-      'desc',
-      ne(members.userId, req.user!.id),
+      {
+        query: req.query,
+        where: ne(members.userId, req.user!.id),
+        sortByColumn: groups.id,
+      },
     )
 
     res.json(result)
@@ -91,10 +92,11 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
         .from(groups)
         .innerJoin(members, eq(members.groupId, groups.id))
         .$dynamic(),
-      req.query,
-      groups.id,
-      'desc',
-      eq(members.userId, req.user!.id),
+      {
+        query: req.query,
+        where: eq(members.userId, req.user!.id),
+        sortByColumn: groups.id,
+      },
     )
 
     res.json(result)

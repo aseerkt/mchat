@@ -1,10 +1,13 @@
-export interface IPaginatedResult<TData> {
+export interface IPaginatedResult<
+  TData,
+  TCursor extends number | string = number,
+> {
   data: TData[]
   hasMore: boolean
-  cursor: number | null
+  cursor: TCursor | null
 }
 
-export type TPaginatedParams = {
+export type TPaginatedParams<TCursor extends string | number = number> = {
   limit: number
-  cursor: number | null
+  cursor: TCursor | null
 }

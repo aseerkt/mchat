@@ -7,7 +7,7 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "lint": "tsc && eslint -c eslint.config.js",
+    "lint": "tsc && eslint src/**/*.ts",
     "migrate:gen": "drizzle-kit generate",
     "migrate:run": "tsx src/scripts/migrate.ts",
     "seed": "tsx src/scripts/seed.ts"
@@ -18,7 +18,7 @@
     "real time"
   ],
   "author": "Aseer KT",
-  "license": "UNLICENSED",
+  "license": "ISC",
   "dependencies": {
     "@socket.io/cluster-adapter": "^0.2.2",
     "@socket.io/sticky": "^1.0.4",
@@ -30,9 +30,9 @@
     "express": "^4.19.2",
     "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
     "pg": "^8.12.0",
-    "socket.io": "^4.7.5",
-    "typescript": "^5.2.2"
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.6.0",
@@ -44,8 +44,9 @@
     "@types/pg": "^8.11.6",
     "drizzle-kit": "^0.22.8",
     "eslint": "9.x",
-    "globals": "^15.6.0",
+    "globals": "^15.7.0",
     "tsx": "^4.15.6",
-    "typescript-eslint": "^7.14.1"
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^7.15.0"
   }
 }

@@ -5,5 +5,5 @@ import { IGetRoomMembersArgs, IMember } from './member.interface'
 export const fetchRoomMembers = async ({
   groupId,
   ...params
-}: IGetRoomMembersArgs): Promise<IPaginatedResult<IMember>> =>
+}: IGetRoomMembersArgs): Promise<IPaginatedResult<IMember, string>> =>
   fetcher(`groups/${groupId}/members?${stringifyQueryParams(params)}`)

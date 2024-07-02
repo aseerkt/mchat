@@ -29,10 +29,11 @@ export const listMessages: RequestHandler = async (req, res, next) => {
         .from(messages)
         .innerJoin(users, eq(messages.senderId, users.id))
         .$dynamic(),
-      req.query,
-      messages.id,
-      'desc',
-      eq(messages.groupId, Number(req.params.groupId)),
+      {
+        query: req.query,
+        where: eq(messages.groupId, Number(req.params.groupId)),
+        sortByColumn: messages.id,
+      },
     )
 
     res.json(result)

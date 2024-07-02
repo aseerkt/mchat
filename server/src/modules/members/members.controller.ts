@@ -34,7 +34,7 @@ export const createMembers: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const getRoomMembers: RequestHandler = async (req, res, next) => {
+export const getGroupMembers: RequestHandler = async (req, res, next) => {
   try {
     const result = await withPagination(
       db
@@ -42,10 +42,12 @@ export const getRoomMembers: RequestHandler = async (req, res, next) => {
         .from(members)
         .innerJoin(users, eq(members.userId, users.id))
         .$dynamic(),
-      req.query,
-      members.id,
-      'asc',
-      eq(members.groupId, Number(req.params.groupId)),
+      {
+        query: req.query,
+        where: eq(members.groupId, Number(req.params.groupId)),
+        sortByColumn: users.username,
+        sortDirection: 'asc',
+      },
     )
 
     if (!result?.data.length) {

@@ -9,6 +9,6 @@ export interface IMember {
   online?: boolean
 }
 
-export interface IGetRoomMembersArgs extends TPaginatedParams {
+export interface IGetRoomMembersArgs extends TPaginatedParams<string> {
   groupId: number
 }
