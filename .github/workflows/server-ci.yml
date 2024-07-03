@@ -34,6 +34,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm i --filter server
+      
+      - name: Lint
+        run: pnpm --filter server lint
 
       - name: Build
         run: pnpm --filter server build

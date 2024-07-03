@@ -11,3 +11,19 @@ export const Skeleton = ({ className }: { className?: string }) => {
     ></div>
   )
 }
+
+export const ArraySkeleton = ({
+  length = 3,
+  className,
+}: {
+  className?: string
+  length?: number
+}) => {
+  return (
+    <div className='flex flex-col gap-3'>
+      {new Array(length).fill(0).map((_, i) => (
+        <Skeleton key={i} className={className} />
+      ))}
+    </div>
+  )
+}
