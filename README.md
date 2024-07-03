@@ -12,17 +12,18 @@
 
 ## Tech Stacks
 
-- Frontend - React.js, TailwindCSS
-- Backend - Express, socket.io, MongoDB, Redis
+- Frontend - React.js, TailwindCSS, React-Query
+- Backend - Express, socket.io, PostgreSQL, Redis
 
 ## Get Started
 
 ### Run final build using docker compose
 
-- Spin up the entire stack (redis, postgres, web, server)
+- Spin up the entire stack (Redis, PostgreSQL, React.js, Node.js)
 ```bash
-pnpm docker:build
+pnpm docker:up
 ```
+> Make sure ports `6379`,`5432`,`5000` and `3000` are not occupied
 - Run migrations
 ```bash
 pnpm docker:db:migrate
@@ -33,6 +34,11 @@ pnpm docker:db:seed
 ```
 - Go to [http://localhost:3000](http://localhost:3000)
 
+- Stop docker containers
+```bash
+pnpm docker:down
+```
+
 ### Development
 
 - Spin up PostgreSQL and Redis
@@ -40,7 +46,7 @@ pnpm docker:db:seed
 docker compose up -d
 ```
 
-> Make sure the ports (mongo: 27017, redis: 6379) are open for connection
+> Make sure the ports (postgres: 5432, redis: 6379) are open for connection
 
 - Install dependencies
 ```bash
@@ -69,7 +75,7 @@ pnpm dev
 
 - Run playwright e2e tests
 ```bash
-pnpm --filter e2e test
+pnpm e2e:test
 ```
 - Run playwright e2e tests in UI mode
 ```bash
@@ -79,6 +85,7 @@ pnpm --filter e2e test:ui
 ```bash
 pnpm --filter e2e test:codegen
 ```
+
 
 ## Features Roadmap
 

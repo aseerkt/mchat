@@ -8,8 +8,8 @@ import { hash } from 'argon2'
 import 'colors'
 
 const USER_PASSWORD = 'bob@123'
+const USER_COUNT = 300
 
-const USER_COUNT = 1000
 const GROUP_COUNT_PER_USER = 5
 const MEMBER_COUNT_PER_GROUP = 35
 const MESSAGE_PER_MEMBER = 5

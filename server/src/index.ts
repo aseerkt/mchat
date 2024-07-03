@@ -25,14 +25,16 @@ import {
 
 const createApp = async () => {
   if (cluster.isPrimary && config.isProd) {
-    console.log(`Master ${process.pid} is running`)
+    console.log(`Primary ${process.pid} is running`)
 
     const numCPUs = availableParallelism()
 
     const httpServer = createServer()
 
+    // setup sticky sessions
     setupMaster(httpServer, { loadBalancingMethod: 'least-connection' })
 
+    // setup connection between the workers
     setupPrimary()
 
     httpServer.listen(config.port, () => {
@@ -40,6 +42,8 @@ const createApp = async () => {
     })
 
     for (let i = 0; i < numCPUs; i++) {
+      // Spawn a new worker process.
+      // This can only be called from the primary process.
       cluster.fork()
     }
 
@@ -71,7 +75,10 @@ const createApp = async () => {
   })
 
   if (config.isProd) {
+    // use cluster adapter
     io.adapter(createClusterAdapter())
+
+    // setup connection with primary process
     setupWorker(io)
   }
 
