@@ -20,4 +20,4 @@ router.delete('/:groupId', hasGroupPermission('owner'), deleteGroup)
 router.get('/:groupId/members', hasGroupPermission('member'), getGroupMembers)
 
 router.get('/:groupId/messages', hasGroupPermission('member'), listMessages)
-router.post('/:groupId/messages', createMessage)
+router.post('/:groupId/messages', hasGroupPermission('member'), createMessage)

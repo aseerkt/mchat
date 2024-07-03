@@ -44,7 +44,7 @@ async function seedDatabase() {
       await db.insert(users).values(userValues)
     }
 
-    const insertedUsers = await db.select().from(users)
+    const insertedUsers = await db.select({ id: users.id }).from(users)
 
     // Batch insert groups
     for (let i = 0; i < USER_COUNT * GROUP_COUNT_PER_USER; i += BATCH_SIZE) {
@@ -63,7 +63,9 @@ async function seedDatabase() {
       await db.insert(groups).values(groupValues)
     }
 
-    const insertedGroups = await db.select().from(groups)
+    const insertedGroups = await db
+      .select({ id: groups.id, ownerId: groups.ownerId })
+      .from(groups)
 
     // Batch insert members and messages
     for (let i = 0; i < insertedGroups.length; i++) {
