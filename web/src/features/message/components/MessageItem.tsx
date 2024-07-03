@@ -1,5 +1,5 @@
-import { formateChatDate } from '../../../utils/date'
-import { cn } from '../../../utils/style'
+import { formateChatDate } from '@/utils/date'
+import { cn } from '@/utils/style'
 import { IMessage } from '../message.interface'
 
 interface MessageItemProps {

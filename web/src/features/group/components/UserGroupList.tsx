@@ -1,8 +1,8 @@
+import { Skeleton } from '@/components/Skeleton'
+import { useAuthState } from '@/hooks/useAuth'
+import { useInView } from '@/hooks/useInView'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Fragment, useRef } from 'react'
-import { Skeleton } from '../../../components/Skeleton'
-import { useAuthState } from '../../../hooks/useAuth'
-import { useInView } from '../../../hooks/useInView'
 import { fetchUserGroups } from '../group.service'
 import { UserGroupItem } from './UserGroupItem'
 

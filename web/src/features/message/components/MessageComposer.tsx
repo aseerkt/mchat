@@ -1,9 +1,9 @@
+import sendSvg from '@/assets/send-svgrepo-com.svg'
+import { Button } from '@/components/Button'
+import { useAutoFocus } from '@/hooks/useAutoFocus'
+import { useToast } from '@/hooks/useToast'
+import { getSocketIO } from '@/utils/socket'
 import { useRef, useState } from 'react'
-import sendSvg from '../../../assets/send-svgrepo-com.svg'
-import { Button } from '../../../components/Button'
-import { useAutoFocus } from '../../../hooks/useAutoFocus'
-import { useToast } from '../../../hooks/useToast'
-import { getSocketIO } from '../../../utils/socket'
 
 interface MessageComposerProps {
   groupId: number

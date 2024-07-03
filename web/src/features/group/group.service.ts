@@ -2,7 +2,7 @@ import {
   IPaginatedResult,
   TPaginatedParams,
 } from '@/interfaces/common.interface'
-import { fetcher, getAuthHeaders, stringifyQueryParams } from '@/utils/api'
+import { fetcher, stringifyQueryParams } from '@/utils/api'
 import {
   ICreateGroupArgs,
   IGroup,
@@ -27,6 +27,4 @@ export const createNewGroup = async (args: ICreateGroupArgs): Promise<IGroup> =>
   })
 
 export const fetchGroup = async (groupId: number): Promise<IGroup> =>
-  fetcher(`groups/${groupId}`, {
-    headers: getAuthHeaders(),
-  })
+  fetcher(`groups/${groupId}`, {})

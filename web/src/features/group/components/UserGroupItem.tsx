@@ -1,5 +1,5 @@
+import { cn } from '@/utils/style'
 import { NavLink } from 'react-router-dom'
-import { cn } from '../../../utils/style'
 import { IGroup } from '../group.interface'
 
 interface UserGroupItemProps {

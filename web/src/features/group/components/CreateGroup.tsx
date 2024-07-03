@@ -15,6 +15,7 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
+
   const { mutate: createGroup, isPending } = useMutation({
     mutationFn: createNewGroup,
     onSuccess: result => {

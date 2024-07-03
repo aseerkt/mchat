@@ -1,10 +1,10 @@
+import { PageLoader } from '@/components/PageLoader'
+import { ChatHeader } from '@/features/chat/components'
+import { ChatUser } from '@/features/chat/components/ChatUser'
 import { CreateGroup, GroupList, JoinGroup } from '@/features/group/components'
+import { useSocketConnect } from '@/hooks/useSocketConnect'
+import { cn } from '@/utils/style'
 import { Outlet, useParams } from 'react-router-dom'
-import { PageLoader } from '../components/PageLoader'
-import { ChatHeader } from '../features/chat/components'
-import { ChatUser } from '../features/chat/components/ChatUser'
-import { useSocketConnect } from '../hooks/useSocketConnect'
-import { cn } from '../utils/style'
 
 const ChatLayout = () => {
   const { isConnected } = useSocketConnect()

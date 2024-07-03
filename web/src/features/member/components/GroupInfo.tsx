@@ -1,4 +1,4 @@
-import backArrow from '../../../assets/back-svgrepo-com.svg'
+import backArrow from '@/assets/back-svgrepo-com.svg'
 import { MemberList } from './MemberList'
 
 interface MembersListProps {

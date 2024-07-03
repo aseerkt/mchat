@@ -1,18 +1,6 @@
 import { config } from '../config'
 import { getToken } from './token'
 
-export const getAuthHeaders = () => {
-  const token = getToken()
-  return {
-    'Content-Type': 'application/json',
-    Authorization: token ? `Bearer ${token}` : '',
-  }
-}
-
-export const getUrl = (path: string) => {
-  return `${config.backendUrl}/api/${path}`
-}
-
 export const stringifyQueryParams = <
   TQueryParams extends Record<string, unknown>,
 >(
@@ -29,10 +17,12 @@ export const stringifyQueryParams = <
 }
 
 export const fetcher = async (path: string, options?: RequestInit) => {
-  const res = await fetch(getUrl(path), {
+  const token = getToken()
+  const res = await fetch(`${config.backendUrl}/api/${path}`, {
     ...options,
     headers: {
-      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : '',
       ...options?.headers,
     },
   })

@@ -1,11 +1,11 @@
+import { Button } from '@/components/Button'
+import { Dialog } from '@/components/Dialog'
+import { useDisclosure } from '@/hooks/useDisclosure'
+import { useToast } from '@/hooks/useToast'
+import { getSocketIO } from '@/utils/socket'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '../../../components/Button'
-import { Dialog } from '../../../components/Dialog'
-import { useDisclosure } from '../../../hooks/useDisclosure'
-import { useToast } from '../../../hooks/useToast'
-import { getSocketIO } from '../../../utils/socket'
 import { JoinGroupList } from './JoinGroupList'
 
 export const JoinGroup = () => {

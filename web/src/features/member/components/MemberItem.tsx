@@ -1,4 +1,4 @@
-import { cn } from '../../../utils/style'
+import { cn } from '@/utils/style'
 import { IMember } from '../member.interface'
 
 interface MemberItemProps {

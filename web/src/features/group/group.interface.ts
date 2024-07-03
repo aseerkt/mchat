@@ -1,4 +1,4 @@
-import { TPaginatedParams } from '../../interfaces/common.interface'
+import { TPaginatedParams } from '@/interfaces/common.interface'
 
 export interface IGroup {
   id: number

@@ -86,6 +86,13 @@ pnpm --filter e2e test:ui
 pnpm --filter e2e test:codegen
 ```
 
+### Unit testing
+
+- Run web unit tests
+```bash
+pnpm --filter web test
+```
+
 
 ## Features Roadmap
 
