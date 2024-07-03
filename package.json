@@ -16,7 +16,12 @@
     "e2e:test": "pnpm --filter e2e test"
   },
   "keywords": [
-    "chat", "realtime", "socket.io", "react", "node.js", "react-query"
+    "chat",
+    "realtime",
+    "socket.io",
+    "react",
+    "node.js",
+    "react-query"
   ],
   "author": "Aseer KT",
   "license": "ISC",

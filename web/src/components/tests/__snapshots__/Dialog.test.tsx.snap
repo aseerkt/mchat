@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`<Dialog /> tests > should match snapshot for isOpen false 1`] = `
+<body>
+  <div />
+</body>
+`;
+
+exports[`<Dialog /> tests > should match snapshot for isOpen false 2`] = `
+<body>
+  <div />
+  <div
+    aria-label="dialog_overlay"
+    class="fixed top-0 flex h-screen w-screen items-center justify-center bg-black bg-opacity-80"
+  >
+    <div
+      aria-modal="true"
+      class="border-3 rounded bg-white p-6 shadow-md"
+      role="dialog"
+    >
+      hello world
+    </div>
+  </div>
+</body>
+`;
+
+exports[`<Dialog /> tests > should match snapshot for isOpen true 1`] = `
+<body>
+  <div />
+  <div
+    aria-label="dialog_overlay"
+    class="fixed top-0 flex h-screen w-screen items-center justify-center bg-black bg-opacity-80"
+  >
+    <div
+      aria-modal="true"
+      class="border-3 rounded bg-white p-6 shadow-md"
+      role="dialog"
+    >
+      hello world
+    </div>
+  </div>
+</body>
+`;

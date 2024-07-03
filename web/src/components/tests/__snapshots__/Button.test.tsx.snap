@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`<Button /> tests > should match snapshot 1`] = `
+<body>
+  <div>
+    <button
+      class="rounded-lg border-2 border-black disabled:bg-gray-300 bg-black text-white h-10 px-3"
+    >
+      button
+    </button>
+  </div>
+</body>
+`;

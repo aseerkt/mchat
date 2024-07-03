@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`<Toast / > tests > should show toast only for 3 sec > toast hidden 1`] = `
+<body>
+  <div />
+  <div
+    class="fixed flex text-white justify-between gap-4 md:min-w-[250px] shadow-lg border rounded p-3 bottom-6 z-10 transition-all bg-blue-800 right-6"
+  >
+    This is a toast!
+    <button
+      aria-label="close toast"
+      class="inline-flex h-5 w-5 items-center justify-center rounded-full text-white hover:bg-gray-100"
+    >
+      x
+    </button>
+  </div>
+</body>
+`;
+
+exports[`<Toast / > tests > should show toast only for 3 sec > toast visible 1`] = `
+<body>
+  <div />
+  <div
+    class="fixed flex text-white justify-between gap-4 md:min-w-[250px] shadow-lg border rounded p-3 bottom-6 z-10 transition-all bg-blue-800 right-6"
+  >
+    This is a toast!
+    <button
+      aria-label="close toast"
+      class="inline-flex h-5 w-5 items-center justify-center rounded-full text-white hover:bg-gray-100"
+    >
+      x
+    </button>
+  </div>
+</body>
+`;
+
+exports[`<Toast / > tests > should show toast only for 3 sec 1`] = `
+<body>
+  <div />
+  <div
+    class="fixed flex text-white justify-between gap-4 md:min-w-[250px] shadow-lg border rounded p-3 bottom-6 z-10 transition-all bg-blue-800 right-6"
+  >
+    This is a toast!
+    <button
+      aria-label="close toast"
+      class="inline-flex h-5 w-5 items-center justify-center rounded-full text-white hover:bg-gray-100"
+    >
+      x
+    </button>
+  </div>
+</body>
+`;

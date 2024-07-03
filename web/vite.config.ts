@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
@@ -11,5 +12,11 @@ export default defineConfig({
   },
   resolve: {
     alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }],
+  },
+  test: {
+    globals: true,
+    include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {},
+    environment: 'jsdom',
   },
 })
