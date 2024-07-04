@@ -36,7 +36,6 @@ export const LoginForm = () => {
       }
     },
     onError(error) {
-      console.log(error.message)
       toast({ title: error.message, severity: 'error' })
     },
   })

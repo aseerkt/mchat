@@ -50,9 +50,7 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
 
     function setUserOnlineStatus(userId: number, online: boolean) {
       updateMemberData(data => {
-        if (!data) {
-          return data
-        }
+        if (!data) return
         const updatedData = produce(data, draft => {
           let member: IMember | undefined
           draft.pages.forEach(page => {
@@ -60,7 +58,6 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
               if (m.userId === userId) member = m
             })
           })
-          console.log(member)
           if (member) {
             member.online = online
           }
@@ -71,9 +68,7 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
 
     function handleNewMember(member: IMember) {
       updateMemberData(data => {
-        if (!data) {
-          return data
-        }
+        if (!data) return
         const updatedData = produce(data, draft => {
           draft.pages[0].data.unshift({ ...member, online: true })
         })
@@ -98,7 +93,7 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
       socket.off('userOffline', handleOfflineUser)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [groupId])
 
   let content
 

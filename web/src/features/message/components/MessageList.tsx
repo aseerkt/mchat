@@ -43,12 +43,10 @@ export const MessageList = ({ groupId }: MessageListProps) => {
       queryClient.setQueriesData<TMessageInfiniteData>(
         { queryKey: ['messages', groupId] },
         data => {
-          if (!data) {
-            return data
-          }
+          if (!data) return
 
           const updatedData = produce(data, draft => {
-            draft?.pages[0].data.unshift(message)
+            draft.pages[0].data.unshift(message)
           })
           return updatedData
         },
