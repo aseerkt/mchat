@@ -3,7 +3,7 @@ import {
   IMessage,
   TMessageInfiniteData,
 } from '@/features/message/message.interface'
-import { useAuthState } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
 import { getSocketIO } from '@/utils/socket'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
@@ -17,7 +17,7 @@ interface MessageListProps {
 }
 
 export const MessageList = ({ groupId }: MessageListProps) => {
-  const auth = useAuthState()
+  const { auth } = useAuth()
 
   const queryClient = useQueryClient()
 

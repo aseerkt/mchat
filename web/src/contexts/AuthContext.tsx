@@ -1,13 +1,13 @@
 import { createContext } from 'react'
 
-export type Auth =
-  | {
-      id: number
-      username: string
-    }
-  | undefined
+export type AuthPayload = {
+  id: number
+  username: string
+}
 
-type AuthDispatch = (auth?: Auth) => void
+export type TAuth = {
+  auth?: AuthPayload
+  setAuth: (auth?: AuthPayload) => void
+}
 
-export const AuthContext = createContext<Auth>(undefined)
-export const AuthDispatchContext = createContext<AuthDispatch>(() => {})
+export const AuthContext = createContext<TAuth>({ setAuth() {} })

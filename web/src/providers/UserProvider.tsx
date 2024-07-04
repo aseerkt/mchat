@@ -1,19 +1,15 @@
 import { useState } from 'react'
-import {
-  AuthContext,
-  AuthDispatchContext,
-  type Auth,
-} from '../contexts/AuthContext'
+import { AuthContext, AuthPayload } from '../contexts/AuthContext'
 import { decodeToken } from '../utils/token'
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [auth, setAuth] = useState<Auth>(decodeToken())
+  const [auth, setAuth] = useState<AuthPayload | undefined>(decodeToken())
 
   return (
-    <AuthDispatchContext.Provider value={setAuth}>
-      <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>
-    </AuthDispatchContext.Provider>
+    <AuthContext.Provider value={{ auth, setAuth }}>
+      {children}
+    </AuthContext.Provider>
   )
 }

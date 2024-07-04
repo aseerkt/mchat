@@ -1,8 +1,8 @@
-import { useAuthState } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/style'
 
 export const ChatUser = ({ isConnected }: { isConnected: boolean }) => {
-  const auth = useAuthState()
+  const { auth } = useAuth()
   return (
     <header className='flex h-14 shrink-0 items-center gap-4 rounded border-b bg-cyan-200 p-2 px-6'>
       <span

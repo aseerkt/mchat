@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Mock } from 'vitest'
-import { useAuthState } from '../useAuth'
+import { useAuth } from '../useAuth'
 import { useAuthRedirect } from '../useAuthRedirect'
 
 vi.mock('react-router-dom', () => ({
@@ -18,7 +18,7 @@ describe('useAuthRedirect', () => {
     const mockNavigate = vi.fn()
     ;(useLocation as Mock).mockReturnValue({ pathname: '/' })
     ;(useNavigate as Mock).mockReturnValue(mockNavigate)
-    ;(useAuthState as Mock).mockReturnValue(true)
+    ;(useAuth as Mock).mockReturnValue(true)
 
     renderHook(() => useAuthRedirect())
 
@@ -29,7 +29,7 @@ describe('useAuthRedirect', () => {
     const mockNavigate = vi.fn()
     ;(useLocation as Mock).mockReturnValue({ pathname: '/' })
     ;(useNavigate as Mock).mockReturnValue(mockNavigate)
-    ;(useAuthState as Mock).mockReturnValue(false)
+    ;(useAuth as Mock).mockReturnValue(false)
 
     renderHook(() => useAuthRedirect())
 
@@ -40,7 +40,7 @@ describe('useAuthRedirect', () => {
     const mockNavigate = vi.fn()
     ;(useLocation as Mock).mockReturnValue({ pathname: '/login' })
     ;(useNavigate as Mock).mockReturnValue(mockNavigate)
-    ;(useAuthState as Mock).mockReturnValue(true)
+    ;(useAuth as Mock).mockReturnValue(true)
 
     renderHook(() => useAuthRedirect())
 
@@ -51,7 +51,7 @@ describe('useAuthRedirect', () => {
     const mockNavigate = vi.fn()
     ;(useLocation as Mock).mockReturnValue({ pathname: '/chat' })
     ;(useNavigate as Mock).mockReturnValue(mockNavigate)
-    ;(useAuthState as Mock).mockReturnValue(false)
+    ;(useAuth as Mock).mockReturnValue(false)
 
     renderHook(() => useAuthRedirect())
 
@@ -62,7 +62,7 @@ describe('useAuthRedirect', () => {
     const mockNavigate = vi.fn()
     ;(useLocation as Mock).mockReturnValue({ pathname: '/chat' })
     ;(useNavigate as Mock).mockReturnValue(mockNavigate)
-    ;(useAuthState as Mock).mockReturnValue(true)
+    ;(useAuth as Mock).mockReturnValue(true)
 
     renderHook(() => useAuthRedirect())
 

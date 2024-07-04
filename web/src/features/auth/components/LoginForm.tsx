@@ -1,6 +1,6 @@
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
-import { useAuthSetter } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import useForm from '@/hooks/useForm'
 import { useToast } from '@/hooks/useToast'
 import { setToken } from '@/utils/token'
@@ -17,7 +17,7 @@ const validators = {
 
 export const LoginForm = () => {
   const { toast } = useToast()
-  const setAuth = useAuthSetter()
+  const { setAuth } = useAuth()
   const { register, handleSubmit, errors } = useForm({
     initialValues: { username: '', password: '' },
   })

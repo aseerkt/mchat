@@ -1,11 +1,11 @@
 import logoutSvg from '@/assets/logout-2-svgrepo-com.svg'
 import { Logo } from '@/components/Logo'
-import { useAuthSetter } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { getSocketIO } from '@/utils/socket'
 import { removeToken } from '@/utils/token'
 
 export const ChatHeader = () => {
-  const setAuth = useAuthSetter()
+  const { setAuth } = useAuth()
 
   const logout = () => {
     const socket = getSocketIO()

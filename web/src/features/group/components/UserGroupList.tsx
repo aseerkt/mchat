@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/Skeleton'
-import { useAuthState } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Fragment, useRef } from 'react'
@@ -7,7 +7,7 @@ import { fetchUserGroups } from '../group.service'
 import { UserGroupItem } from './UserGroupItem'
 
 export const GroupList = () => {
-  const auth = useAuthState()
+  const { auth } = useAuth()
   const { data, isLoading, isSuccess, hasNextPage, fetchNextPage, error } =
     useInfiniteQuery({
       queryKey: ['userGroups', auth],

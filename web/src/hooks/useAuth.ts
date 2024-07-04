@@ -1,5 +1,12 @@
 import { useContext } from 'react'
-import { AuthContext, AuthDispatchContext } from '../contexts/AuthContext'
+import { AuthContext } from '../contexts/AuthContext'
 
-export const useAuthState = () => useContext(AuthContext)
-export const useAuthSetter = () => useContext(AuthDispatchContext)
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+
+  if (!context) {
+    throw new Error('useAuthState should be used inside UserProvider')
+  }
+
+  return context
+}

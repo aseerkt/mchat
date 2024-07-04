@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useAuthState } from './useAuth'
+import { useAuth } from './useAuth'
 
 const GUEST_ROUTES = ['/login', '/signup']
 
 export const useAuthRedirect = () => {
-  const auth = useAuthState()
+  const { auth } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
