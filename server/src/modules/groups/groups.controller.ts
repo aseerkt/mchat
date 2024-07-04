@@ -1,10 +1,15 @@
 import { db } from '@/database'
 import { withPagination } from '@/database/helpers'
+import {
+  deleteGroupMembersRoles,
+  getUserSockets,
+  setMemberRolesForAGroup,
+} from '@/redis/handlers'
+import { TypedIOServer } from '@/socket/socket.inteface'
 import { notFound } from '@/utils/api'
-import { deleteGroupMembersRoles, setMemberRole } from '@/utils/redis'
 import { eq, getTableColumns, notInArray } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { NewMember, members } from '../members/members.schema'
+import { MemberRole, NewMember, members } from '../members/members.schema'
 import { messages } from '../messages/messages.schema'
 import { groups } from './groups.schema'
 
@@ -34,11 +39,26 @@ export const createGroup: RequestHandler = async (req, res, next) => {
       const newMembers = await tx
         .insert(members)
         .values(memberValues)
-        .returning()
+        .returning({ userId: members.userId, role: members.role })
+
+      const userIds: number[] = []
+      const memberRoles: Record<string, MemberRole> = {}
 
       newMembers.forEach(member => {
-        setMemberRole(group.id, member.userId, member.role)
+        if (member.userId !== req.user?.id) {
+          userIds.push(member.userId)
+        }
+        memberRoles[member.userId] = member.role
       })
+
+      setMemberRolesForAGroup(group.id, memberRoles)
+
+      const userSockets = await getUserSockets(userIds)
+
+      const io = req.app.get('io') as TypedIOServer
+
+      io.to(userSockets).emit('newGroup', group)
+
       return group
     })
     res.status(201).json(group)

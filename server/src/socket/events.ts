@@ -1,14 +1,16 @@
 import { db } from '@/database'
 import { checkPermission } from '@/modules/members/members.service'
 import { messages } from '@/modules/messages/messages.schema'
-import { config } from '../config'
 import {
-  addOnlineUser,
+  addUserSocket,
   getTypingUsers,
-  removeOnlineUser,
+  markUserOffline,
+  markUserOnline,
   removeTypingUser,
+  removeUserSocket,
   setTypingUser,
-} from '../utils/redis'
+} from '@/redis/handlers'
+import { config } from '../config'
 import { TypedIOServer, TypedSocket } from './socket.inteface'
 
 async function emitTypingUsers(socket: TypedSocket, groupId: number) {
@@ -28,7 +30,8 @@ function leaveAllRoom(socket: TypedSocket) {
 
 export const registerSocketEvents = (io: TypedIOServer) => {
   io.on('connection', async socket => {
-    await addOnlineUser(socket.data.user.id)
+    await markUserOnline(socket.data.user.id)
+    await addUserSocket(socket.data.user.id, socket.id)
     socket.broadcast.emit('userOnline', socket.data.user.id)
 
     socket.on('joinGroup', groupId => {
@@ -85,7 +88,9 @@ export const registerSocketEvents = (io: TypedIOServer) => {
     })
 
     socket.on('disconnect', async () => {
-      await removeOnlineUser(socket.data.user.id)
+      await markUserOffline(socket.data.user.id)
+      await removeUserSocket(socket.data.user.id, socket.id)
+
       socket.broadcast.emit('userOffline', socket.data.user.id)
     })
 

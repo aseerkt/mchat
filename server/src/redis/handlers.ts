@@ -1,47 +1,39 @@
 import { MemberRole } from '@/modules/members/members.schema'
-import { Redis } from 'ioredis'
-import { config } from '../config'
+import { getRedisClient } from '.'
 
-let redisClient: Redis
-
-export function getRedisClient() {
-  if (!redisClient) {
-    redisClient = new Redis({
-      host: config.redisHost,
-      port: Number(config.redisPort),
-    })
-
-    redisClient.on('connect', () => {
-      console.log('Redis connected'.yellow.bold)
-    })
-
-    redisClient.on('error', (...args) => {
-      console.log('Redis error: '.red.bold, ...args)
-    })
-  }
-
-  return redisClient
-}
-
-getRedisClient()
+const redisClient = getRedisClient()
 
 // REDIS KEYS
 
 export const redisKeys = {
   ONLINE_USERS: 'online_users',
+  SOCKET_MAP: (userId: number) => `user:${userId}:sockets`,
   TYPING_USERS: (groupId: number) => `group:${groupId}:typing_users`,
   MEMBER_ROLES: (groupId: number) => `group:${groupId}:member_roles`,
 }
 
-// MEMBER
+// MEMBER ROLES
 
-export const setMemberRole = async (
+export const setGroupMemberRoleTxn = (
+  groupMemberRoles: Record<string, [number, MemberRole]>,
+) => {
+  const pipe = redisClient.pipeline()
+
+  for (const [groupId, roles] of Object.entries(groupMemberRoles)) {
+    const cacheKey = redisKeys.MEMBER_ROLES(Number(groupId))
+    pipe.hset(cacheKey, roles[0], roles[1])
+    pipe.expire(cacheKey, 3600)
+  }
+
+  return pipe.exec()
+}
+
+export const setMemberRolesForAGroup = async (
   groupId: number,
-  userId: number,
-  role: MemberRole,
+  roles: Record<string, MemberRole>,
 ) => {
   const cacheKey = redisKeys.MEMBER_ROLES(groupId)
-  await redisClient.hset(cacheKey, userId, role)
+  await redisClient.hset(cacheKey, roles)
   await redisClient.expire(cacheKey, 3600)
 }
 export const getMemberRole = (groupId: number, userId: number) => {
@@ -60,11 +52,15 @@ export const getOnlineUsers = async () => {
   const onlineUsers = await redisClient.smembers(redisKeys.ONLINE_USERS)
   return new Set(onlineUsers)
 }
-export const addOnlineUser = (userId: number) => {
+export const markUserOnline = (userId: number) => {
   return redisClient.sadd(redisKeys.ONLINE_USERS, userId)
 }
-export const removeOnlineUser = (userId: number) => {
+export const markUserOffline = (userId: number) => {
   return redisClient.srem(redisKeys.ONLINE_USERS, userId)
+}
+
+export const checkOnlineUsers = async (userIds: number[]) => {
+  return redisClient.smismember(redisKeys.ONLINE_USERS, userIds)
 }
 
 // TYPING USERS
@@ -86,4 +82,18 @@ export const setTypingUser = async (
 }
 export const removeTypingUser = async (groupId: number, userId: number) => {
   await redisClient.hdel(redisKeys.TYPING_USERS(groupId), userId.toString())
+}
+
+// USER SOCKETS
+
+export const addUserSocket = async (userId: number, socketId: string) => {
+  return redisClient.sadd(redisKeys.SOCKET_MAP(userId), socketId)
+}
+
+export const removeUserSocket = async (userId: number, socketId: string) => {
+  return redisClient.srem(redisKeys.SOCKET_MAP(userId), socketId)
+}
+
+export const getUserSockets = async (userIds: number[]) => {
+  return redisClient.sunion(userIds.map(uid => redisKeys.SOCKET_MAP(uid)))
 }

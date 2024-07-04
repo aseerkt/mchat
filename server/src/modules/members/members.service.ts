@@ -1,5 +1,5 @@
 import { db } from '@/database'
-import { getMemberRole, setMemberRole } from '@/utils/redis'
+import { getMemberRole, setMemberRolesForAGroup } from '@/redis/handlers'
 import { and, eq } from 'drizzle-orm'
 import { MemberRole, memberRoles, members } from './members.schema'
 
@@ -21,7 +21,7 @@ export const checkPermission = async (
       return false
     }
 
-    await setMemberRole(groupId, userId, member.role)
+    await setMemberRolesForAGroup(groupId, { [userId]: member.role })
     memberRole = member.role
   }
 

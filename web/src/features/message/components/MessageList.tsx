@@ -40,8 +40,8 @@ export const MessageList = ({ groupId }: MessageListProps) => {
       function scrollToBottom() {
         listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
       }
-      queryClient.setQueriesData<TMessageInfiniteData>(
-        { queryKey: ['messages', groupId] },
+      queryClient.setQueryData<TMessageInfiniteData>(
+        ['messages', groupId],
         data => {
           if (!data) return
 

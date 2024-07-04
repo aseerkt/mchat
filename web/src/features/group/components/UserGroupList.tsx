@@ -1,13 +1,22 @@
 import { Skeleton } from '@/components/Skeleton'
 import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
-import { useInfiniteQuery } from '@tanstack/react-query'
-import { Fragment, useRef } from 'react'
+import { IPaginatedResult } from '@/interfaces/common.interface'
+import { getSocketIO } from '@/utils/socket'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import { produce } from 'immer'
+import { Fragment, useEffect, useRef } from 'react'
+import { IGroup } from '../group.interface'
 import { fetchUserGroups } from '../group.service'
 import { UserGroupItem } from './UserGroupItem'
 
 export const GroupList = () => {
   const { auth } = useAuth()
+  const queryClient = useQueryClient()
   const { data, isLoading, isSuccess, hasNextPage, fetchNextPage, error } =
     useInfiniteQuery({
       queryKey: ['userGroups', auth],
@@ -28,6 +37,32 @@ export const GroupList = () => {
   const listRef = useRef<HTMLUListElement>(null)
 
   const watchElement = useInView(listRef, fetchNextPage, hasNextPage)
+
+  useEffect(() => {
+    if (!auth) return
+
+    const socket = getSocketIO()
+
+    function unshiftGroup(group: IGroup) {
+      queryClient.setQueryData<InfiniteData<IPaginatedResult<IGroup>>>(
+        ['userGroups', auth],
+        data => {
+          if (!data) return
+          const updatedData = produce(data, draft => {
+            draft.pages[0].data.unshift(group)
+          })
+          return updatedData
+        },
+      )
+    }
+
+    socket.on('newGroup', unshiftGroup)
+
+    return () => {
+      socket.off('newGroup', unshiftGroup)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth])
 
   let content
 

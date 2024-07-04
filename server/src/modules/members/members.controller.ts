@@ -1,12 +1,12 @@
 import { db } from '@/database'
 import { withPagination } from '@/database/helpers'
+import { checkOnlineUsers, setGroupMemberRoleTxn } from '@/redis/handlers'
 import { TypedIOServer } from '@/socket/socket.inteface'
 import { badRequest } from '@/utils/api'
-import { getOnlineUsers, setMemberRole } from '@/utils/redis'
 import { eq, getTableColumns } from 'drizzle-orm'
 import { RequestHandler } from 'express'
 import { users } from '../users/users.schema'
-import { members } from './members.schema'
+import { MemberRole, members } from './members.schema'
 
 export const createMembers: RequestHandler = async (req, res, next) => {
   try {
@@ -27,14 +27,17 @@ export const createMembers: RequestHandler = async (req, res, next) => {
 
     const io: TypedIOServer = req.app.get('io')
 
+    const groupMemberRoles: Record<string, [number, MemberRole]> = {}
+
     rows.forEach(member => {
-      setMemberRole(member.groupId, req.user!.id, 'member')
-      // TODO: do not emit events to current socket
+      groupMemberRoles[member.groupId] = [member.userId, 'member']
       io.to(member.groupId.toString()).emit('newMember', {
         ...member,
         username: req.user!.username,
       })
     })
+
+    setGroupMemberRoleTxn(groupMemberRoles)
 
     res.status(201).json(rows)
   } catch (error) {
@@ -62,12 +65,13 @@ export const getGroupMembers: RequestHandler = async (req, res, next) => {
       return res.json({ data: [] })
     }
 
-    // TODO: avoid fetching all online users
-    const onlineMembers = await getOnlineUsers()
+    const userIds = result.data.map(member => member.userId)
 
-    const membersWithOnlineStatus = result.data.map(member => ({
+    const onlineMembers = await checkOnlineUsers(userIds)
+
+    const membersWithOnlineStatus = result.data.map((member, index) => ({
       ...member,
-      online: onlineMembers.has(String(member.userId)),
+      online: onlineMembers[index] === 1,
     }))
 
     res.json({ data: membersWithOnlineStatus, cursor: result.cursor })

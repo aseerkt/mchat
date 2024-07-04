@@ -1,3 +1,4 @@
+import { IGroup } from '@/features/group/group.interface'
 import { Socket } from 'socket.io-client'
 import { IMember } from '../features/member/member.interface'
 import { IMessage } from '../features/message/message.interface'
@@ -7,6 +8,7 @@ export interface ServerToClientEvents {
   userOffline: (userId: number) => void
   newMessage: (message: IMessage) => void
   newMember: (member: IMember) => void
+  newGroup: (group: IGroup) => void
   typingUsers: (users: { id: number; username: string }[]) => void
 }
 

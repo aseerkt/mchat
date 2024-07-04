@@ -1,3 +1,4 @@
+import { Group } from '@/modules/groups/groups.schema'
 import { Member } from '@/modules/members/members.schema'
 import { Message } from '@/modules/messages/messages.schema'
 import { Server, Socket } from 'socket.io'
@@ -7,6 +8,7 @@ export interface ServerToClientEvents {
   userOffline: (userId: number) => void
   newMessage: (message: Message & { username: string }) => void
   newMember: (member: Member & { username: string }) => void
+  newGroup: (group: Group) => void
   typingUsers: (users: { id: number; username: string }[]) => void
 }
 

@@ -42,7 +42,7 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
   const watchElement = useInView(listRef, fetchNextPage, hasNextPage)
 
   const updateMemberData = (updater: MemberUpdater) => {
-    queryClient.setQueriesData({ queryKey: ['members', groupId] }, updater)
+    queryClient.setQueryData(['members', groupId], updater)
   }
 
   useEffect(() => {
