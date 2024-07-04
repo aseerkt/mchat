@@ -1,14 +1,12 @@
 import { db } from '@/database'
-import { members } from '@/modules/members/members.schema'
+import { checkPermission } from '@/modules/members/members.service'
 import { messages } from '@/modules/messages/messages.schema'
-import { and, count, eq } from 'drizzle-orm'
 import { config } from '../config'
 import {
   addOnlineUser,
   getTypingUsers,
   removeOnlineUser,
   removeTypingUser,
-  setMemberRole,
   setTypingUser,
 } from '../utils/redis'
 import { TypedIOServer, TypedSocket } from './socket.inteface'
@@ -38,30 +36,6 @@ export const registerSocketEvents = (io: TypedIOServer) => {
       socket.join(String(groupId))
     })
 
-    socket.on('memberJoin', async (groupIds, cb) => {
-      try {
-        const rows = await db
-          .insert(members)
-          .values(
-            groupIds.map(groupId => ({
-              groupId: groupId,
-              userId: socket.data.user.id,
-            })),
-          )
-          .returning()
-        rows.forEach(member => {
-          setMemberRole(member.groupId, socket.data.user.id, 'member')
-          socket.broadcast.to(member.groupId.toString()).emit('newMember', {
-            ...member,
-            username: socket.data.user.username,
-          })
-        })
-        cb({ success: true })
-      } catch (error) {
-        cb({ success: false, error })
-      }
-    })
-
     socket.on('userStartedTyping', async groupId => {
       await setTypingUser(
         groupId,
@@ -78,16 +52,12 @@ export const registerSocketEvents = (io: TypedIOServer) => {
 
     socket.on('createMessage', async ({ groupId, text }, cb) => {
       try {
-        const [{ memberCount }] = await db
-          .select({ memberCount: count(members.userId) })
-          .from(members)
-          .where(
-            and(
-              eq(members.groupId, groupId),
-              eq(members.userId, socket.data.user.id),
-            ),
-          )
-        if (!memberCount) {
+        const hasPermission = await checkPermission(
+          groupId,
+          socket.data.user!.id,
+          'member',
+        )
+        if (!hasPermission) {
           throw new Error('createMessage: Not authorized')
         }
 

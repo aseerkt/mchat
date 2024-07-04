@@ -1,10 +1,17 @@
-import { and, eq } from 'drizzle-orm'
-import { RequestHandler } from 'express'
-import { db } from './database'
-import { MemberRole, members } from './modules/members/members.schema'
+import { ErrorRequestHandler, RequestHandler } from 'express'
+import { config } from './config'
+import { MemberRole } from './modules/members/members.schema'
+import { checkPermission } from './modules/members/members.service'
 import { notAuthenticated, notAuthorized } from './utils/api'
 import { verifyToken } from './utils/jwt'
-import { getMemberRole, setMemberRole } from './utils/redis'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  res.status(500).json({
+    message: 'Something went wrong',
+    error: config.isProd ? undefined : err,
+  })
+}
 
 export const auth: RequestHandler = (req, res, next) => {
   try {
@@ -24,8 +31,6 @@ export const auth: RequestHandler = (req, res, next) => {
   }
 }
 
-const memberRoles: MemberRole[] = ['member', 'admin', 'owner']
-
 export const hasGroupPermission =
   (role: MemberRole): RequestHandler =>
   async (req, res, next) => {
@@ -38,29 +43,9 @@ export const hasGroupPermission =
         return notAuthorized(res)
       }
 
-      let memberRole = (await getMemberRole(
-        groupId,
-        req.user!.id,
-      )) as MemberRole | null
+      const isAllowed = await checkPermission(groupId, req.user!.id, role)
 
-      if (!memberRole) {
-        const [member] = await db
-          .select()
-          .from(members)
-          .where(
-            and(eq(members.groupId, groupId), eq(members.userId, req.user!.id)),
-          )
-          .limit(1)
-
-        if (!member) {
-          return notAuthorized(res)
-        }
-
-        await setMemberRole(groupId, req.user!.id, member.role)
-        memberRole = member.role
-      }
-
-      if (memberRoles.indexOf(memberRole!) < memberRoles.indexOf(role)) {
+      if (!isAllowed) {
         return notAuthorized(res)
       }
 

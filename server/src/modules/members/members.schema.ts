@@ -1,10 +1,11 @@
 import { commonSchemaFields } from '@/database/helpers'
 import { bigint, index, pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
 
+// order of roles shows auth precedence
 export const memberRoleEnum = pgEnum('member_role', [
-  'owner',
-  'admin',
   'member',
+  'admin',
+  'owner',
 ])
 
 export const members = pgTable(
@@ -21,6 +22,8 @@ export const members = pgTable(
     memberGroupIndex: index().on(table.groupId),
   }),
 )
+
+export const memberRoles = memberRoleEnum.enumValues
 
 export type Member = typeof members.$inferSelect
 export type NewMember = typeof members.$inferInsert

@@ -2,10 +2,10 @@ import { Button } from '@/components/Button'
 import { Dialog } from '@/components/Dialog'
 import { useDisclosure } from '@/hooks/useDisclosure'
 import { useToast } from '@/hooks/useToast'
-import { getSocketIO } from '@/utils/socket'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { joinGroups } from '../group.service'
 import { JoinGroupList } from './JoinGroupList'
 
 export const JoinGroup = () => {
@@ -28,6 +28,22 @@ const JoinGroupsForm = ({ onClose }: { onClose: () => void }) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
+  const { mutate: joinMultipleGroups } = useMutation({
+    mutationFn: joinGroups,
+    onSuccess: data => {
+      if (data.length) {
+        navigate(`/chat`)
+        toast({ title: 'Joined groups successfully', severity: 'success' })
+        queryClient.invalidateQueries({ queryKey: ['userGroups'] })
+        queryClient.invalidateQueries({ queryKey: ['groupsToJoin'] })
+        onClose()
+      }
+    },
+    onError: error => {
+      toast({ title: (error as Error).message, severity: 'error' })
+    },
+  })
+
   const [selectedGroups, setSelectedGroups] = useState<Record<number, boolean>>(
     {},
   )
@@ -39,21 +55,7 @@ const JoinGroupsForm = ({ onClose }: { onClose: () => void }) => {
       toast({ title: "You haven't selected any groups", severity: 'error' })
       return
     }
-    try {
-      const socket = getSocketIO()
-      const res = await socket.emitWithAck('memberJoin', groupIds)
-      if (res?.success) {
-        toast({ title: 'Joined groups successfully', severity: 'success' })
-        navigate(`/chat/${groupIds[0]}`)
-        queryClient.invalidateQueries({ queryKey: ['userGroups'] })
-        queryClient.invalidateQueries({ queryKey: ['groupsToJoin'] })
-        onClose()
-      } else if (res.error) {
-        throw res.error
-      }
-    } catch (error) {
-      toast({ title: (error as Error).message, severity: 'error' })
-    }
+    joinMultipleGroups({ groupIds })
   }
 
   return (

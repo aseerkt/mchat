@@ -2,11 +2,13 @@ import { db } from '@/database'
 import { withPagination } from '@/database/helpers'
 import { notFound } from '@/utils/api'
 import { deleteGroupMembersRoles, setMemberRole } from '@/utils/redis'
-import { eq, getTableColumns, ne } from 'drizzle-orm'
+import { eq, getTableColumns, notInArray } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { members } from '../members/members.schema'
+import { NewMember, members } from '../members/members.schema'
 import { messages } from '../messages/messages.schema'
 import { groups } from './groups.schema'
+
+// CREATE
 
 export const createGroup: RequestHandler = async (req, res, next) => {
   try {
@@ -15,10 +17,28 @@ export const createGroup: RequestHandler = async (req, res, next) => {
         .insert(groups)
         .values({ name: req.body.name, ownerId: req.user!.id })
         .returning()
-      await tx
+
+      const { memberIds = [] } = req.body
+
+      const memberValues: NewMember[] = (memberIds as number[]).map(mid => ({
+        groupId: group.id,
+        userId: mid,
+      }))
+
+      memberValues.push({
+        groupId: group.id,
+        userId: req.user!.id,
+        role: 'owner',
+      })
+
+      const newMembers = await tx
         .insert(members)
-        .values({ groupId: group.id, userId: req.user!.id, role: 'owner' })
-      await setMemberRole(group.id, req.user!.id, 'owner')
+        .values(memberValues)
+        .returning()
+
+      newMembers.forEach(member => {
+        setMemberRole(group.id, member.userId, member.role)
+      })
       return group
     })
     res.status(201).json(group)
@@ -26,6 +46,8 @@ export const createGroup: RequestHandler = async (req, res, next) => {
     next(error)
   }
 }
+
+// READ
 
 export const getGroup: RequestHandler = async (req, res, next) => {
   try {
@@ -45,15 +67,21 @@ export const getGroup: RequestHandler = async (req, res, next) => {
 
 export const listGroups: RequestHandler = async (req, res, next) => {
   try {
+    const userGroupIds = await db
+      .select({ groupId: members.groupId })
+      .from(members)
+      .where(eq(members.userId, req.user!.id))
+
     const result = await withPagination(
-      db
-        .selectDistinct(getTableColumns(groups))
-        .from(groups)
-        .innerJoin(members, eq(members.groupId, groups.id))
-        .$dynamic(),
+      db.select(getTableColumns(groups)).from(groups).$dynamic(),
       {
         query: req.query,
-        where: ne(members.userId, req.user!.id),
+        where: userGroupIds.length
+          ? notInArray(
+              groups.id,
+              userGroupIds.map(m => m.groupId),
+            )
+          : undefined,
         sortByColumn: groups.id,
       },
     )
@@ -63,6 +91,29 @@ export const listGroups: RequestHandler = async (req, res, next) => {
     next(error)
   }
 }
+
+export const listUserGroups: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await withPagination(
+      db
+        .select(getTableColumns(groups))
+        .from(groups)
+        .innerJoin(members, eq(members.groupId, groups.id))
+        .$dynamic(),
+      {
+        query: req.query,
+        where: eq(members.userId, req.user!.id),
+        sortByColumn: groups.id,
+      },
+    )
+
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+// DELETE
 
 export const deleteGroup: RequestHandler = async (req, res, next) => {
   try {
@@ -79,27 +130,6 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
     await db.delete(members).where(eq(members.groupId, groupId))
 
     res.json({ message: 'Group deleted' })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const listUserGroups: RequestHandler = async (req, res, next) => {
-  try {
-    const result = await withPagination(
-      db
-        .selectDistinct(getTableColumns(groups))
-        .from(groups)
-        .innerJoin(members, eq(members.groupId, groups.id))
-        .$dynamic(),
-      {
-        query: req.query,
-        where: eq(members.userId, req.user!.id),
-        sortByColumn: groups.id,
-      },
-    )
-
-    res.json(result)
   } catch (error) {
     next(error)
   }

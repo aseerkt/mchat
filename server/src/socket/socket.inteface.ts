@@ -12,10 +12,6 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   joinGroup: (groupId: number) => void
-  memberJoin: (
-    groupIds: number[],
-    cb: (res: { success: boolean; error?: unknown }) => void,
-  ) => void
   createMessage: (
     args: { groupId: number; text: string },
     callback: (response: { message?: Message; error?: unknown }) => void,

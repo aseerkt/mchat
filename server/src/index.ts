@@ -12,7 +12,7 @@ import { availableParallelism } from 'node:os'
 import { Server } from 'socket.io'
 import { config } from './config'
 import { connectDB } from './database'
-import { auth } from './middlewares'
+import { auth, errorHandler } from './middlewares'
 import * as routes from './routes'
 import { registerSocketEvents } from './socket/events'
 import { socketAuthMiddleware } from './socket/middlewares'
@@ -86,6 +86,8 @@ const createApp = async () => {
 
   registerSocketEvents(io)
 
+  app.set('io', io)
+
   app.get('/', (_, res) => {
     res.send('<h1>Welcome to mChat</h1>')
   })
@@ -93,6 +95,8 @@ const createApp = async () => {
   app.use('/api/users', routes.userRoutes)
   app.use('/api/groups', auth, routes.groupRoutes)
   app.use('/api/members', auth, routes.memberRoutes)
+
+  app.use(errorHandler)
 
   if (!config.isProd) {
     server.listen(config.port, () => {

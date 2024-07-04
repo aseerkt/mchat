@@ -1,5 +1,6 @@
 import { db } from '@/database'
 import { withPagination } from '@/database/helpers'
+import { TypedIOServer } from '@/socket/socket.inteface'
 import { badRequest } from '@/utils/api'
 import { getOnlineUsers, setMemberRole } from '@/utils/redis'
 import { eq, getTableColumns } from 'drizzle-orm'
@@ -9,26 +10,33 @@ import { members } from './members.schema'
 
 export const createMembers: RequestHandler = async (req, res, next) => {
   try {
-    const { groupIds: groupIds } = req.body
+    const { groupIds } = req.body
     if (!groupIds?.length) {
-      return badRequest(res, 'No group id provided')
+      return badRequest(res, 'No group ids provided')
     }
 
     const rows = await db
       .insert(members)
       .values(
-        (groupIds as string[]).map(groupId => ({
+        (groupIds as number[]).map(groupId => ({
           groupId: Number(groupId),
           userId: req.user!.id,
         })),
       )
       .returning()
 
-    rows.forEach(({ groupId }) => {
-      setMemberRole(groupId, req.user!.id, 'member')
+    const io: TypedIOServer = req.app.get('io')
+
+    rows.forEach(member => {
+      setMemberRole(member.groupId, req.user!.id, 'member')
+      // TODO: do not emit events to current socket
+      io.to(member.groupId.toString()).emit('newMember', {
+        ...member,
+        username: req.user!.username,
+      })
     })
 
-    res.status(201).json(members)
+    res.status(201).json(rows)
   } catch (error) {
     next(error)
   }
