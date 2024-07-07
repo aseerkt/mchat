@@ -2,7 +2,7 @@ import { db } from '@/database'
 import { signToken } from '@/utils/jwt'
 import { removeAttrFromObject } from '@/utils/object'
 import { hash, verify } from 'argon2'
-import { eq } from 'drizzle-orm'
+import { and, eq, getTableColumns, like, ne } from 'drizzle-orm'
 import { RequestHandler } from 'express'
 import { users } from './users.schema'
 
@@ -69,6 +69,28 @@ export const loginUser: RequestHandler = async (req, res, next) => {
     })
 
     res.json({ user: removeAttrFromObject(user, 'password'), token })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getUsers: RequestHandler = async (req, res, next) => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...columns } = getTableColumns(users)
+    const rows = await db
+      .select(columns)
+      .from(users)
+      .where(
+        and(
+          like(users.username, `%${req.query.query}%`),
+          ne(users.id, req.user!.id),
+        ),
+      )
+      .limit(Number(req.query.limit) || 5)
+      .orderBy(users.username)
+
+    res.json(rows)
   } catch (error) {
     next(error)
   }

@@ -95,5 +95,6 @@ export const removeUserSocket = async (userId: number, socketId: string) => {
 }
 
 export const getUserSockets = async (userIds: number[]) => {
+  if (!userIds.length) return []
   return redisClient.sunion(userIds.map(uid => redisKeys.SOCKET_MAP(uid)))
 }

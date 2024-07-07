@@ -1,4 +1,5 @@
 import backArrow from '@/assets/back-svgrepo-com.svg'
+import { AddMembers } from './AddMembers'
 import { MemberList } from './MemberList'
 
 interface MembersListProps {
@@ -30,6 +31,9 @@ export const GroupInfo = (props: MembersListProps) => {
         key={props.isOpen ? 'true' : 'false'}
         groupId={props.groupId}
       />
+      <div className='w-full p-3'>
+        <AddMembers />
+      </div>
     </div>
   ) : null
 }

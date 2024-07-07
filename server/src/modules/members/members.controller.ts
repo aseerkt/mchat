@@ -8,7 +8,7 @@ import { RequestHandler } from 'express'
 import { users } from '../users/users.schema'
 import { MemberRole, members } from './members.schema'
 
-export const createMembers: RequestHandler = async (req, res, next) => {
+export const joinRooms: RequestHandler = async (req, res, next) => {
   try {
     const { groupIds } = req.body
     if (!groupIds?.length) {

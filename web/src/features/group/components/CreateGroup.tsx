@@ -1,6 +1,8 @@
 import { Button } from '@/components/Button'
 import { Dialog } from '@/components/Dialog'
 import { Input } from '@/components/Input'
+import { UserAutoComplete } from '@/features/user/components'
+import { useUsersSelect } from '@/features/user/hooks/useUsersSelect'
 import { useAutoFocus } from '@/hooks/useAutoFocus'
 import { useDisclosure } from '@/hooks/useDisclosure'
 import { useToast } from '@/hooks/useToast'
@@ -15,6 +17,7 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
+  const userSelectProps = useUsersSelect()
 
   const { mutate: createGroup, isPending } = useMutation({
     mutationFn: createNewGroup,
@@ -33,16 +36,23 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
 
   useAutoFocus(inputRef, [])
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!name.trim()) {
       return toast({ title: 'Group name is required', severity: 'error' })
     }
-    createGroup({ name })
+    const memberIds = Object.keys(userSelectProps.users).map(Number)
+    if (!memberIds.length) {
+      return toast({ title: 'Select at least one member', severity: 'error' })
+    }
+    createGroup({
+      name,
+      memberIds,
+    })
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className='w-full max-w-[500px]'>
       <h4 className='mb-3 text-xl font-semibold'>Create group</h4>
       <Input
         ref={inputRef}
@@ -52,6 +62,7 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
         autoFocus
         onChange={e => setName(e.target.value)}
       />
+      <UserAutoComplete {...userSelectProps} />
       <Button disabled={isPending}>Create</Button>
     </form>
   )

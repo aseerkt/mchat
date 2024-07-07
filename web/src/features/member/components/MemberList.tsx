@@ -84,11 +84,17 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
       setUserOnlineStatus(userId, false)
     }
 
+    function handleNewMembers() {
+      queryClient.invalidateQueries({ queryKey: ['members', groupId] })
+    }
+
     socket.on('newMember', handleNewMember)
+    socket.on('newMembers', handleNewMembers)
     socket.on('userOnline', handleOnlineUser)
     socket.on('userOffline', handleOfflineUser)
     return () => {
       socket.off('newMember', handleNewMember)
+      socket.off('newMembers', handleNewMembers)
       socket.off('userOnline', handleOnlineUser)
       socket.off('userOffline', handleOfflineUser)
     }

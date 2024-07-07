@@ -12,3 +12,8 @@ export interface IMember {
 export interface IGetGroupMembersArgs extends TPaginatedParams<string> {
   groupId: number
 }
+
+export interface IAddMemberArgs {
+  groupId: number
+  memberIds: number[]
+}

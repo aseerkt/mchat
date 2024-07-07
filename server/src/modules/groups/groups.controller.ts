@@ -1,16 +1,14 @@
 import { db } from '@/database'
 import { withPagination } from '@/database/helpers'
-import {
-  deleteGroupMembersRoles,
-  getUserSockets,
-  setMemberRolesForAGroup,
-} from '@/redis/handlers'
+import { deleteGroupMembersRoles } from '@/redis/handlers'
 import { TypedIOServer } from '@/socket/socket.inteface'
 import { notFound } from '@/utils/api'
-import { eq, getTableColumns, notInArray } from 'drizzle-orm'
+import { and, eq, getTableColumns, like, notInArray } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { MemberRole, NewMember, members } from '../members/members.schema'
+import { members } from '../members/members.schema'
+import { addMembers } from '../members/members.service'
 import { messages } from '../messages/messages.schema'
+import { users } from '../users/users.schema'
 import { groups } from './groups.schema'
 
 // CREATE
@@ -25,39 +23,12 @@ export const createGroup: RequestHandler = async (req, res, next) => {
 
       const { memberIds = [] } = req.body
 
-      const memberValues: NewMember[] = (memberIds as number[]).map(mid => ({
-        groupId: group.id,
-        userId: mid,
-      }))
-
-      memberValues.push({
-        groupId: group.id,
-        userId: req.user!.id,
-        role: 'owner',
-      })
-
-      const newMembers = await tx
-        .insert(members)
-        .values(memberValues)
-        .returning({ userId: members.userId, role: members.role })
-
-      const userIds: number[] = []
-      const memberRoles: Record<string, MemberRole> = {}
-
-      newMembers.forEach(member => {
-        if (member.userId !== req.user?.id) {
-          userIds.push(member.userId)
-        }
-        memberRoles[member.userId] = member.role
-      })
-
-      setMemberRolesForAGroup(group.id, memberRoles)
-
-      const userSockets = await getUserSockets(userIds)
-
-      const io = req.app.get('io') as TypedIOServer
-
-      io.to(userSockets).emit('newGroup', group)
+      await addMembers(
+        tx,
+        req.app.get('io'),
+        group,
+        memberIds.concat(req.user!.id),
+      )
 
       return group
     })
@@ -133,6 +104,40 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
   }
 }
 
+// UPDATE
+
+export const addGroupMembers: RequestHandler = async (req, res, next) => {
+  try {
+    const groupId = Number(req.params.groupId)
+    const [group] = await db
+      .select()
+      .from(groups)
+      .where(eq(groups.id, groupId))
+      .limit(1)
+
+    if (!group) {
+      return notFound(res, 'Group')
+    }
+
+    const newMembers = await addMembers(
+      db,
+      req.app.get('io'),
+      group,
+      req.body.memberIds || [],
+    )
+
+    const io = req.app.get('io') as TypedIOServer
+
+    io.to(req.params.groupId).emit('newMembers', newMembers)
+
+    // let existing members know new member is joined in member list
+
+    res.json(newMembers)
+  } catch (error) {
+    next(error)
+  }
+}
+
 // DELETE
 
 export const deleteGroup: RequestHandler = async (req, res, next) => {
@@ -150,6 +155,35 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
     await db.delete(members).where(eq(members.groupId, groupId))
 
     res.json({ message: 'Group deleted' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getNonGroupMembers: RequestHandler = async (req, res, next) => {
+  try {
+    const groupMembers = await db
+      .select({ userId: members.userId })
+      .from(members)
+      .where(eq(members.groupId, Number(req.params.groupId)))
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...columns } = getTableColumns(users)
+    const rows = await db
+      .select(columns)
+      .from(users)
+      .where(
+        and(
+          like(users.username, `%${req.query.query}%`),
+          notInArray(
+            users.id,
+            groupMembers.map(m => m.userId),
+          ),
+        ),
+      )
+      .limit(Number(req.query.limit) || 5)
+      .orderBy(users.username)
+
+    res.json(rows)
   } catch (error) {
     next(error)
   }

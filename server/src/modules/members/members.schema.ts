@@ -1,5 +1,7 @@
 import { commonSchemaFields } from '@/database/helpers'
 import { bigint, index, pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
+import { groups } from '../groups/groups.schema'
+import { users } from '../users/users.schema'
 
 // order of roles shows auth precedence
 export const memberRoleEnum = pgEnum('member_role', [
@@ -12,8 +14,12 @@ export const members = pgTable(
   'members',
   {
     ...commonSchemaFields,
-    userId: bigint('user_id', { mode: 'number' }).notNull(),
-    groupId: bigint('group_id', { mode: 'number' }).notNull(),
+    userId: bigint('user_id', { mode: 'number' })
+      .notNull()
+      .references(() => users.id),
+    groupId: bigint('group_id', { mode: 'number' })
+      .notNull()
+      .references(() => groups.id),
     role: memberRoleEnum('role').notNull().default('member'),
   },
   table => ({

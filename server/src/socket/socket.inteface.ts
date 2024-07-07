@@ -8,6 +8,7 @@ export interface ServerToClientEvents {
   userOffline: (userId: number) => void
   newMessage: (message: Message & { username: string }) => void
   newMember: (member: Member & { username: string }) => void
+  newMembers: (member: Member[]) => void
   newGroup: (group: Group) => void
   typingUsers: (users: { id: number; username: string }[]) => void
 }

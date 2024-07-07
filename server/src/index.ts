@@ -89,7 +89,7 @@ const createApp = async () => {
   app.set('io', io)
 
   app.get('/', (_, res) => {
-    res.send('<h1>Welcome to mChat</h1>')
+    res.send('<h1>Welcome to mChat API</h1>')
   })
 
   app.use('/api/users', routes.userRoutes)

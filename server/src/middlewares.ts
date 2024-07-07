@@ -7,9 +7,10 @@ import { verifyToken } from './utils/jwt'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  console.error(err)
   res.status(500).json({
     message: 'Something went wrong',
-    error: config.isProd ? undefined : err,
+    error: config.isProd ? undefined : err.message,
   })
 }
 

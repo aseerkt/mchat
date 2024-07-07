@@ -1,10 +1,4 @@
-export interface IUser {
-  id: number
-  username: string
-  fullName: string
-  password: string
-  createdAt: string
-}
+import { IUser } from '../user/user.interface'
 
 export interface IUserResponse {
   user: IUser

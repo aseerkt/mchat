@@ -13,6 +13,7 @@ export type TGetUserGroupsQueryVariables = TPaginatedParams & {
 
 export interface ICreateGroupArgs {
   name: string
+  memberIds: number[]
 }
 
 export interface IJoinGroupArgs {
