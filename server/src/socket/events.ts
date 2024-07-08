@@ -55,12 +55,12 @@ export const registerSocketEvents = (io: TypedIOServer) => {
 
     socket.on('createMessage', async ({ groupId, text }, cb) => {
       try {
-        const hasPermission = await checkPermission(
+        const { isAllowed } = await checkPermission(
           groupId,
           socket.data.user!.id,
           'member',
         )
-        if (!hasPermission) {
+        if (!isAllowed) {
           throw new Error('createMessage: Not authorized')
         }
 

@@ -44,10 +44,19 @@ export const hasGroupPermission =
         return notAuthorized(res)
       }
 
-      const isAllowed = await checkPermission(groupId, req.user!.id, role)
+      const { isAllowed, memberRole } = await checkPermission(
+        groupId,
+        req.user!.id,
+        role,
+      )
 
       if (!isAllowed) {
         return notAuthorized(res)
+      }
+
+      req.group = {
+        id: groupId,
+        role: memberRole!,
       }
 
       next()

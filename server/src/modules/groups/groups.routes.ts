@@ -1,6 +1,9 @@
 import { hasGroupPermission } from '@/middlewares'
 import { Router } from 'express'
-import { getGroupMembers } from '../members/members.controller'
+import {
+  getCurrentMember,
+  getGroupMembers,
+} from '../members/members.controller'
 import { createMessage, listMessages } from '../messages/messages.controller'
 import {
   addGroupMembers,
@@ -21,6 +24,11 @@ router.delete('/:groupId', hasGroupPermission('owner'), deleteGroup)
 
 router.post('/:groupId/members', hasGroupPermission('admin'), addGroupMembers)
 router.get('/:groupId/members', hasGroupPermission('member'), getGroupMembers)
+router.get(
+  '/:groupId/members/current',
+  hasGroupPermission('member'),
+  getCurrentMember,
+)
 router.get(
   '/:groupId/non-members',
   hasGroupPermission('admin'),

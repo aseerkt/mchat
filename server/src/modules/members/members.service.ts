@@ -25,14 +25,17 @@ export const checkPermission = async (
       .limit(1)
 
     if (!member) {
-      return false
+      return { isAllowed: false }
     }
 
     await setMemberRolesForAGroup(groupId, { [userId]: member.role })
     memberRole = member.role
   }
 
-  return memberRoles.indexOf(memberRole) >= memberRoles.indexOf(role)
+  return {
+    isAllowed: memberRoles.indexOf(memberRole) >= memberRoles.indexOf(role),
+    memberRole,
+  }
 }
 
 export const addMembers = async (

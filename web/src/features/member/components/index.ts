@@ -1,1 +1,2 @@
-export { GroupInfo as MembersSidebar } from './GroupInfo'
+export { AddMembers } from './AddMembers'
+export { MemberList } from './MemberList'

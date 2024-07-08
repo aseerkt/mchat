@@ -1,6 +1,8 @@
 import { TypingIndicator } from '@/features/chat/components'
+import { GroupInfo } from '@/features/chat/layouts'
 import { GroupHeader } from '@/features/group/components'
-import { MembersSidebar } from '@/features/member/components'
+import { AddMembers, MemberList } from '@/features/member/components'
+import { useCurrentMember } from '@/features/member/hooks'
 import { MessageComposer, MessageList } from '@/features/message/components'
 import { useDisclosure } from '@/hooks/useDisclosure'
 import { getSocketIO } from '@/utils/socket'
@@ -22,6 +24,8 @@ export const Component = () => {
     }
   }, [groupId])
 
+  const { hasPermission } = useCurrentMember(groupId, isOpen)
+
   if (!groupId) return null
 
   return (
@@ -37,7 +41,12 @@ export const Component = () => {
         <TypingIndicator />
         <MessageComposer groupId={groupId} />
       </div>
-      <MembersSidebar isOpen={isOpen} onClose={toggle} groupId={groupId} />
+      <GroupInfo isOpen={isOpen} onClose={toggle} groupId={groupId}>
+        <MemberList groupId={groupId} />
+        <div className='w-full p-3'>
+          {hasPermission('admin') && <AddMembers />}
+        </div>
+      </GroupInfo>
     </>
   )
 }

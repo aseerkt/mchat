@@ -20,3 +20,8 @@ export const addGroupMembers = async ({
     method: 'POST',
     body: JSON.stringify({ memberIds }),
   })
+
+export const getCurrentMember = async (
+  groupId: number,
+): Promise<{ id: number; role: IMember['role'] }> =>
+  fetcher(`groups/${groupId}/members/current`)

@@ -79,3 +79,11 @@ export const getGroupMembers: RequestHandler = async (req, res, next) => {
     next(error)
   }
 }
+
+export const getCurrentMember: RequestHandler = (req, res, next) => {
+  try {
+    return res.json(req.group)
+  } catch (error) {
+    next(error)
+  }
+}

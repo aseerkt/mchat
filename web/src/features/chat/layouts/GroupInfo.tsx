@@ -1,11 +1,10 @@
 import backArrow from '@/assets/back-svgrepo-com.svg'
-import { AddMembers } from './AddMembers'
-import { MemberList } from './MemberList'
 
 interface MembersListProps {
   isOpen: boolean
   onClose: () => void
   groupId: number
+  children: React.ReactNode
 }
 
 export const GroupInfo = (props: MembersListProps) => {
@@ -27,13 +26,7 @@ export const GroupInfo = (props: MembersListProps) => {
         </button>
         <h3 className='font-semibold'>Group info</h3>
       </header>
-      <MemberList
-        key={props.isOpen ? 'true' : 'false'}
-        groupId={props.groupId}
-      />
-      <div className='w-full p-3'>
-        <AddMembers />
-      </div>
+      {props.children}
     </div>
   ) : null
 }
