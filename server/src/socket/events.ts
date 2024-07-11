@@ -1,4 +1,5 @@
 import { db } from '@/database'
+import { checkPermission } from '@/modules/members/members.service'
 import { messages } from '@/modules/messages/messages.schema'
 import {
   insertMessage,
@@ -72,12 +73,30 @@ export const registerSocketEvents = (io: TypedIOServer) => {
     })
 
     socket.on('markMessageAsRead', async messageId => {
-      await markMessageAsRead(messageId, socket.data.user.id)
       const [message] = await db
-        .select({ senderId: messages.senderId })
+        .select({ senderId: messages.senderId, groupId: messages.groupId })
         .from(messages)
         .where(eq(messages.id, messageId))
         .limit(1)
+      if (!message?.groupId) {
+        throw new Error(
+          'markMessageAsRead: message does not belongs to a group',
+        )
+      }
+
+      const { isAllowed } = await checkPermission(
+        message.groupId,
+        socket.data.user.id,
+        'member',
+      )
+
+      if (!isAllowed) {
+        throw new Error(
+          "markMessageAsRead: you don't have permission to mark the message as read",
+        )
+      }
+
+      await markMessageAsRead(messageId, socket.data.user.id)
       const senderSocketIds = await getUserSockets([message.senderId])
       io.to(senderSocketIds).emit('messageRead', messageId)
     })
