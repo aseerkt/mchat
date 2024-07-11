@@ -1,10 +1,10 @@
 import { db } from '@/database'
 import {
   getMemberRole,
-  getUserSockets,
+  getMultipleUserSockets,
   setMemberRolesForAGroup,
 } from '@/redis/handlers'
-import { TypedIOServer } from '@/socket/socket.inteface'
+import { TypedIOServer } from '@/socket/socket.interface'
 import { and, eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { Group } from '../groups/groups.schema'
@@ -52,21 +52,35 @@ export const addMembers = async (
 
   const newMembers = await db.insert(members).values(memberValues).returning()
 
-  const userIds: number[] = []
   const memberRoles: Record<string, MemberRole> = {}
 
   newMembers.forEach(member => {
-    if (member.userId !== group.ownerId) {
-      userIds.push(member.userId)
-    }
     memberRoles[member.userId] = member.role
   })
 
   setMemberRolesForAGroup(group.id, memberRoles)
 
-  const userSockets = await getUserSockets(userIds)
+  const userSockets = await getMultipleUserSockets(memberIds)
+
+  userSockets.forEach(socketId => {
+    const socket = io.sockets.sockets.get(socketId)
+    console.log('member socket', socket)
+    socket?.join(group.id.toString())
+  })
 
   io.to(userSockets).emit('newGroup', group)
 
   return newMembers
+}
+
+export const joinMultiSocketRooms = async (
+  io: TypedIOServer,
+  userIds: number[],
+  groupIds: number[],
+) => {
+  const userSockets = await getMultipleUserSockets(userIds)
+
+  userSockets.forEach(socketId => {
+    io.sockets.sockets.get(socketId)?.join(groupIds.map(String))
+  })
 }

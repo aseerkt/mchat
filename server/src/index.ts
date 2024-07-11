@@ -21,7 +21,7 @@ import {
   InterServerEvents,
   ServerToClientEvents,
   SocketData,
-} from './socket/socket.inteface'
+} from './socket/socket.interface'
 
 const createApp = async () => {
   if (cluster.isPrimary && config.isProd) {

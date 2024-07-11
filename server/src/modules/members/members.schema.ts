@@ -23,9 +23,9 @@ export const members = pgTable(
     role: memberRoleEnum('role').notNull().default('member'),
   },
   table => ({
-    pk: unique().on(table.userId, table.groupId),
-    memberUserIndex: index().on(table.userId),
-    memberGroupIndex: index().on(table.groupId),
+    uniqueUserGroupIndex: unique().on(table.userId, table.groupId),
+    userIndex: index().on(table.userId),
+    groupIndex: index().on(table.groupId),
   }),
 )
 

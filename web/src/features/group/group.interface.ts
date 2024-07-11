@@ -17,10 +17,13 @@ export interface IGroupWithLastMessage extends IGroup {
     content: string
     senderId: number
   }
+  unreadCount: number
   lastActivity: string
 }
 
-export type IPaginatedInfiniteGroups = InfiniteData<IPaginatedResult<IGroup>>
+export type IPaginatedInfiniteGroups = InfiniteData<
+  IPaginatedResult<IGroupWithLastMessage>
+>
 
 export type TGetUserGroupsQueryVariables = TPaginatedParams & {
   userId: number

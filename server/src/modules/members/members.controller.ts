@@ -1,7 +1,12 @@
 import { db } from '@/database'
 import { getPaginationParams, withPagination } from '@/database/helpers'
-import { checkOnlineUsers, setGroupMemberRoleTxn } from '@/redis/handlers'
-import { TypedIOServer } from '@/socket/socket.inteface'
+import {
+  checkOnlineUsers,
+  getMultipleUserSockets,
+  setGroupMemberRoleTxn,
+} from '@/redis/handlers'
+import { getGroupRoomId } from '@/socket/helpers'
+import { TypedIOServer } from '@/socket/socket.interface'
 import { badRequest } from '@/utils/api'
 import { and, asc, eq, getTableColumns, gt } from 'drizzle-orm'
 import { RequestHandler } from 'express'
@@ -31,10 +36,17 @@ export const joinRooms: RequestHandler = async (req, res, next) => {
 
     rows.forEach(member => {
       groupMemberRoles[member.groupId] = [member.userId, 'member']
-      io.to(member.groupId.toString()).emit('newMember', {
+      io.to(getGroupRoomId(member.groupId)).emit('newMember', {
         ...member,
         username: req.user!.username,
       })
+    })
+
+    const currentUserSockets = await getMultipleUserSockets([req.user!.id])
+
+    currentUserSockets.forEach(socketId => {
+      const socket = io.sockets.sockets.get(socketId)
+      socket?.join(rows.map(member => member.groupId.toString()))
     })
 
     setGroupMemberRoleTxn(groupMemberRoles)

@@ -37,6 +37,9 @@ export const MessageList = ({ groupId }: MessageListProps) => {
     const socket = getSocketIO()
 
     function updateMessage(message: IMessage) {
+      if (message.groupId !== groupId) {
+        return
+      }
       function scrollToBottom() {
         listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
       }

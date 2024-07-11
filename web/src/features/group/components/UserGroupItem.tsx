@@ -29,9 +29,22 @@ export const UserGroupItem = ({ group }: UserGroupItemProps) => {
             {group.lastMessage?.content}
           </span>
         </div>
-        <div className='flex flex-col'>
-          <span className='text-xs text-gray-500'>
+        <div className='flex flex-col items-end'>
+          <span
+            className={cn(
+              'text-xs text-gray-500',
+              group.unreadCount > 0 ? 'text-green-600' : 'text-gray-500',
+            )}
+          >
             {formatGroupDate(group.lastActivity)}
+          </span>
+          <span
+            className={cn(
+              'flex h-6 w-6 items-center justify-center rounded-full text-center text-xs text-white',
+              group.unreadCount > 0 ? 'bg-green-600' : 'hidden',
+            )}
+          >
+            {group.unreadCount}
           </span>
         </div>
       </div>

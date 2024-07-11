@@ -21,6 +21,7 @@ export const Component = () => {
     const socket = getSocketIO()
     if (groupId) {
       socket.emit('joinGroup', Number(groupId))
+      socket.emit('markGroupMessagesAsRead', groupId)
     }
   }, [groupId])
 

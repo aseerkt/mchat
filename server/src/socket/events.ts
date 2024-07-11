@@ -1,12 +1,15 @@
 import { db } from '@/database'
+import { groups } from '@/modules/groups/groups.schema'
+import { members } from '@/modules/members/members.schema'
 import { checkPermission } from '@/modules/members/members.service'
-import { messages } from '@/modules/messages/messages.schema'
+import { messageRecipients, messages } from '@/modules/messages/messages.schema'
 import {
   insertMessage,
   markMessageAsRead,
 } from '@/modules/messages/messages.service'
 import {
   addUserSocket,
+  getMultipleUserSockets,
   getTypingUsers,
   getUserSockets,
   markUserOffline,
@@ -15,23 +18,16 @@ import {
   removeUserSocket,
   setTypingUser,
 } from '@/redis/handlers'
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { config } from '../config'
-import { TypedIOServer, TypedSocket } from './socket.inteface'
+import { getGroupRoomId } from './helpers'
+import { TypedIOServer, TypedSocket } from './socket.interface'
+
+export const groupRoomPrefix = 'group'
 
 async function emitTypingUsers(socket: TypedSocket, groupId: number) {
   const typingUsers = await getTypingUsers(groupId)
-  socket.broadcast.to(String(groupId)).emit('typingUsers', typingUsers)
-}
-
-function leaveAllRoom(socket: TypedSocket) {
-  const rooms = Array.from(socket.rooms)
-  rooms.forEach(room => {
-    if (room !== socket.id) {
-      // don't leave the default room
-      socket.leave(room)
-    }
-  })
+  socket.broadcast.to(getGroupRoomId(groupId)).emit('typingUsers', typingUsers)
 }
 
 export const registerSocketEvents = (io: TypedIOServer) => {
@@ -40,9 +36,22 @@ export const registerSocketEvents = (io: TypedIOServer) => {
     await addUserSocket(socket.data.user.id, socket.id)
     socket.broadcast.emit('userOnline', socket.data.user.id)
 
-    socket.on('joinGroup', groupId => {
-      leaveAllRoom(socket)
-      socket.join(String(groupId))
+    const userGroups = await db
+      .select({ id: groups.id })
+      .from(groups)
+      .innerJoin(members, eq(members.groupId, groups.id))
+      .where(eq(members.userId, socket.data.user.id))
+    socket.join(userGroups.map(group => group.id.toString()))
+
+    socket.on('joinGroup', async (groupId: number) => {
+      const rooms = Array.from(socket.rooms)
+      rooms.forEach(room => {
+        if (room !== socket.id && room.startsWith(groupRoomPrefix)) {
+          // don't leave the default room
+          socket.leave(room)
+        }
+      })
+      socket.join(getGroupRoomId(groupId))
     })
 
     socket.on('userStartedTyping', async groupId => {
@@ -97,8 +106,52 @@ export const registerSocketEvents = (io: TypedIOServer) => {
       }
 
       await markMessageAsRead(messageId, socket.data.user.id)
-      const senderSocketIds = await getUserSockets([message.senderId])
+      const senderSocketIds = await getMultipleUserSockets([message.senderId])
       io.to(senderSocketIds).emit('messageRead', messageId)
+    })
+
+    socket.on('markGroupMessagesAsRead', async groupId => {
+      const { isAllowed } = await checkPermission(
+        groupId,
+        socket.data.user.id,
+        'member',
+      )
+
+      if (!isAllowed) {
+        throw new Error(
+          "markGroupMessagesAsRead: you don't have permission to mark the message as read",
+        )
+      }
+
+      const unreadMessages = await db
+        .select({ messageId: messages.id, senderId: messages.senderId })
+        .from(messages)
+        .leftJoin(
+          messageRecipients,
+          and(
+            eq(messageRecipients.messageId, messages.id),
+            eq(messageRecipients.recipientId, socket.data.user.id),
+          ),
+        )
+        .where(
+          and(
+            eq(messages.groupId, groupId),
+            isNull(messageRecipients.messageId),
+          ),
+        )
+
+      if (unreadMessages.length) {
+        await db.insert(messageRecipients).values(
+          unreadMessages.map(message => ({
+            messageId: message.messageId,
+            recipientId: socket.data.user.id,
+          })),
+        )
+
+        const socketIds = await getUserSockets(socket.data.user.id)
+
+        io.to(socketIds).emit('groupMarkedAsRead', groupId)
+      }
     })
 
     socket.on('error', err => {

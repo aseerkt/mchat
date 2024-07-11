@@ -10,6 +10,8 @@ export interface ServerToClientEvents {
   newMember: (member: IMember) => void
   newMembers: (member: IMember[]) => void
   newGroup: (group: IGroup) => void
+  messageRead: (messageId: number) => void
+  groupMarkedAsRead: (groupId: number) => void
   typingUsers: (users: { id: number; username: string }[]) => void
 }
 
@@ -23,6 +25,8 @@ export interface ClientToServerEvents {
     args: { groupId: number; text: string },
     callback: (response: { message?: IMessage; error?: unknown }) => void,
   ) => void
+  markMessageAsRead: (messageId: number) => void
+  markGroupMessagesAsRead: (groupId: number) => void
   userStartedTyping: (groupId: number) => void
   userStoppedTyping: (groupId: number) => void
 }

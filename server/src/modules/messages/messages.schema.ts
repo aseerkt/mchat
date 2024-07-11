@@ -1,19 +1,26 @@
 import { baseSchema } from '@/database/constants'
-import { bigint, pgTable, text, unique } from 'drizzle-orm/pg-core'
+import { bigint, index, pgTable, text, unique } from 'drizzle-orm/pg-core'
 import { groups } from '../groups/groups.schema'
 import { users } from '../users/users.schema'
 
-export const messages = pgTable('messages', {
-  ...baseSchema,
-  senderId: bigint('sender_id', { mode: 'number' })
-    .references(() => users.id)
-    .notNull(),
-  receiverId: bigint('receiver_id', { mode: 'number' }).references(
-    () => users.id,
-  ),
-  groupId: bigint('group_id', { mode: 'number' }).references(() => groups.id),
-  content: text('content').notNull(),
-})
+export const messages = pgTable(
+  'messages',
+  {
+    ...baseSchema,
+    senderId: bigint('sender_id', { mode: 'number' })
+      .references(() => users.id)
+      .notNull(),
+    receiverId: bigint('receiver_id', { mode: 'number' }).references(
+      () => users.id,
+    ),
+    groupId: bigint('group_id', { mode: 'number' }).references(() => groups.id),
+    content: text('content').notNull(),
+  },
+  table => ({
+    groupIdIndex: index().on(table.groupId),
+    createdAtIndex: index().on(table.createdAt),
+  }),
+)
 
 export const messageRecipients = pgTable(
   'message_recipients',
@@ -27,7 +34,10 @@ export const messageRecipients = pgTable(
       .notNull(),
   },
   table => ({
-    uniqueMessageRecipient: unique().on(table.messageId, table.recipientId),
+    uniqueMessageRecipientIndex: unique().on(
+      table.messageId,
+      table.recipientId,
+    ),
   }),
 )
 

@@ -15,12 +15,14 @@ export const Skeleton = ({ className }: { className?: string }) => {
 export const ArraySkeleton = ({
   length = 3,
   className,
+  wrapperClassName,
 }: {
   className?: string
+  wrapperClassName?: string
   length?: number
 }) => {
   return (
-    <div className='flex flex-col gap-3'>
+    <div className={cn('flex flex-col gap-3', wrapperClassName)}>
       {new Array(length).fill(0).map((_, i) => (
         <Skeleton key={i} className={className} />
       ))}

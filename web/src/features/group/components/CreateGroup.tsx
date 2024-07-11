@@ -6,7 +6,7 @@ import { useUsersSelect } from '@/features/user/hooks/useUsersSelect'
 import { useAutoFocus } from '@/hooks/useAutoFocus'
 import { useDisclosure } from '@/hooks/useDisclosure'
 import { useToast } from '@/hooks/useToast'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createNewGroup } from '../group.service'
@@ -16,7 +16,6 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
   const { toast } = useToast()
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
-  const queryClient = useQueryClient()
   const userSelectProps = useUsersSelect()
 
   const { mutate: createGroup, isPending } = useMutation({
@@ -25,7 +24,6 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
       if (result.id) {
         toast({ title: `Group "${name}" created`, severity: 'success' })
         onComplete()
-        queryClient.invalidateQueries({ queryKey: ['userGroups'] })
         navigate(`/chat/${result.id}`)
       }
     },

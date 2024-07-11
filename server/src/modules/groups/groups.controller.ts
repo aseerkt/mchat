@@ -1,13 +1,16 @@
 import { db } from '@/database'
 import { getPaginationParams, withPagination } from '@/database/helpers'
 import { deleteGroupMembersRoles } from '@/redis/handlers'
-import { TypedIOServer } from '@/socket/socket.inteface'
+import { getGroupRoomId } from '@/socket/helpers'
+import { TypedIOServer } from '@/socket/socket.interface'
 import { notFound } from '@/utils/api'
 import {
   and,
+  count,
   desc,
   eq,
   getTableColumns,
+  isNull,
   like,
   lt,
   notInArray,
@@ -16,7 +19,7 @@ import {
 import { RequestHandler } from 'express'
 import { members } from '../members/members.schema'
 import { addMembers } from '../members/members.service'
-import { messages } from '../messages/messages.schema'
+import { messageRecipients, messages } from '../messages/messages.schema'
 import { users } from '../users/users.schema'
 import { groups } from './groups.schema'
 
@@ -99,41 +102,83 @@ export const listGroups: RequestHandler = async (req, res, next) => {
 
 export const listUserGroups: RequestHandler = async (req, res, next) => {
   try {
-    const sq = db
-      .select({
-        ...getTableColumns(messages),
-        seqNum:
-          sql<number>`ROW_NUMBER() OVER (PARTITION BY ${messages.groupId} ORDER BY ${desc(messages.createdAt)})`.as(
-            'seq_num',
-          ),
-      })
-      .from(messages)
-      .as('messages_with_seq')
+    const messagesWithSequence = db.$with('messages_with_sequence').as(
+      db
+        .select({
+          ...getTableColumns(messages),
+          seqNum:
+            sql<number>`ROW_NUMBER() OVER (PARTITION BY ${messages.groupId} ORDER BY ${desc(messages.createdAt)})`.as(
+              'seq_num',
+            ),
+        })
+        .from(messages),
+    )
 
     const groupsWithLastMessage = db.$with('groups_with_last_message').as(
       db
+        .with(messagesWithSequence)
         .select({
           ...getTableColumns(groups),
           lastMessage: {
-            id: sql`${sq.id}`.as('message_id'),
-            content: sq.content,
-            senderId: sq.senderId,
+            id: sql`${messagesWithSequence.id}`.as('message_id'),
+            content: messagesWithSequence.content,
+            senderId: messagesWithSequence.senderId,
           },
           lastActivity:
-            sql<string>`COALESCE (${sq.createdAt}, ${groups.createdAt})`.as(
+            sql<string>`COALESCE (${messagesWithSequence.createdAt}, ${groups.createdAt})`.as(
               'last_activity',
             ),
         })
         .from(groups)
-        .leftJoin(sq, and(eq(groups.id, sq.groupId), eq(sq.seqNum, 1)))
+        .leftJoin(
+          messagesWithSequence,
+          and(
+            eq(groups.id, messagesWithSequence.groupId),
+            eq(messagesWithSequence.seqNum, 1),
+          ),
+        )
         .innerJoin(members, eq(members.groupId, groups.id))
         .where(eq(members.userId, req.user!.id)),
     )
 
+    const unreadCounts = db.$with('unread_counts').as(
+      db
+        .select({
+          groupId: groups.id,
+          unreadCount: count(messages.id).as('unread_count'),
+        })
+        .from(groups)
+        .leftJoin(messages, eq(groups.id, messages.groupId))
+        .leftJoin(
+          messageRecipients,
+          and(
+            eq(messageRecipients.messageId, messages.id),
+            eq(messageRecipients.recipientId, req.user!.id),
+          ),
+        )
+        .where(isNull(messageRecipients.messageId))
+        .groupBy(groups.id),
+    )
+
     const qb = db
-      .with(groupsWithLastMessage)
-      .select()
+      .with(groupsWithLastMessage, unreadCounts)
+      .select({
+        lastMessage: groupsWithLastMessage.lastMessage,
+        lastActivity: groupsWithLastMessage.lastActivity,
+        id: groupsWithLastMessage.id,
+        name: groupsWithLastMessage.name,
+        ownerId: groupsWithLastMessage.ownerId,
+        createdAt: groupsWithLastMessage.createdAt,
+        updatedAt: groupsWithLastMessage.updatedAt,
+        unreadCount: sql<number>`COALESCE (${unreadCounts.unreadCount}, 0)`
+          .mapWith(Number)
+          .as('unread_count'),
+      })
       .from(groupsWithLastMessage)
+      .leftJoin(
+        unreadCounts,
+        eq(unreadCounts.groupId, groupsWithLastMessage.id),
+      )
       .$dynamic()
 
     const { cursor, limit } = getPaginationParams(req.query, 'date')
@@ -177,7 +222,7 @@ export const addGroupMembers: RequestHandler = async (req, res, next) => {
 
     const io = req.app.get('io') as TypedIOServer
 
-    io.to(req.params.groupId).emit('newMembers', newMembers)
+    io.to(getGroupRoomId(req.params.groupId)).emit('newMembers', newMembers)
 
     // let existing members know new member is joined in member list
 
