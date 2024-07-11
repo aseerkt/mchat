@@ -1,4 +1,8 @@
-import { TPaginatedParams } from '@/interfaces/common.interface'
+import {
+  IPaginatedResult,
+  TPaginatedParams,
+} from '@/interfaces/common.interface'
+import { InfiniteData } from '@tanstack/react-query'
 
 export interface IGroup {
   id: number
@@ -6,6 +10,17 @@ export interface IGroup {
   ownerId: number
   createdAt: string
 }
+
+export interface IGroupWithLastMessage extends IGroup {
+  lastMessage?: {
+    id: number
+    content: string
+    senderId: number
+  }
+  lastActivity: string
+}
+
+export type IPaginatedInfiniteGroups = InfiniteData<IPaginatedResult<IGroup>>
 
 export type TGetUserGroupsQueryVariables = TPaginatedParams & {
   userId: number

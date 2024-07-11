@@ -1,61 +1,69 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { isValidDate } from '@/utils/validations'
-import { AnyColumn, SQL, and, asc, desc, gt, lt, sql } from 'drizzle-orm'
-import { PgSelect, bigserial, timestamp } from 'drizzle-orm/pg-core'
+import { ColumnBaseConfig, ColumnDataType, SQL } from 'drizzle-orm'
+import { PgColumn, PgSelect } from 'drizzle-orm/pg-core'
+import get from 'lodash/get'
+import { defaultLimit } from './constants'
 
-interface WithPaginateOptions {
-  query: Record<string, unknown>
-  sortByColumn: AnyColumn
-  sortDirection?: 'asc' | 'desc'
-  where?: SQL<unknown>
-}
-
-export const withPagination = async <T extends PgSelect>(
-  qb: T,
-  { query, sortByColumn, sortDirection = 'desc', where }: WithPaginateOptions,
+export const getPaginationParams = (
+  query: Record<string, unknown>,
+  cursorDataType: 'number' | 'string' | 'date' = 'string',
 ) => {
-  const limit = Number(query.limit) > 20 ? 10 : Number(query.limit)
   let cursor
 
-  switch (sortByColumn.dataType) {
+  switch (cursorDataType) {
     case 'number':
-      cursor = Number(query.cursor)
+      cursor = Number(query.cursor) || null
       break
     case 'date':
       cursor = isValidDate(query.cursor)
         ? new Date(query.cursor as string)
         : null
       break
+    case 'string':
     default:
       cursor = query.cursor
+      break
   }
 
-  const orderWhere =
-    sortDirection === 'asc'
-      ? gt(sortByColumn, cursor)
-      : lt(sortByColumn, cursor)
-  const orderBy =
-    sortDirection === 'asc' ? asc(sortByColumn) : desc(sortByColumn)
+  return { cursor, limit: Number(query.limit) || defaultLimit }
+}
 
-  const result = await qb
-    .where(cursor ? and(orderWhere, where) : where)
+export const withPagination = async <T extends PgSelect>(
+  qb: T,
+  {
+    limit = defaultLimit,
+    cursorSelect,
+    where,
+    orderBy,
+  }: {
+    limit?: number
+    cursorSelect: keyof T['_']['result'][0]
+    where?:
+      | SQL<unknown>
+      | ((aliases: T['_']['selection']) => SQL<unknown> | undefined)
+      | undefined
+    orderBy: (
+      | SQL<unknown>
+      | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>
+      | SQL.Aliased<unknown>
+    )[]
+  },
+) => {
+  const paginatedQb = qb
+    .where(where)
     .limit(limit)
-    .orderBy(orderBy)
+    .orderBy(...orderBy)
+
+  console.log('paginted sql query', paginatedQb.toSQL())
+
+  const result = await paginatedQb
 
   return {
     data: result,
     cursor:
       result.length === limit
-        ? result[result.length - 1][sortByColumn.name]
+        ? get(result[result.length - 1], cursorSelect)
         : null,
   }
-}
-
-export const commonSchemaFields = {
-  id: bigserial('id', { mode: 'number' }).primaryKey(),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .$onUpdate(() => sql`now()`),
 }

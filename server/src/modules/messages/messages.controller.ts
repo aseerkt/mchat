@@ -1,6 +1,6 @@
 import { db } from '@/database'
-import { withPagination } from '@/database/helpers'
-import { eq, getTableColumns } from 'drizzle-orm'
+import { getPaginationParams, withPagination } from '@/database/helpers'
+import { and, desc, eq, getTableColumns, lt } from 'drizzle-orm'
 import { RequestHandler } from 'express'
 import { users } from '../users/users.schema'
 import { messages } from './messages.schema'
@@ -23,6 +23,7 @@ export const createMessage: RequestHandler = async (req, res, next) => {
 
 export const listMessages: RequestHandler = async (req, res, next) => {
   try {
+    const { cursor, limit } = getPaginationParams(req.query, 'number')
     const result = await withPagination(
       db
         .select({ ...getTableColumns(messages), username: users.username })
@@ -30,9 +31,13 @@ export const listMessages: RequestHandler = async (req, res, next) => {
         .innerJoin(users, eq(messages.senderId, users.id))
         .$dynamic(),
       {
-        query: req.query,
-        where: eq(messages.groupId, Number(req.params.groupId)),
-        sortByColumn: messages.id,
+        limit,
+        cursorSelect: 'id',
+        orderBy: [desc(messages.id)],
+        where: and(
+          eq(messages.groupId, Number(req.params.groupId)),
+          cursor ? lt(messages.id, cursor as number) : undefined,
+        ),
       },
     )
 

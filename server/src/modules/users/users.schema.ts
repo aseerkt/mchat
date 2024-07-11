@@ -1,9 +1,9 @@
-import { commonSchemaFields } from '@/database/helpers'
+import { baseSchema } from '@/database/constants'
 import { sql } from 'drizzle-orm'
 import { pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
-  ...commonSchemaFields,
+  ...baseSchema,
   username: varchar('username', { length: 40 }).unique().notNull(),
   password: varchar('password').notNull(),
   fullName: varchar('full_name').notNull(),

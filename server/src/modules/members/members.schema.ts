@@ -1,4 +1,4 @@
-import { commonSchemaFields } from '@/database/helpers'
+import { baseSchema } from '@/database/constants'
 import { bigint, index, pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
 import { groups } from '../groups/groups.schema'
 import { users } from '../users/users.schema'
@@ -13,7 +13,7 @@ export const memberRoleEnum = pgEnum('member_role', [
 export const members = pgTable(
   'members',
   {
-    ...commonSchemaFields,
+    ...baseSchema,
     userId: bigint('user_id', { mode: 'number' })
       .notNull()
       .references(() => users.id),

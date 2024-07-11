@@ -28,8 +28,8 @@
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
-    "husky": "^8.0.0",
-    "typescript": "^5.2.2"
+    "husky": "^8.0.3",
+    "typescript": "^5.5.3"
   },
   "workspaces": [
     "client",

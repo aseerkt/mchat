@@ -1,20 +1,15 @@
 import { Skeleton } from '@/components/Skeleton'
 import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
-import { IPaginatedResult } from '@/interfaces/common.interface'
 import { getSocketIO } from '@/utils/socket'
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { produce } from 'immer'
 import { Fragment, useEffect, useRef } from 'react'
-import { IGroup } from '../group.interface'
+import { IGroup, IPaginatedInfiniteGroups } from '../group.interface'
 import { fetchUserGroups } from '../group.service'
 import { UserGroupItem } from './UserGroupItem'
 
-export const GroupList = () => {
+export const UserGroupList = () => {
   const { auth } = useAuth()
   const queryClient = useQueryClient()
   const { data, isLoading, isSuccess, hasNextPage, fetchNextPage, error } =
@@ -44,7 +39,7 @@ export const GroupList = () => {
     const socket = getSocketIO()
 
     function unshiftGroup(group: IGroup) {
-      queryClient.setQueryData<InfiniteData<IPaginatedResult<IGroup>>>(
+      queryClient.setQueryData<IPaginatedInfiniteGroups>(
         ['userGroups', auth],
         data => {
           if (!data) return

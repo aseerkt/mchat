@@ -1,9 +1,9 @@
 import { db } from '@/database'
-import { withPagination } from '@/database/helpers'
+import { getPaginationParams, withPagination } from '@/database/helpers'
 import { checkOnlineUsers, setGroupMemberRoleTxn } from '@/redis/handlers'
 import { TypedIOServer } from '@/socket/socket.inteface'
 import { badRequest } from '@/utils/api'
-import { eq, getTableColumns } from 'drizzle-orm'
+import { and, asc, eq, getTableColumns, gt } from 'drizzle-orm'
 import { RequestHandler } from 'express'
 import { users } from '../users/users.schema'
 import { MemberRole, members } from './members.schema'
@@ -47,17 +47,22 @@ export const joinRooms: RequestHandler = async (req, res, next) => {
 
 export const getGroupMembers: RequestHandler = async (req, res, next) => {
   try {
+    const { cursor, limit } = getPaginationParams(req.query)
     const result = await withPagination(
       db
         .select({ ...getTableColumns(members), username: users.username })
         .from(members)
         .innerJoin(users, eq(members.userId, users.id))
         .$dynamic(),
+
       {
-        query: req.query,
-        where: eq(members.groupId, Number(req.params.groupId)),
-        sortByColumn: users.username,
-        sortDirection: 'asc',
+        limit,
+        cursorSelect: 'username',
+        orderBy: [asc(users.username)],
+        where: and(
+          eq(members.groupId, Number(req.params.groupId)),
+          cursor ? gt(users.username, cursor as string) : undefined,
+        ),
       },
     )
 

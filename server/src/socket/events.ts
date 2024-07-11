@@ -1,15 +1,20 @@
 import { db } from '@/database'
-import { checkPermission } from '@/modules/members/members.service'
 import { messages } from '@/modules/messages/messages.schema'
+import {
+  insertMessage,
+  markMessageAsRead,
+} from '@/modules/messages/messages.service'
 import {
   addUserSocket,
   getTypingUsers,
+  getUserSockets,
   markUserOffline,
   markUserOnline,
   removeTypingUser,
   removeUserSocket,
   setTypingUser,
 } from '@/redis/handlers'
+import { eq } from 'drizzle-orm'
 import { config } from '../config'
 import { TypedIOServer, TypedSocket } from './socket.inteface'
 
@@ -55,32 +60,26 @@ export const registerSocketEvents = (io: TypedIOServer) => {
 
     socket.on('createMessage', async ({ groupId, text }, cb) => {
       try {
-        const { isAllowed } = await checkPermission(
-          groupId,
-          socket.data.user!.id,
-          'member',
-        )
-        if (!isAllowed) {
-          throw new Error('createMessage: Not authorized')
-        }
-
-        const [message] = await db
-          .insert(messages)
-          .values({
-            groupId,
-            content: text,
-            senderId: socket.data.user.id,
-          })
-          .returning()
-        const messageWithUsername = {
+        const message = await insertMessage(groupId, text, socket.data.user.id)
+        io.to(groupId.toString()).emit('newMessage', {
           ...message,
           username: socket.data.user.username,
-        }
-        io.to(groupId.toString()).emit('newMessage', messageWithUsername)
-        cb({ message: messageWithUsername })
+        })
+        cb({ message })
       } catch (error) {
         cb({ error })
       }
+    })
+
+    socket.on('markMessageAsRead', async messageId => {
+      await markMessageAsRead(messageId, socket.data.user.id)
+      const [message] = await db
+        .select({ senderId: messages.senderId })
+        .from(messages)
+        .where(eq(messages.id, messageId))
+        .limit(1)
+      const senderSocketIds = await getUserSockets([message.senderId])
+      io.to(senderSocketIds).emit('messageRead', messageId)
     })
 
     socket.on('error', err => {

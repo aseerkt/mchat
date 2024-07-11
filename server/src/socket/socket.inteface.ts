@@ -7,6 +7,7 @@ export interface ServerToClientEvents {
   userOnline: (userId: number) => void
   userOffline: (userId: number) => void
   newMessage: (message: Message & { username: string }) => void
+  messageRead: (messageId: number) => void
   newMember: (member: Member & { username: string }) => void
   newMembers: (member: Member[]) => void
   newGroup: (group: Group) => void
@@ -19,6 +20,7 @@ export interface ClientToServerEvents {
     args: { groupId: number; text: string },
     callback: (response: { message?: Message; error?: unknown }) => void,
   ) => void
+  markMessageAsRead: (messageId: number) => void
   userStartedTyping: (groupId: number) => void
   userStoppedTyping: (groupId: number) => void
 }

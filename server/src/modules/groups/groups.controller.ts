@@ -1,9 +1,18 @@
 import { db } from '@/database'
-import { withPagination } from '@/database/helpers'
+import { getPaginationParams, withPagination } from '@/database/helpers'
 import { deleteGroupMembersRoles } from '@/redis/handlers'
 import { TypedIOServer } from '@/socket/socket.inteface'
 import { notFound } from '@/utils/api'
-import { and, eq, getTableColumns, like, notInArray } from 'drizzle-orm'
+import {
+  and,
+  desc,
+  eq,
+  getTableColumns,
+  like,
+  lt,
+  notInArray,
+  sql,
+} from 'drizzle-orm'
 import { RequestHandler } from 'express'
 import { members } from '../members/members.schema'
 import { addMembers } from '../members/members.service'
@@ -63,19 +72,24 @@ export const listGroups: RequestHandler = async (req, res, next) => {
       .from(members)
       .where(eq(members.userId, req.user!.id))
 
-    const result = await withPagination(
-      db.select(getTableColumns(groups)).from(groups).$dynamic(),
-      {
-        query: req.query,
-        where: userGroupIds.length
+    const qb = db.select(getTableColumns(groups)).from(groups).$dynamic()
+
+    const { cursor, limit } = getPaginationParams(req.query, 'number')
+
+    const result = await withPagination(qb, {
+      limit,
+      cursorSelect: 'id',
+      where: and(
+        userGroupIds.length
           ? notInArray(
               groups.id,
               userGroupIds.map(m => m.groupId),
             )
           : undefined,
-        sortByColumn: groups.id,
-      },
-    )
+        cursor ? lt(groups.id, cursor as number) : undefined,
+      ),
+      orderBy: [desc(groups.id)],
+    })
 
     res.json(result)
   } catch (error) {
@@ -85,18 +99,53 @@ export const listGroups: RequestHandler = async (req, res, next) => {
 
 export const listUserGroups: RequestHandler = async (req, res, next) => {
   try {
-    const result = await withPagination(
+    const sq = db
+      .select({
+        ...getTableColumns(messages),
+        seqNum:
+          sql<number>`ROW_NUMBER() OVER (PARTITION BY ${messages.groupId} ORDER BY ${desc(messages.createdAt)})`.as(
+            'seq_num',
+          ),
+      })
+      .from(messages)
+      .as('messages_with_seq')
+
+    const groupsWithLastMessage = db.$with('groups_with_last_message').as(
       db
-        .select(getTableColumns(groups))
+        .select({
+          ...getTableColumns(groups),
+          lastMessage: {
+            id: sql`${sq.id}`.as('message_id'),
+            content: sq.content,
+            senderId: sq.senderId,
+          },
+          lastActivity:
+            sql<string>`COALESCE (${sq.createdAt}, ${groups.createdAt})`.as(
+              'last_activity',
+            ),
+        })
         .from(groups)
+        .leftJoin(sq, and(eq(groups.id, sq.groupId), eq(sq.seqNum, 1)))
         .innerJoin(members, eq(members.groupId, groups.id))
-        .$dynamic(),
-      {
-        query: req.query,
-        where: eq(members.userId, req.user!.id),
-        sortByColumn: groups.id,
-      },
+        .where(eq(members.userId, req.user!.id)),
     )
+
+    const qb = db
+      .with(groupsWithLastMessage)
+      .select()
+      .from(groupsWithLastMessage)
+      .$dynamic()
+
+    const { cursor, limit } = getPaginationParams(req.query, 'date')
+
+    const result = await withPagination(qb, {
+      cursorSelect: 'lastActivity',
+      orderBy: [desc(groupsWithLastMessage.lastActivity)],
+      where: cursor
+        ? lt(groupsWithLastMessage.lastActivity, cursor)
+        : undefined,
+      limit,
+    })
 
     res.json(result)
   } catch (error) {

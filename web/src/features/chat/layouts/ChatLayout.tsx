@@ -1,7 +1,11 @@
 import { PageLoader } from '@/components/PageLoader'
 import { ChatHeader } from '@/features/chat/components'
 import { ChatUser } from '@/features/chat/components/ChatUser'
-import { CreateGroup, GroupList, JoinGroup } from '@/features/group/components'
+import {
+  CreateGroup,
+  JoinGroup,
+  UserGroupList,
+} from '@/features/group/components'
 import { useSocketConnect } from '@/hooks/useSocketConnect'
 import { cn } from '@/utils/style'
 import { Outlet, useParams } from 'react-router-dom'
@@ -20,12 +24,12 @@ const ChatLayout = () => {
       <div className='flex flex-1 overflow-hidden'>
         <div
           className={cn(
-            'flex w-full flex-shrink-0 flex-col md:w-[266px] md:border-r-2',
+            'flex w-full flex-shrink-0 flex-col md:w-[280px] md:border-r-2',
             params.groupId && 'hidden md:flex',
           )}
         >
           <ChatUser isConnected={isConnected} />
-          <GroupList />
+          <UserGroupList />
           <div className='flex shrink-0 justify-center gap-3 border-t px-3 py-4'>
             <JoinGroup />
             <CreateGroup />
