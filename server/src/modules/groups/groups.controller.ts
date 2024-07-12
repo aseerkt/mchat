@@ -167,9 +167,6 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
         lastActivity: groupsWithLastMessage.lastActivity,
         id: groupsWithLastMessage.id,
         name: groupsWithLastMessage.name,
-        ownerId: groupsWithLastMessage.ownerId,
-        createdAt: groupsWithLastMessage.createdAt,
-        updatedAt: groupsWithLastMessage.updatedAt,
         unreadCount: sql<number>`COALESCE (${unreadCounts.unreadCount}, 0)`
           .mapWith(Number)
           .as('unread_count'),
@@ -222,9 +219,9 @@ export const addGroupMembers: RequestHandler = async (req, res, next) => {
 
     const io = req.app.get('io') as TypedIOServer
 
-    io.to(getGroupRoomId(req.params.groupId)).emit('newMembers', newMembers)
+    // let existing members know new member is joined
 
-    // let existing members know new member is joined in member list
+    io.to(getGroupRoomId(req.params.groupId)).emit('newMembers', newMembers)
 
     res.json(newMembers)
   } catch (error) {

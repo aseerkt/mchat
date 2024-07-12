@@ -111,6 +111,8 @@ pnpm --filter web test
 - [x] infinite scroll cursor pagination (messages/groups/members)
 - [x] tanstack react-query integration 
 - [x] add members
+- [x] realtime unread count 
+- [ ] leave group, transfer ownership, delete group
 - [ ] alert component
 - [ ] confirm dialog
 - [ ] delete group

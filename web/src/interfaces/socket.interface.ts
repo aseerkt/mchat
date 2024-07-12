@@ -6,7 +6,7 @@ import { IMessage } from '../features/message/message.interface'
 export interface ServerToClientEvents {
   userOnline: (userId: number) => void
   userOffline: (userId: number) => void
-  newMessage: (message: IMessage) => void
+  newMessage: (message: IMessage & { groupName: string }) => void
   newMember: (member: IMember) => void
   newMembers: (member: IMember[]) => void
   newGroup: (group: IGroup) => void

@@ -62,7 +62,7 @@ export const UserGroupList = () => {
       )
     }
 
-    function handleNewMessage(message: IMessage) {
+    function handleNewMessage(message: IMessage & { groupName: string }) {
       queryClient.setQueryData<IPaginatedInfiniteGroups>(
         ['userGroups', auth],
         data => {
@@ -80,20 +80,24 @@ export const UserGroupList = () => {
               }
             })
 
-            if (messageGroup) {
-              messageGroup.lastMessage = {
+            const group: IGroupWithLastMessage = {
+              id: messageGroup?.id || message.groupId,
+              name: messageGroup?.name || message.groupName,
+              lastActivity: message.createdAt,
+              unreadCount: messageGroup?.unreadCount || 0,
+              lastMessage: {
                 id: message.id,
                 content: message.content,
                 senderId: message.senderId,
-              }
-              messageGroup.lastActivity = message.createdAt
-              if (params.groupId === message.groupId.toString()) {
-                socket.emit('markMessageAsRead', message.id)
-              } else {
-                messageGroup.unreadCount++
-              }
-              draft.pages[0].data.unshift(messageGroup)
+              },
             }
+
+            if (params.groupId === message.groupId.toString()) {
+              socket.emit('markMessageAsRead', message.id)
+            } else {
+              group.unreadCount++
+            }
+            draft.pages[0].data.unshift(group)
           })
           return updatedData
         },

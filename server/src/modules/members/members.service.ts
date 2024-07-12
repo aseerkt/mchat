@@ -60,13 +60,7 @@ export const addMembers = async (
 
   setMemberRolesForAGroup(group.id, memberRoles)
 
-  const userSockets = await getMultipleUserSockets(memberIds)
-
-  userSockets.forEach(socketId => {
-    const socket = io.sockets.sockets.get(socketId)
-    console.log('member socket', socket)
-    socket?.join(group.id.toString())
-  })
+  const userSockets = await joinMultiSocketRooms(io, memberIds, [group.id])
 
   io.to(userSockets).emit('newGroup', group)
 
@@ -80,7 +74,10 @@ export const joinMultiSocketRooms = async (
 ) => {
   const userSockets = await getMultipleUserSockets(userIds)
 
-  userSockets.forEach(socketId => {
-    io.sockets.sockets.get(socketId)?.join(groupIds.map(String))
-  })
+  for (const socketId of userSockets) {
+    const socket = io.sockets.sockets.get(socketId)
+    socket?.join(groupIds.map(String))
+  }
+
+  return userSockets
 }

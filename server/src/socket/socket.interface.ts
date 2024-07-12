@@ -6,7 +6,9 @@ import { Server, Socket } from 'socket.io'
 export interface ServerToClientEvents {
   userOnline: (userId: number) => void
   userOffline: (userId: number) => void
-  newMessage: (message: Message & { username: string }) => void
+  newMessage: (
+    message: Message & { username: string; groupName: string },
+  ) => void
   newMember: (member: Member & { username: string }) => void
   newMembers: (member: Member[]) => void
   newGroup: (group: Group) => void
