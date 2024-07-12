@@ -11,6 +11,8 @@ import {
   deleteGroup,
   getGroup,
   getNonGroupMembers,
+  kickMember,
+  leaveGroup,
   listGroups,
 } from './groups.controller'
 
@@ -21,6 +23,13 @@ router.get('/', listGroups)
 
 router.get('/:groupId', hasGroupPermission('member'), getGroup)
 router.delete('/:groupId', hasGroupPermission('owner'), deleteGroup)
+
+router.delete('/:groupId/leave', hasGroupPermission('member'), leaveGroup)
+router.delete(
+  '/:groupId/members/:memberId',
+  hasGroupPermission('admin'),
+  kickMember,
+)
 
 router.post('/:groupId/members', hasGroupPermission('admin'), addGroupMembers)
 router.get('/:groupId/members', hasGroupPermission('member'), getGroupMembers)

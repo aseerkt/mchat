@@ -41,9 +41,14 @@ export const getMemberRole = (groupId: number, userId: number) => {
   return redisClient.hget(cacheKey, userId.toString())
 }
 
-export const deleteGroupMembersRoles = (groupId: number) => {
+export const deleteGroupRoles = (groupId: number) => {
   const cacheKey = redisKeys.MEMBER_ROLES(groupId)
   return redisClient.hdel(cacheKey)
+}
+
+export const deleteMemberRole = (groupId: number, memberId: number) => {
+  const cacheKey = redisKeys.MEMBER_ROLES(groupId)
+  return redisClient.hdel(cacheKey, memberId.toString())
 }
 
 // ONLINE USER

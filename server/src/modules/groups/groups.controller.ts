@@ -1,9 +1,9 @@
 import { db } from '@/database'
 import { getPaginationParams, withPagination } from '@/database/helpers'
-import { deleteGroupMembersRoles } from '@/redis/handlers'
+import { deleteGroupRoles, deleteMemberRole } from '@/redis/handlers'
 import { getGroupRoomId } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
-import { notFound } from '@/utils/api'
+import { badRequest, notFound } from '@/utils/api'
 import {
   and,
   count,
@@ -63,6 +63,35 @@ export const getGroup: RequestHandler = async (req, res, next) => {
       return notFound(res, 'Group')
     }
     res.json(group)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getNonGroupMembers: RequestHandler = async (req, res, next) => {
+  try {
+    const groupMembers = await db
+      .select({ userId: members.userId })
+      .from(members)
+      .where(eq(members.groupId, Number(req.params.groupId)))
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...columns } = getTableColumns(users)
+    const rows = await db
+      .select(columns)
+      .from(users)
+      .where(
+        and(
+          like(users.username, `%${req.query.query}%`),
+          notInArray(
+            users.id,
+            groupMembers.map(m => m.userId),
+          ),
+        ),
+      )
+      .limit(Number(req.query.limit) || 5)
+      .orderBy(users.username)
+
+    res.json(rows)
   } catch (error) {
     next(error)
   }
@@ -241,7 +270,7 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
     }
 
     // TODO: move these db operations to queue
-    await deleteGroupMembersRoles(groupId)
+    await deleteGroupRoles(groupId)
     await db.delete(messages).where(eq(messages.groupId, groupId))
     await db.delete(members).where(eq(members.groupId, groupId))
 
@@ -251,30 +280,56 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const getNonGroupMembers: RequestHandler = async (req, res, next) => {
+export const leaveGroup: RequestHandler = async (req, res, next) => {
   try {
-    const groupMembers = await db
-      .select({ userId: members.userId })
-      .from(members)
-      .where(eq(members.groupId, Number(req.params.groupId)))
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...columns } = getTableColumns(users)
-    const rows = await db
-      .select(columns)
-      .from(users)
+    const groupId = Number(req.params.groupId)
+    if (req.group?.role === 'owner' && req.user!.id === req.body.ownerId) {
+      return badRequest(res, 'New owner id should be of different user')
+    }
+    await db.transaction(async tx => {
+      if (req.group?.role === 'owner') {
+        await tx
+          .update(members)
+          .set({ role: 'owner' })
+          .where(
+            and(
+              eq(members.groupId, groupId),
+              eq(members.userId, req.body.newOwnerId),
+            ),
+          )
+      }
+
+      await tx
+        .delete(members)
+        .where(
+          and(eq(members.groupId, groupId), eq(members.userId, req.user!.id)),
+        )
+      await deleteMemberRole(groupId, req.user!.id)
+    })
+    res.json({ message: 'Left the room successfully' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const kickMember: RequestHandler = async (req, res, next) => {
+  try {
+    if (req.user!.id === Number(req.params.memberId)) {
+      return badRequest(res, 'Cannot kick yourself')
+    }
+    await db
+      .delete(members)
       .where(
         and(
-          like(users.username, `%${req.query.query}%`),
-          notInArray(
-            users.id,
-            groupMembers.map(m => m.userId),
-          ),
+          eq(members.groupId, Number(req.params.groupId)),
+          eq(members.userId, Number(req.params.memberId)),
         ),
       )
-      .limit(Number(req.query.limit) || 5)
-      .orderBy(users.username)
-
-    res.json(rows)
+    await deleteMemberRole(
+      Number(req.params.groupId),
+      Number(req.params.memberId),
+    )
+    res.json({ message: 'Kicked member successfully' })
   } catch (error) {
     next(error)
   }

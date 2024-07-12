@@ -6,6 +6,8 @@ import { setupMaster, setupWorker } from '@socket.io/sticky'
 import 'colors'
 import cors from 'cors'
 import express from 'express'
+import helmet from 'helmet'
+import morgan from 'morgan'
 import cluster from 'node:cluster'
 import { createServer } from 'node:http'
 import { availableParallelism } from 'node:os'
@@ -61,7 +63,12 @@ const createApp = async () => {
 
   const app = express()
 
-  app.use(cors({ origin: config.corsOrigin }), express.json())
+  app.use(
+    cors({ origin: config.corsOrigin }),
+    helmet(),
+    express.json(),
+    morgan(config.isProd ? 'combined' : 'dev'),
+  )
 
   const server = createServer(app)
 
