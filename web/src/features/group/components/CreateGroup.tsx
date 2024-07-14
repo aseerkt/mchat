@@ -50,7 +50,7 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className='w-full max-w-[500px]'>
+    <form onSubmit={handleSubmit} className='w-full'>
       <h4 className='mb-3 text-xl font-semibold'>Create group</h4>
       <Input
         ref={inputRef}
@@ -60,7 +60,9 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
         autoFocus
         onChange={e => setName(e.target.value)}
       />
-      <UserAutoComplete {...userSelectProps} />
+      <div className='mb-3'>
+        <UserAutoComplete {...userSelectProps} />
+      </div>
       <Button disabled={isPending}>Create</Button>
     </form>
   )

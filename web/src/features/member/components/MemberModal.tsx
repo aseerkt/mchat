@@ -1,7 +1,12 @@
 import { Dialog } from '@/components/Dialog'
+import { useQueryClient } from '@tanstack/react-query'
 import { useGetMember, useHasPermission } from '../hooks'
 import { ChangeMemberRole } from './ChangeMemberRole'
 import { KickMember } from './KickMember'
+
+function gravatarImage(hashHex: string) {
+  return `https://gravatar.com/avatar/${hashHex}?d=mp&f=y`
+}
 
 export const MemberModal = ({
   groupId,
@@ -13,35 +18,53 @@ export const MemberModal = ({
   onClose: () => void
 }) => {
   const { member } = useGetMember(groupId, userId, Boolean(userId))
-  const { hasPermission, currentMemberRole } = useHasPermission(groupId)
+  const { hasPermission, currentMember } = useHasPermission(groupId)
+  const queryClient = useQueryClient()
 
-  if (!member || !userId) {
+  if (!member || !currentMember || !userId) {
     return null
   }
+  const handleComplete = (close: boolean) => () => {
+    queryClient.invalidateQueries({ queryKey: ['members', groupId] })
+    if (close) {
+      onClose()
+    }
+  }
+
+  const notCurrentMember = currentMember.id !== member.id
 
   return (
     <Dialog isOpen={Boolean(userId)} onClose={onClose}>
-      <div className='flex w-full max-w-[450px] flex-col gap-4'>
+      <div className='flex w-full flex-col gap-4'>
+        <div className='flex items-center justify-center'>
+          <img
+            className='h-20 w-20 animate-pulse rounded-full bg-gray-200 ring-4'
+            src={gravatarImage(member.username)}
+            alt='avatar'
+          />
+        </div>
         <b>{member.username}</b>
         <span>{member.fullName}</span>
-        <span>role: {member.role}</span>
-        <div className='flex gap-4'>
-          {hasPermission('owner') && (
-            <KickMember
-              groupId={groupId}
-              userId={userId}
-              onComplete={onClose}
-            />
-          )}
-          {hasPermission('admin') && (
-            <ChangeMemberRole
-              groupId={groupId}
-              userId={userId}
-              initialRole={member.role}
-              currentUserRole={currentMemberRole}
-            />
-          )}
-        </div>
+        {notCurrentMember && (
+          <div className='flex gap-4'>
+            {hasPermission('owner') && (
+              <KickMember
+                groupId={groupId}
+                userId={userId}
+                onComplete={handleComplete(true)}
+              />
+            )}
+            {hasPermission('admin') && (
+              <ChangeMemberRole
+                groupId={groupId}
+                userId={userId}
+                initialRole={member.role}
+                currentUserRole={currentMember?.role}
+                onComplete={handleComplete(false)}
+              />
+            )}
+          </div>
+        )}
       </div>
     </Dialog>
   )

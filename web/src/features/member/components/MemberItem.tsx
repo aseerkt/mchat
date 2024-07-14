@@ -10,20 +10,23 @@ export const MemberItem = ({ member, onClick }: MemberItemProps) => {
   return (
     <li
       role='button'
-      className='inline-flex cursor-pointer items-center gap-2 bg-gray-100 p-3 hover:bg-gray-200'
+      className='inline-flex cursor-pointer items-center bg-gray-100 p-3 hover:bg-gray-200'
       key={member.userId}
       onClick={onClick}
     >
       <div
         aria-label={member.online ? 'user online' : 'user offline'}
         className={cn(
-          'h-3 w-3 rounded-full',
+          'mr-2 h-3 w-3 shrink-0 rounded-full',
           member.online
             ? 'bg-green-600'
             : 'border-2 border-gray-400 bg-gray-200',
         )}
       ></div>
-      <b title={member.username} className='text-sm'>
+      <b
+        title={member.username}
+        className='overflow-hidden text-ellipsis whitespace-nowrap text-sm'
+      >
         {member.username}
       </b>
       {member.role !== 'member' && (

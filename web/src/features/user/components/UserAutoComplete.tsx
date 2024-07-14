@@ -45,8 +45,7 @@ export const UserAutoComplete = ({
         suggestionLabel='username'
         label='Select members'
         placeholder='Search by username'
-      />
-      <div className='mb-3 flex flex-wrap'>
+      >
         {Object.values(users).map(user => (
           <Chip
             key={user.id}
@@ -54,7 +53,7 @@ export const UserAutoComplete = ({
             onDelete={() => removeUser(user.id)}
           />
         ))}
-      </div>
+      </AutoComplete>
     </>
   )
 }

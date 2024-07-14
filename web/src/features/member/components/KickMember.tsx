@@ -24,7 +24,12 @@ export const KickMember = ({
     },
   })
   return (
-    <Button disabled={isPending} onClick={() => mutate({ groupId, userId })}>
+    <Button
+      variant='secondary'
+      className='border-red-500 text-red-500'
+      disabled={isPending}
+      onClick={() => mutate({ groupId, userId })}
+    >
       Kick member
     </Button>
   )

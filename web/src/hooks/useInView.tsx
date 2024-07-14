@@ -27,7 +27,6 @@ export const useInView = <TElement extends HTMLElement>(
       entries => {
         if (entries[0].isIntersecting) {
           if (observe) {
-            console.log('intersected')
             onLoadMore()
           }
         }

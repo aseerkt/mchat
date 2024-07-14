@@ -27,7 +27,7 @@ export const Dialog = ({ isOpen, onClose, children }: DialogProps) => {
             ref={dialogRef}
             role='dialog'
             aria-modal='true'
-            className='border-3 rounded bg-white p-6 shadow-md'
+            className='border-3 w-full max-w-[500px] shrink-0 rounded bg-white p-6 shadow-md'
           >
             {children}
           </div>

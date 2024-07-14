@@ -62,7 +62,9 @@ export const addMembers = async (
 
   const userSockets = await joinMultiSocketRooms(io, memberIds, [group.id])
 
-  io.to(userSockets).emit('newGroup', group)
+  if (userSockets.length) {
+    io.to(userSockets).emit('newGroup', group)
+  }
 
   return newMembers
 }

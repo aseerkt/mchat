@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
 import { useDebounce } from './useDebounce'
+import { useDisclosure } from './useDisclosure'
 
 export const useQueryAutoComplete = <
   TQueryFnData extends { id: number },
@@ -24,7 +25,11 @@ export const useQueryAutoComplete = <
   const search = useDebounce(inputValue)
 
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
-  const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(true)
+  const {
+    isOpen: isDropdownVisible,
+    open: openDropdown,
+    close: closeDropdown,
+  } = useDisclosure()
 
   const {
     data: suggestions,
@@ -38,17 +43,13 @@ export const useQueryAutoComplete = <
   })
 
   useEffect(() => {
-    if (inputValue.length > 1) {
-      setIsDropdownVisible(true)
-    } else {
-      setIsDropdownVisible(false)
-    }
+    inputValue.length > 1 ? openDropdown() : closeDropdown()
   }, [inputValue])
 
   const handleInputBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
       e.stopPropagation()
-      setTimeout(() => setIsDropdownVisible(false), 100)
+      setTimeout(closeDropdown, 100)
     },
     [],
   )
@@ -61,38 +62,35 @@ export const useQueryAutoComplete = <
     [],
   )
 
-  const handleSelect = useCallback(
-    (suggestion: TQueryFnData) => {
-      setInputValue('')
-      onSelect(suggestion)
-      setIsDropdownVisible(false)
-      setHighlightedIndex(-1)
-    },
-    [onSelect],
-  )
+  const handleSelect = useCallback((suggestion: TQueryFnData) => {
+    setInputValue('')
+    onSelect(suggestion)
+    closeDropdown()
+    setHighlightedIndex(-1)
+  }, [])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       e.stopPropagation()
-      if (suggestions.length > 0) {
+      if (suggestions && suggestions.length > 0) {
         if (e.key === 'ArrowDown') {
           setHighlightedIndex(prevIndex =>
             prevIndex === suggestions.length - 1 ? 0 : prevIndex + 1,
           )
-          setIsDropdownVisible(true)
+          openDropdown()
         } else if (e.key === 'ArrowUp') {
           setHighlightedIndex(prevIndex =>
             prevIndex === 0 ? suggestions.length - 1 : prevIndex - 1,
           )
-          setIsDropdownVisible(true)
+          openDropdown()
         } else if (e.key === 'Enter' && highlightedIndex >= 0) {
           handleSelect(suggestions[highlightedIndex])
         } else if (e.key === 'Tab') {
-          setIsDropdownVisible(false)
+          closeDropdown()
         }
       }
     },
-    [highlightedIndex, suggestions, handleSelect],
+    [highlightedIndex, suggestions],
   )
 
   return {
@@ -100,7 +98,7 @@ export const useQueryAutoComplete = <
     handleInputChange,
     handleInputBlur,
     handleKeyDown,
-    isDropdownVisible: isDropdownVisible && suggestions.length > 0,
+    isDropdownVisible,
     handleSelect,
     highlightedIndex,
     suggestions,

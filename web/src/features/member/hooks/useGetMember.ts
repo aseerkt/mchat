@@ -37,5 +37,5 @@ export const useHasPermission = (groupId: number, enabled = true) => {
     [member],
   )
 
-  return { hasPermission, currentMemberRole: member?.role }
+  return { hasPermission, currentMember: member }
 }

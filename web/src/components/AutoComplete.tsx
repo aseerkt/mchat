@@ -1,12 +1,13 @@
+import { cn } from '@/utils/style'
 import React, { useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Input } from './Input'
 
 type AutoCompleteProps<TSuggestion, TError> = {
   suggestions: TSuggestion[]
   suggestionLabel: keyof TSuggestion
   inputValue: string
   isDropdownVisible: boolean
+  children: React.ReactNode
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleSelect: (suggestion: TSuggestion) => void
   handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
@@ -35,6 +36,7 @@ export const AutoComplete = <
   suggestionLabel,
   inputValue,
   isDropdownVisible,
+  children,
   handleInputChange,
   handleSelect,
   handleKeyDown,
@@ -47,33 +49,62 @@ export const AutoComplete = <
   placeholder = 'Search',
 }: AutoCompleteProps<TSuggestion, TError>) => {
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleInputFocus = (e: React.FocusEvent | React.MouseEvent) => {
+    e.stopPropagation()
+    inputRef.current?.focus()
+  }
+
+  let content
+
+  if (isFetching) {
+    content = <small>Loading...</small>
+  } else if (isError) {
+    content = <small>Error: {error?.toString()}</small>
+  } else if (isDropdownVisible && suggestions.length > 0) {
+    content = (
+      <SuggestionList
+        wrapperRef={wrapperRef}
+        suggestions={suggestions}
+        suggestionLabel={suggestionLabel}
+        highlightedIndex={highlightedIndex}
+        onSelect={handleSelect}
+      />
+    )
+  } else if (isDropdownVisible) {
+    content = <small className='text-gray-500'>No results</small>
+  }
 
   return (
-    <div className='relative flex flex-col' ref={wrapperRef}>
-      <Input
-        type='search'
-        placeholder={placeholder}
-        value={inputValue}
-        label={label}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        onBlur={handleInputBlur}
-        aria-autocomplete='list'
-        aria-controls='suggestion-list'
-        aria-activedescendant={`suggestion-${highlightedIndex}`}
-      />
-      {isFetching && <p>Loading...</p>}
-      {isError && <p>Error: {error?.toString()}</p>}
-      {isDropdownVisible && suggestions.length > 0 && (
-        <SuggestionList
-          wrapperRef={wrapperRef}
-          suggestions={suggestions}
-          suggestionLabel={suggestionLabel}
-          highlightedIndex={highlightedIndex}
-          onSelect={handleSelect}
-        />
-      )}
-    </div>
+    <>
+      {label && <label className='mb-1 inline-block'>{label}</label>}
+      <div
+        tabIndex={0}
+        className='relative flex flex-col rounded border p-2 focus-within:border-2 focus-within:border-black'
+        ref={wrapperRef}
+        onClick={handleInputFocus}
+        onFocus={handleInputFocus}
+      >
+        <div className='flex flex-wrap gap-2'>
+          {children}
+          <input
+            ref={inputRef}
+            type='text'
+            className='px-1 text-sm outline-none'
+            placeholder={placeholder}
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onBlur={handleInputBlur}
+            aria-autocomplete='list'
+            aria-controls='suggestion-list'
+            aria-activedescendant={`suggestion-${highlightedIndex}`}
+          />
+        </div>
+        {content}
+      </div>
+    </>
   )
 }
 
@@ -88,7 +119,7 @@ const SuggestionList = <TSuggestion extends { id: number }>({
     const wrapperRect = wrapperRef.current?.getBoundingClientRect()
     return wrapperRect
       ? {
-          top: wrapperRect.bottom - 15,
+          top: wrapperRect.bottom,
           left: wrapperRect.left,
           width: wrapperRect.width,
         }
@@ -105,14 +136,17 @@ const SuggestionList = <TSuggestion extends { id: number }>({
       {suggestions.map((suggestion, index) => (
         <li
           key={suggestion.id}
-          id={`suggestion-${index}`}
-          className={`cursor-pointer px-3 py-2 hover:bg-gray-200 ${highlightedIndex === index ? 'bg-gray-200' : ''}`}
+          className={cn(
+            `cursor-pointer px-3 py-2 hover:bg-gray-200`,
+            highlightedIndex === index && 'bg-gray-200',
+          )}
           role='option'
           aria-selected={highlightedIndex === index}
           onMouseDown={e => {
             e.stopPropagation()
             onSelect(suggestion)
           }}
+          tabIndex={-1}
         >
           {suggestion[suggestionLabel] as string}
         </li>

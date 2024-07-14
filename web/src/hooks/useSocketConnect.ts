@@ -26,7 +26,6 @@ export const useSocketConnect = () => {
 
     socket.on('connect_error', err => {
       console.log('socket err: ', err)
-      window.location.href = '/'
     })
 
     if (config.isDev) {

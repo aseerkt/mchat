@@ -20,7 +20,7 @@ export const UserGroupItem = ({ group }: UserGroupItemProps) => {
         <Avatar name={group.name} id={group.id} />
         <div className='ml-3 flex flex-1 flex-col overflow-hidden'>
           <b
-            className='text-ellipsis whitespace-nowrap text-nowrap font-semibold'
+            className='overflow-hidden text-ellipsis whitespace-nowrap text-nowrap font-semibold'
             title={group.name}
           >
             {group.name}

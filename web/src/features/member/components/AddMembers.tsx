@@ -9,14 +9,14 @@ import { useParams } from 'react-router-dom'
 import { addGroupMembers } from '../member.service'
 
 export const AddMembers = () => {
-  const { isOpen, toggle } = useDisclosure()
+  const { isOpen, open, close } = useDisclosure()
   return (
     <>
-      <Button variant='secondary' className='w-full' onClick={toggle}>
+      <Button variant='secondary' className='w-full' onClick={open}>
         Add members
       </Button>
-      <Dialog isOpen={isOpen} onClose={toggle}>
-        <AddMemberForm onComplete={toggle} />
+      <Dialog isOpen={isOpen} onClose={close}>
+        <AddMemberForm onComplete={close} />
       </Dialog>
     </>
   )
@@ -42,6 +42,7 @@ const AddMemberForm = ({ onComplete }: { onComplete: () => void }) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    console.log(e)
     const memberIds = Object.keys(userSelectProps.users).map(Number)
     if (!memberIds.length) {
       return toast({ title: 'Select at least one member', severity: 'error' })
@@ -50,9 +51,14 @@ const AddMemberForm = ({ onComplete }: { onComplete: () => void }) => {
   }
 
   return (
-    <form className='w-full max-w-[500px]' onSubmit={handleSubmit}>
-      <UserAutoComplete groupId={Number(groupId)} {...userSelectProps} />
-      <Button type='submit' disabled={isPending}>
+    <form className='w-full' onSubmit={handleSubmit}>
+      <div className='mb-3'>
+        <UserAutoComplete groupId={Number(groupId)} {...userSelectProps} />
+      </div>
+      <Button
+        type='submit'
+        disabled={isPending && Object.keys(userSelectProps.users).length === 0}
+      >
         Add members
       </Button>
     </form>
