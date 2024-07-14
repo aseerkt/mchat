@@ -2,7 +2,7 @@
 
 > Real-time messenger powered by Socket.IO
 
-![Chat Interface](./screenshots/chat-interface.png)
+![Chat Interface](./screenshots/mchat-dual.png)
 
 ## Pre requisites
 
