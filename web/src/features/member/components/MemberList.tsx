@@ -9,10 +9,11 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { produce } from 'immer'
-import { Fragment, useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { IMember } from '../member.interface'
 import { fetchGroupMembers } from '../member.service'
 import { MemberItem } from './MemberItem'
+import { MemberModal } from './MemberModal'
 
 type MemberInfiniteData = InfiniteData<IPaginatedResult<IMember>, string>
 
@@ -101,6 +102,11 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId])
 
+  const [selectedMemberId, setSelectedMemberId] = useState<number>()
+
+  const openMemberModal = (userId: number) => () => setSelectedMemberId(userId)
+  const closeMemberModal = () => setSelectedMemberId(undefined)
+
   let content
 
   if (error) {
@@ -109,14 +115,27 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
     content = new Array(5).map((_, idx) => (
       <Skeleton key={idx} className='h-6 w-full' />
     ))
-  } else if (data?.pages?.length) {
-    content = data.pages.map((page, i) => (
-      <Fragment key={i}>
-        {page.data.map(member => (
-          <MemberItem key={member.id} member={member} />
+  } else if (data?.pages[0].data.length) {
+    content = (
+      <>
+        {data.pages.map((page, i) => (
+          <Fragment key={i}>
+            {page.data.map(member => (
+              <MemberItem
+                key={member.id}
+                member={member}
+                onClick={openMemberModal(member.userId)}
+              />
+            ))}
+          </Fragment>
         ))}
-      </Fragment>
-    ))
+        <MemberModal
+          groupId={groupId}
+          userId={selectedMemberId}
+          onClose={closeMemberModal}
+        />
+      </>
+    )
   }
 
   return (

@@ -7,7 +7,7 @@ import {
 } from '@/redis/handlers'
 import { getGroupRoomId } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
-import { badRequest } from '@/utils/api'
+import { badRequest, notFound } from '@/utils/api'
 import { and, asc, eq, getTableColumns, gt } from 'drizzle-orm'
 import { RequestHandler } from 'express'
 import { users } from '../users/users.schema'
@@ -97,9 +97,27 @@ export const getGroupMembers: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const getCurrentMember: RequestHandler = (req, res, next) => {
+export const getGroupMember: RequestHandler = async (req, res, next) => {
   try {
-    return res.json(req.group)
+    const [member] = await db
+      .select({
+        ...getTableColumns(members),
+        fullName: users.fullName,
+        username: users.username,
+      })
+      .from(members)
+      .where(
+        and(
+          eq(members.userId, Number(req.params.userId)),
+          eq(members.groupId, Number(req.params.groupId)),
+        ),
+      )
+      .innerJoin(users, eq(members.userId, users.id))
+
+    if (!member) {
+      return notFound(res, 'Member')
+    }
+    res.json(member)
   } catch (error) {
     next(error)
   }

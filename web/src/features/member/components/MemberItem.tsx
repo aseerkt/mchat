@@ -3,15 +3,19 @@ import { IMember } from '../member.interface'
 
 interface MemberItemProps {
   member: IMember
+  onClick: () => void
 }
 
-export const MemberItem = ({ member }: MemberItemProps) => {
+export const MemberItem = ({ member, onClick }: MemberItemProps) => {
   return (
     <li
-      className='inline-flex items-center gap-2 bg-gray-100 p-3'
+      role='button'
+      className='inline-flex cursor-pointer items-center gap-2 bg-gray-100 p-3 hover:bg-gray-200'
       key={member.userId}
+      onClick={onClick}
     >
       <div
+        aria-label={member.online ? 'user online' : 'user offline'}
         className={cn(
           'h-3 w-3 rounded-full',
           member.online
@@ -19,7 +23,14 @@ export const MemberItem = ({ member }: MemberItemProps) => {
             : 'border-2 border-gray-400 bg-gray-200',
         )}
       ></div>
-      <b className='text-sm'>{member.username}</b>
+      <b title={member.username} className='text-sm'>
+        {member.username}
+      </b>
+      {member.role !== 'member' && (
+        <span className='ml-auto rounded-full border-2 bg-yellow-700 px-2 text-xs font-semibold text-blue-50'>
+          {member.role}
+        </span>
+      )}
     </li>
   )
 }

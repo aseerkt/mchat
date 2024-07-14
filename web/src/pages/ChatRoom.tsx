@@ -2,7 +2,7 @@ import { TypingIndicator } from '@/features/chat/components'
 import { GroupInfo } from '@/features/chat/layouts'
 import { GroupHeader } from '@/features/group/components'
 import { AddMembers, MemberList } from '@/features/member/components'
-import { useCurrentMember } from '@/features/member/hooks'
+import { useHasPermission } from '@/features/member/hooks'
 import { MessageComposer, MessageList } from '@/features/message/components'
 import { useDisclosure } from '@/hooks/useDisclosure'
 import { getSocketIO } from '@/utils/socket'
@@ -21,11 +21,12 @@ export const Component = () => {
     const socket = getSocketIO()
     if (groupId) {
       socket.emit('joinGroup', Number(groupId))
+      // TODO: only mark group as read if it has unread messages
       socket.emit('markGroupMessagesAsRead', groupId)
     }
   }, [groupId])
 
-  const { hasPermission } = useCurrentMember(groupId, isOpen)
+  const { hasPermission } = useHasPermission(groupId)
 
   if (!groupId) return null
 

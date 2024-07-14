@@ -54,8 +54,8 @@ export const hasGroupPermission =
         return notAuthorized(res)
       }
 
-      req.group = {
-        id: groupId,
+      req.member = {
+        groupId: groupId,
         role: memberRole!,
       }
 

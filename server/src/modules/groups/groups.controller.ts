@@ -3,7 +3,7 @@ import { getPaginationParams, withPagination } from '@/database/helpers'
 import { deleteGroupRoles, deleteMemberRole } from '@/redis/handlers'
 import { getGroupRoomId } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
-import { badRequest, notFound } from '@/utils/api'
+import { badRequest, notAuthorized, notFound } from '@/utils/api'
 import {
   and,
   count,
@@ -258,6 +258,61 @@ export const addGroupMembers: RequestHandler = async (req, res, next) => {
   }
 }
 
+export const changeMemberRole: RequestHandler = async (req, res, next) => {
+  try {
+    const [member] = await db
+      .select({ role: members.role })
+      .from(members)
+      .where(
+        and(
+          eq(members.userId, Number(req.params.userId)),
+          eq(members.groupId, Number(req.params.groupId)),
+        ),
+      )
+      .innerJoin(users, eq(members.userId, users.id))
+
+    if (!member) {
+      return notFound(res, 'Member')
+    }
+
+    if (member.role === req.body.role) {
+      return badRequest(res, 'Provide different role')
+    }
+
+    let isRoleChangePermissible = false
+
+    // owner can promote members and demote admins
+    // admin can promote existing members to admin role
+    // admins cannot demote/promote existing admins
+    if (req.member!.role === 'owner') {
+      if (
+        (member.role == 'member' && req.body.role === 'admin') ||
+        (member.role === 'admin' && req.body.role === 'member')
+      ) {
+        isRoleChangePermissible = true
+      }
+    } else if (req.member?.role === 'admin' && req.body.role === 'admin') {
+      isRoleChangePermissible = true
+    }
+
+    if (isRoleChangePermissible) {
+      await db
+        .update(members)
+        .set({ role: req.body.role })
+        .where(
+          and(
+            eq(members.userId, Number(req.params.userId)),
+            eq(members.groupId, Number(req.params.groupId)),
+          ),
+        )
+      return res.json({ message: 'Role changed successfully' })
+    }
+    notAuthorized(res)
+  } catch (error) {
+    next(error)
+  }
+}
+
 // DELETE
 
 export const deleteGroup: RequestHandler = async (req, res, next) => {
@@ -274,6 +329,8 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
     await db.delete(messages).where(eq(messages.groupId, groupId))
     await db.delete(members).where(eq(members.groupId, groupId))
 
+    // TODO: send socket io event to kick active members away from group
+
     res.json({ message: 'Group deleted' })
   } catch (error) {
     next(error)
@@ -283,11 +340,11 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
 export const leaveGroup: RequestHandler = async (req, res, next) => {
   try {
     const groupId = Number(req.params.groupId)
-    if (req.group?.role === 'owner' && req.user!.id === req.body.ownerId) {
+    if (req.member?.role === 'owner' && req.user!.id === req.body.ownerId) {
       return badRequest(res, 'New owner id should be of different user')
     }
     await db.transaction(async tx => {
-      if (req.group?.role === 'owner') {
+      if (req.member?.role === 'owner') {
         await tx
           .update(members)
           .set({ role: 'owner' })
@@ -306,6 +363,7 @@ export const leaveGroup: RequestHandler = async (req, res, next) => {
         )
       await deleteMemberRole(groupId, req.user!.id)
     })
+    // TODO: send socket io event to existing members
     res.json({ message: 'Left the room successfully' })
   } catch (error) {
     next(error)
@@ -329,6 +387,8 @@ export const kickMember: RequestHandler = async (req, res, next) => {
       Number(req.params.groupId),
       Number(req.params.memberId),
     )
+    // TODO: send socket io event to kicked member as well existing members
+
     res.json({ message: 'Kicked member successfully' })
   } catch (error) {
     next(error)

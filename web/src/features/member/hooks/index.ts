@@ -1,1 +1,1 @@
-export * from './useCurrentMember'
+export * from './useGetMember'

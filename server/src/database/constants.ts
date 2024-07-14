@@ -1,4 +1,3 @@
-import { sql } from 'drizzle-orm'
 import { bigserial, timestamp } from 'drizzle-orm/pg-core'
 
 export const baseSchema = {
@@ -8,7 +7,7 @@ export const baseSchema = {
     .defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
-    .$onUpdate(() => sql`now()`),
+    .$onUpdate(() => new Date()),
 }
 
 export const defaultLimit = 15

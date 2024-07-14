@@ -2,8 +2,12 @@ import { IPaginatedResult } from '@/interfaces/common.interface'
 import { fetcher, stringifyQueryParams } from '@/utils/api'
 import {
   IAddMemberArgs,
+  IChangeMemberRoleArgs,
   IGetGroupMembersArgs,
+  IKickMemberArgs,
+  ILeaveGroupArgs,
   IMember,
+  IMemberWithUser,
 } from './member.interface'
 
 export const fetchGroupMembers = async ({
@@ -21,7 +25,27 @@ export const addGroupMembers = async ({
     body: JSON.stringify({ memberIds }),
   })
 
-export const getCurrentMember = async (
+export const getMember = async (
   groupId: number,
-): Promise<{ id: number; role: IMember['role'] }> =>
-  fetcher(`groups/${groupId}/members/current`)
+  userId: number,
+): Promise<IMemberWithUser> => fetcher(`groups/${groupId}/members/${userId}`)
+
+export const kickMember = ({ groupId, userId }: IKickMemberArgs) =>
+  fetcher(`groups/${groupId}/members/${userId}`, { method: 'DELETE' })
+
+export const leaveGroup = ({ groupId, newOwnerId }: ILeaveGroupArgs) => {
+  fetcher(`groups/${groupId}/leave`, {
+    method: 'DELETE',
+    body: newOwnerId ? JSON.stringify({ newOwnerId }) : undefined,
+  })
+}
+
+export const changeMemberRole = ({
+  groupId,
+  userId,
+  role,
+}: IChangeMemberRoleArgs) =>
+  fetcher(`groups/${groupId}/members/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  })

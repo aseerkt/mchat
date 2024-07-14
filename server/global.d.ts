@@ -7,8 +7,8 @@ interface UserPayload {
 declare namespace Express {
   export interface Request {
     user?: UserPayload
-    group?: {
-      id: number
+    member?: {
+      groupId: number
       role: 'owner' | 'admin' | 'member'
     }
   }
