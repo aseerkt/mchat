@@ -1,3 +1,4 @@
+import { Alert } from '@/components/Alert'
 import { Skeleton } from '@/components/Skeleton'
 import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
@@ -35,7 +36,7 @@ export const UserGroupList = () => {
   let content
 
   if (error) {
-    content = <p className='text-red-500'>{error.message}</p>
+    content = <Alert severity='error'>{error.message}</Alert>
   } else if (isLoading) {
     content = new Array(5).map((_, idx) => (
       <Skeleton key={idx} className='h-8 w-full' />
@@ -54,7 +55,7 @@ export const UserGroupList = () => {
       </ul>
     )
   } else if (isSuccess) {
-    content = <p className='p-3 text-gray-700'>Join or create group</p>
+    content = <Alert severity='info'>Join or create group</Alert>
   }
 
   return <aside className='flex-1 overflow-hidden'>{content}</aside>

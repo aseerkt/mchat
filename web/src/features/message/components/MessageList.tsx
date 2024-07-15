@@ -1,3 +1,4 @@
+import { Alert } from '@/components/Alert'
 import { Skeleton } from '@/components/Skeleton'
 import {
   IMessage,
@@ -69,12 +70,12 @@ export const MessageList = ({ groupId }: MessageListProps) => {
   let content
 
   if (error) {
-    content = <p className='text-red-500'>{error.message}</p>
+    content = <Alert severity='error'>{error.message}</Alert>
   } else if (isLoading) {
     content = new Array(5).map((_, index) => (
       <Skeleton key={index} className='h-10' />
     ))
-  } else if (data?.pages.length) {
+  } else if (data?.pages[0].data.length) {
     content = data.pages.map((page, i) => (
       <Fragment key={i}>
         {page.data.map(message => (
@@ -87,7 +88,7 @@ export const MessageList = ({ groupId }: MessageListProps) => {
       </Fragment>
     ))
   } else if (isSuccess) {
-    content = <p className='p-3 text-gray-700'>Be the first one to message</p>
+    content = <Alert severity='info'>Be the first to message</Alert>
   }
 
   return (

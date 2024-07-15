@@ -1,6 +1,8 @@
 import { cn } from '@/utils/style'
 import React, { useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { Alert } from './Alert'
+import { Skeleton } from './Skeleton'
 
 type AutoCompleteProps<TSuggestion, TError> = {
   suggestions: TSuggestion[]
@@ -59,9 +61,13 @@ export const AutoComplete = <
   let content
 
   if (isFetching) {
-    content = <small>Loading...</small>
+    content = <Skeleton className='h-5 w-full' />
   } else if (isError) {
-    content = <small>Error: {error?.toString()}</small>
+    content = (
+      <Alert severity='error'>
+        {error?.toString() || 'Something went wrong'}
+      </Alert>
+    )
   } else if (isDropdownVisible && suggestions.length > 0) {
     content = (
       <SuggestionList

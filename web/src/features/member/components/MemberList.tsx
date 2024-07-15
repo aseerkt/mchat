@@ -1,4 +1,5 @@
-import { Skeleton } from '@/components/Skeleton'
+import { Alert } from '@/components/Alert'
+import { ArraySkeleton } from '@/components/Skeleton'
 import { useInView } from '@/hooks/useInView'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Fragment, useRef, useState } from 'react'
@@ -36,11 +37,9 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
   let content
 
   if (error) {
-    return <div className='text-red-500'>{error.message}</div>
+    content = <Alert severity='error'>{error.message}</Alert>
   } else if (isLoading) {
-    content = new Array(5).map((_, idx) => (
-      <Skeleton key={idx} className='h-6 w-full' />
-    ))
+    content = <ArraySkeleton length={5} className='h-6 w-full' />
   } else if (data?.pages[0].data.length) {
     content = (
       <>

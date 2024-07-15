@@ -16,11 +16,15 @@ import {
 
 export const router = Router()
 
+// Group Handler
+
 router.post('/', createGroup)
 router.get('/', listGroups)
 
 router.get('/:groupId', hasGroupPermission('member'), getGroup)
 router.delete('/:groupId', hasGroupPermission('owner'), deleteGroup)
+
+// Group Member Handler
 
 router.delete('/:groupId/leave', hasGroupPermission('member'), leaveGroup)
 router.delete(
@@ -28,7 +32,6 @@ router.delete(
   hasGroupPermission('admin'),
   kickMember,
 )
-
 router.post('/:groupId/members', hasGroupPermission('admin'), addGroupMembers)
 router.get('/:groupId/members', hasGroupPermission('member'), getGroupMembers)
 router.get(
@@ -46,6 +49,8 @@ router.get(
   hasGroupPermission('admin'),
   getNonGroupMembers,
 )
+
+// Message handler
 
 router.get('/:groupId/messages', hasGroupPermission('member'), listMessages)
 router.post('/:groupId/messages', hasGroupPermission('member'), createMessage)
