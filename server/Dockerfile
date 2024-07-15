@@ -8,6 +8,8 @@ COPY package.json .
 
 RUN pnpm i
 
+RUN pnpm swag:gen
+
 COPY .env.docker .env
 
 COPY . .

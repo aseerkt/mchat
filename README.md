@@ -123,7 +123,7 @@ pnpm --filter web test
 
 - [x] playwright e2e tests for chat
 - [x] switch to postgresql (support transaction)
-- [ ] swagger ui
+- [x] minimal swagger ui
 - [ ] keploy api test generation
 - [ ] private groups - invite/add/delete members
 - [ ] notifications
