@@ -114,7 +114,7 @@ pnpm --filter web test
 - [x] realtime unread count 
 - [x] leave group, transfer ownership, delete group
 - [x] delete group
-- [ ] alert component
+- [x] alert component
 - [ ] confirm dialog
 - [ ] read receipts
 - [ ] e2e encryption
