@@ -9,8 +9,11 @@ services:
     environment:
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: mchat
-  redis:
-    image: redis:7.2-alpine
-    restart: always
+  dragonfly:
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    restart: unless-stopped
+    command: dragonfly --proactor_threads=4
     ports:
       - 6379:6379
+    ulimits:
+      memlock: -1

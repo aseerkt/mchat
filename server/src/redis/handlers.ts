@@ -65,6 +65,8 @@ export const markUserOffline = (userId: number) => {
 }
 
 export const checkOnlineUsers = async (userIds: number[]) => {
+  // redis: array of 1, 0
+  // dragonfly: array of '1', '0'
   return redisClient.smismember(redisKeys.ONLINE_USERS, userIds)
 }
 

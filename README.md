@@ -8,18 +8,18 @@
 
 - Node.js v20
 - PNPM
-- Docker
+- Docker (dragonflydb - 3.5GB memory / 4 cores)
 
 ## Tech Stacks
 
 - Frontend - React.js, TailwindCSS, React-Query
-- Backend - Express, socket.io, PostgreSQL, Redis
+- Backend - Express, socket.io, PostgreSQL, DragonflyDB
 
 ## Get Started
 
 ### Run final build using docker compose
 
-- Spin up the entire stack (Redis, PostgreSQL, React.js, Node.js)
+- Spin up the entire stack (DragonflyDB, PostgreSQL, React.js, Node.js)
 ```bash
 pnpm docker:up
 ```
@@ -41,12 +41,12 @@ pnpm docker:down
 
 ### Development
 
-- Spin up PostgreSQL and Redis
+- Spin up PostgreSQL and DragonflyDB
 ```bash
 docker compose up -d
 ```
 
-> Make sure the ports (postgres: 5432, redis: 6379) are open for connection
+> Make sure the ports (postgres: 5432, dragonfly: 6379) are open for connection
 
 - Install dependencies
 ```bash
@@ -105,7 +105,7 @@ pnpm --filter web test
 - [x] realtime messaging
 - [x] typing indicators
 - [x] socket.io cluster adapter integration
-- [x] redis implementation (typing users, online users)
+- [x] dragonflydb implementation (typing users, online users)
 - [x] member online status
 - [x] realtime member list update
 - [x] infinite scroll cursor pagination (messages/groups/members)

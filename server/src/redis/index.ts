@@ -12,11 +12,11 @@ export function getRedisClient() {
     })
 
     redisClient.on('connect', () => {
-      console.log('Redis connected'.yellow.bold)
+      console.log('DragonflyDB connected'.yellow.bold)
     })
 
     redisClient.on('error', (...args) => {
-      console.log('Redis error: '.red.bold, ...args)
+      console.log('DragonflyDB error: '.red.bold, ...args)
     })
   }
 
