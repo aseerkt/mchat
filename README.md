@@ -112,12 +112,12 @@ pnpm --filter web test
 - [x] tanstack react-query integration 
 - [x] add members
 - [x] realtime unread count 
-- [ ] leave group, transfer ownership, delete group
+- [x] leave group, transfer ownership, delete group
+- [x] delete group
 - [ ] alert component
 - [ ] confirm dialog
-- [ ] delete group
-- [ ] e2e encryption
 - [ ] read receipts
+- [ ] e2e encryption
 
 ### extras
 

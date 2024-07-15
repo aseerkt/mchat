@@ -10,7 +10,8 @@
     "lint": "tsc && eslint src/**/*.ts",
     "migrate:gen": "drizzle-kit generate",
     "migrate:run": "tsx src/scripts/migrate.ts",
-    "seed": "tsx src/scripts/seed.ts"
+    "seed": "tsx src/scripts/seed.ts",
+    "swag:gen": "tsx src/scripts/swagger.ts"
   },
   "keywords": [
     "socket.io",
@@ -34,7 +35,9 @@
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "pg": "^8.12.0",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.6.0",
@@ -46,6 +49,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.14.5",
     "@types/pg": "^8.11.6",
+    "@types/swagger-ui-express": "^4.1.6",
     "drizzle-kit": "^0.22.8",
     "eslint": "9.x",
     "globals": "^15.7.0",

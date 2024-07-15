@@ -12,10 +12,11 @@ import cluster from 'node:cluster'
 import { createServer } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { Server } from 'socket.io'
+import swaggerUi from 'swagger-ui-express'
 import { config } from './config'
 import { connectDB } from './database'
-import { auth, errorHandler } from './middlewares'
-import * as routes from './routes'
+import { errorHandler } from './middlewares'
+import rootRouter from './routes'
 import { registerSocketEvents } from './socket/events'
 import { socketAuthMiddleware } from './socket/middlewares'
 import {
@@ -24,6 +25,7 @@ import {
   ServerToClientEvents,
   SocketData,
 } from './socket/socket.interface'
+import swaggerDocument from './swagger-output.json'
 
 const createApp = async () => {
   if (cluster.isPrimary && config.isProd) {
@@ -99,9 +101,10 @@ const createApp = async () => {
     res.send('<h1>Welcome to mChat API</h1>')
   })
 
-  app.use('/api/users', routes.userRoutes)
-  app.use('/api/groups', auth, routes.groupRoutes)
-  app.use('/api/members', auth, routes.memberRoutes)
+  app.use(rootRouter)
+
+  app.use('/api-docs', swaggerUi.serve)
+  app.get('/api-docs', swaggerUi.setup(swaggerDocument))
 
   app.use(errorHandler)
 

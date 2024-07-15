@@ -9,6 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["global.d.ts"],
     "outDir": "dist",
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"]
     }
