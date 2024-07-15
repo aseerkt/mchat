@@ -9,7 +9,9 @@ export interface ServerToClientEvents {
   newMessage: (message: IMessage & { groupName: string }) => void
   newMember: (member: IMember) => void
   newMembers: (member: IMember[]) => void
+  memberLeft: (args: { groupId: number; memberId: number }) => void
   newGroup: (group: IGroup) => void
+  groupDeleted: (groupId: number) => void
   messageRead: (messageId: number) => void
   groupMarkedAsRead: (groupId: number) => void
   typingUsers: (users: { id: number; username: string }[]) => void

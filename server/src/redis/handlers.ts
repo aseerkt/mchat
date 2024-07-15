@@ -43,7 +43,7 @@ export const getMemberRole = (groupId: number, userId: number) => {
 
 export const deleteGroupRoles = (groupId: number) => {
   const cacheKey = redisKeys.MEMBER_ROLES(groupId)
-  return redisClient.hdel(cacheKey)
+  return redisClient.hdel(cacheKey, '*')
 }
 
 export const deleteMemberRole = (groupId: number, memberId: number) => {

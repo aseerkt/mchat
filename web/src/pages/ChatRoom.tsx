@@ -1,7 +1,12 @@
 import { TypingIndicator } from '@/features/chat/components'
 import { GroupInfo } from '@/features/chat/layouts'
 import { GroupHeader } from '@/features/group/components'
-import { AddMembers, MemberList } from '@/features/member/components'
+import { DeleteGroup } from '@/features/group/components/DeleteGroup'
+import {
+  AddMembers,
+  LeaveGroup,
+  MemberList,
+} from '@/features/member/components'
 import { useHasPermission } from '@/features/member/hooks'
 import { MessageComposer, MessageList } from '@/features/message/components'
 import { useDisclosure } from '@/hooks/useDisclosure'
@@ -45,7 +50,9 @@ export const Component = () => {
       </div>
       <GroupInfo isOpen={isOpen} onClose={toggle} groupId={groupId}>
         <MemberList groupId={groupId} />
-        <div className='w-full p-3'>
+        <div className='flex w-full flex-col gap-2 p-3'>
+          <LeaveGroup />
+          {hasPermission('owner') && <DeleteGroup groupId={groupId} />}
           {hasPermission('admin') && <AddMembers />}
         </div>
       </GroupInfo>

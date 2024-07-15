@@ -12,7 +12,7 @@ export const AddMembers = () => {
   const { isOpen, open, close } = useDisclosure()
   return (
     <>
-      <Button variant='secondary' className='w-full' onClick={open}>
+      <Button className='w-full' onClick={open}>
         Add members
       </Button>
       <Dialog isOpen={isOpen} onClose={close}>

@@ -1,5 +1,5 @@
 export interface IPaginatedResult<
-  TData,
+  TData extends { id: number },
   TCursor extends number | string = number,
 > {
   data: TData[]

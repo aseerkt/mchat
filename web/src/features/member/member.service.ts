@@ -33,8 +33,11 @@ export const getMember = async (
 export const kickMember = ({ groupId, userId }: IKickMemberArgs) =>
   fetcher(`groups/${groupId}/members/${userId}`, { method: 'DELETE' })
 
-export const leaveGroup = ({ groupId, newOwnerId }: ILeaveGroupArgs) => {
-  fetcher(`groups/${groupId}/leave`, {
+export const leaveGroup = ({
+  groupId,
+  newOwnerId,
+}: ILeaveGroupArgs): Promise<{ message: string }> => {
+  return fetcher(`groups/${groupId}/leave`, {
     method: 'DELETE',
     body: newOwnerId ? JSON.stringify({ newOwnerId }) : undefined,
   })

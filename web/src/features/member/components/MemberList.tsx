@@ -1,30 +1,14 @@
 import { Skeleton } from '@/components/Skeleton'
 import { useInView } from '@/hooks/useInView'
-import { IPaginatedResult } from '@/interfaces/common.interface'
-import { getSocketIO } from '@/utils/socket'
-import {
-  InfiniteData,
-  Updater,
-  useInfiniteQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
-import { produce } from 'immer'
-import { Fragment, useEffect, useRef, useState } from 'react'
-import { IMember } from '../member.interface'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { Fragment, useRef, useState } from 'react'
+import { useMemberSocketHandle } from '../hooks/useMemberSocketHandle'
 import { fetchGroupMembers } from '../member.service'
 import { MemberItem } from './MemberItem'
 import { MemberModal } from './MemberModal'
 
-type MemberInfiniteData = InfiniteData<IPaginatedResult<IMember>, string>
-
-type MemberUpdater = Updater<
-  MemberInfiniteData | undefined,
-  MemberInfiniteData | undefined
->
-
 export const MemberList = ({ groupId }: { groupId: number }) => {
   const listRef = useRef<HTMLUListElement>(null)
-  const queryClient = useQueryClient()
 
   const { data, hasNextPage, fetchNextPage, isLoading, error } =
     useInfiniteQuery({
@@ -42,65 +26,7 @@ export const MemberList = ({ groupId }: { groupId: number }) => {
 
   const watchElement = useInView(listRef, fetchNextPage, hasNextPage)
 
-  const updateMemberData = (updater: MemberUpdater) => {
-    queryClient.setQueryData(['members', groupId], updater)
-  }
-
-  useEffect(() => {
-    const socket = getSocketIO()
-
-    function setUserOnlineStatus(userId: number, online: boolean) {
-      updateMemberData(data => {
-        if (!data) return
-        const updatedData = produce(data, draft => {
-          let member: IMember | undefined
-          draft.pages.forEach(page => {
-            page.data.forEach(m => {
-              if (m.userId === userId) member = m
-            })
-          })
-          if (member) {
-            member.online = online
-          }
-        })
-        return updatedData
-      })
-    }
-
-    function handleNewMember(member: IMember) {
-      updateMemberData(data => {
-        if (!data) return
-        const updatedData = produce(data, draft => {
-          draft.pages[0].data.unshift({ ...member, online: true })
-        })
-        return updatedData
-      })
-    }
-
-    function handleOnlineUser(userId: number) {
-      setUserOnlineStatus(userId, true)
-    }
-
-    function handleOfflineUser(userId: number) {
-      setUserOnlineStatus(userId, false)
-    }
-
-    function handleNewMembers() {
-      queryClient.invalidateQueries({ queryKey: ['members', groupId] })
-    }
-
-    socket.on('newMember', handleNewMember)
-    socket.on('newMembers', handleNewMembers)
-    socket.on('userOnline', handleOnlineUser)
-    socket.on('userOffline', handleOfflineUser)
-    return () => {
-      socket.off('newMember', handleNewMember)
-      socket.off('newMembers', handleNewMembers)
-      socket.off('userOnline', handleOnlineUser)
-      socket.off('userOffline', handleOfflineUser)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId])
+  useMemberSocketHandle(groupId)
 
   const [selectedMemberId, setSelectedMemberId] = useState<number>()
 

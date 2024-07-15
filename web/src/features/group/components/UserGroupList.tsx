@@ -1,24 +1,14 @@
 import { Skeleton } from '@/components/Skeleton'
-import { IMessage } from '@/features/message/message.interface'
 import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
-import { getSocketIO } from '@/utils/socket'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { produce } from 'immer'
-import { Fragment, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
-import {
-  IGroup,
-  IGroupWithLastMessage,
-  IPaginatedInfiniteGroups,
-} from '../group.interface'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { Fragment, useRef } from 'react'
 import { fetchUserGroups } from '../group.service'
+import { useGroupSocketHandle } from '../hooks/useGroupSocketHandle'
 import { UserGroupItem } from './UserGroupItem'
 
 export const UserGroupList = () => {
   const { auth } = useAuth()
-  const queryClient = useQueryClient()
-  const params = useParams()
   const { data, isLoading, isSuccess, hasNextPage, fetchNextPage, error } =
     useInfiniteQuery({
       queryKey: ['userGroups', auth],
@@ -40,98 +30,7 @@ export const UserGroupList = () => {
 
   const watchElement = useInView(listRef, fetchNextPage, hasNextPage)
 
-  useEffect(() => {
-    if (!auth) return
-
-    const socket = getSocketIO()
-
-    function handleNewGroup(group: IGroup) {
-      queryClient.setQueryData<IPaginatedInfiniteGroups>(
-        ['userGroups', auth],
-        data => {
-          if (!data) return
-          const updatedData = produce(data, draft => {
-            draft.pages[0].data.unshift({
-              ...group,
-              lastActivity: group.createdAt,
-              unreadCount: 0,
-            })
-          })
-          return updatedData
-        },
-      )
-    }
-
-    function handleNewMessage(message: IMessage & { groupName: string }) {
-      queryClient.setQueryData<IPaginatedInfiniteGroups>(
-        ['userGroups', auth],
-        data => {
-          if (!data) return
-          const updatedData = produce(data, draft => {
-            let messageGroup: IGroupWithLastMessage | undefined
-
-            draft.pages.forEach(page => {
-              const groupIndex = page.data.findIndex(
-                group => group.id === message.groupId,
-              )
-              if (groupIndex !== -1) {
-                messageGroup = page.data[groupIndex]
-                page.data.splice(groupIndex, 1)
-              }
-            })
-
-            const group: IGroupWithLastMessage = {
-              id: messageGroup?.id || message.groupId,
-              name: messageGroup?.name || message.groupName,
-              lastActivity: message.createdAt,
-              unreadCount: messageGroup?.unreadCount || 0,
-              lastMessage: {
-                id: message.id,
-                content: message.content,
-                senderId: message.senderId,
-              },
-            }
-
-            if (params.groupId === message.groupId.toString()) {
-              socket.emit('markMessageAsRead', message.id)
-            } else {
-              group.unreadCount++
-            }
-            draft.pages[0].data.unshift(group)
-          })
-          return updatedData
-        },
-      )
-    }
-
-    function handleGroupMarkedAsRead(groupId: number) {
-      queryClient.setQueryData<IPaginatedInfiniteGroups>(
-        ['userGroups', auth],
-        data => {
-          if (!data) return
-          const updatedData = produce(data, draft => {
-            draft.pages.forEach(page => {
-              const group = page.data.find(group => group.id === groupId)
-              if (group) {
-                group.unreadCount = 0
-              }
-            })
-          })
-          return updatedData
-        },
-      )
-    }
-
-    socket.on('newGroup', handleNewGroup)
-    socket.on('newMessage', handleNewMessage)
-    socket.on('groupMarkedAsRead', handleGroupMarkedAsRead)
-
-    return () => {
-      socket.off('newGroup', handleNewGroup)
-      socket.off('newMessage', handleNewMessage)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth, params.groupId])
+  useGroupSocketHandle()
 
   let content
 

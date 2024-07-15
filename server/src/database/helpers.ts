@@ -55,8 +55,6 @@ export const withPagination = async <T extends PgSelect>(
     .limit(limit)
     .orderBy(...orderBy)
 
-  console.log('paginted sql query', paginatedQb.toSQL())
-
   const result = await paginatedQb
 
   return {

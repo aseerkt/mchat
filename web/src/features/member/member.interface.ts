@@ -15,6 +15,7 @@ export interface IMemberWithUser extends Omit<IMember, 'online'> {
 
 export interface IGetGroupMembersArgs extends TPaginatedParams<string> {
   groupId: number
+  query?: string
 }
 
 export interface IAddMemberArgs {

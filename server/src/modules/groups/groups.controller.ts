@@ -318,18 +318,15 @@ export const changeMemberRole: RequestHandler = async (req, res, next) => {
 export const deleteGroup: RequestHandler = async (req, res, next) => {
   try {
     const groupId = Number(req.params.groupId)
-    const result = await db.delete(groups).where(eq(groups.id, groupId))
 
-    if (!result.rowCount) {
-      return notFound(res, 'Group')
-    }
-
-    // TODO: move these db operations to queue
-    await deleteGroupRoles(groupId)
-    await db.delete(messages).where(eq(messages.groupId, groupId))
-    await db.delete(members).where(eq(members.groupId, groupId))
+    await db.transaction(async tx => {
+      await tx.delete(groups).where(eq(groups.id, groupId))
+      await deleteGroupRoles(groupId)
+    })
 
     // TODO: send socket io event to kick active members away from group
+    const io = req.app.get('io') as TypedIOServer
+    io.to(req.params.groupId).emit('groupDeleted', groupId)
 
     res.json({ message: 'Group deleted' })
   } catch (error) {
@@ -340,8 +337,15 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
 export const leaveGroup: RequestHandler = async (req, res, next) => {
   try {
     const groupId = Number(req.params.groupId)
-    if (req.member?.role === 'owner' && req.user!.id === req.body.ownerId) {
-      return badRequest(res, 'New owner id should be of different user')
+    const { newOwnerId } = req.body
+    if (req.member?.role === 'owner') {
+      if (!newOwnerId) {
+        return badRequest(res, 'Please select new owner')
+      }
+
+      if (req.user!.id === newOwnerId) {
+        return badRequest(res, 'Please select different member as owner')
+      }
     }
     await db.transaction(async tx => {
       if (req.member?.role === 'owner') {
@@ -349,10 +353,7 @@ export const leaveGroup: RequestHandler = async (req, res, next) => {
           .update(members)
           .set({ role: 'owner' })
           .where(
-            and(
-              eq(members.groupId, groupId),
-              eq(members.userId, req.body.newOwnerId),
-            ),
+            and(eq(members.groupId, groupId), eq(members.userId, newOwnerId)),
           )
       }
 
@@ -364,6 +365,13 @@ export const leaveGroup: RequestHandler = async (req, res, next) => {
       await deleteMemberRole(groupId, req.user!.id)
     })
     // TODO: send socket io event to existing members
+    const io = req.app.get('io') as TypedIOServer
+
+    io.to(req.params.memberId).emit('memberLeft', {
+      memberId: req.user!.id,
+      groupId,
+    })
+
     res.json({ message: 'Left the room successfully' })
   } catch (error) {
     next(error)
@@ -372,22 +380,19 @@ export const leaveGroup: RequestHandler = async (req, res, next) => {
 
 export const kickMember: RequestHandler = async (req, res, next) => {
   try {
-    if (req.user!.id === Number(req.params.memberId)) {
+    const memberId = Number(req.params.memberId)
+    const groupId = Number(req.params.groupId)
+    if (req.user!.id === memberId) {
       return badRequest(res, 'Cannot kick yourself')
     }
     await db
       .delete(members)
-      .where(
-        and(
-          eq(members.groupId, Number(req.params.groupId)),
-          eq(members.userId, Number(req.params.memberId)),
-        ),
-      )
-    await deleteMemberRole(
-      Number(req.params.groupId),
-      Number(req.params.memberId),
-    )
+      .where(and(eq(members.groupId, groupId), eq(members.userId, memberId)))
+    await deleteMemberRole(groupId, memberId)
     // TODO: send socket io event to kicked member as well existing members
+    const io = req.app.get('io') as TypedIOServer
+
+    io.to(req.params.memberId).emit('memberLeft', { memberId, groupId })
 
     res.json({ message: 'Kicked member successfully' })
   } catch (error) {

@@ -11,7 +11,9 @@ export interface ServerToClientEvents {
   ) => void
   newMember: (member: Member & { username: string }) => void
   newMembers: (member: Member[]) => void
+  memberLeft: (args: { groupId: number; memberId: number }) => void
   newGroup: (group: Group) => void
+  groupDeleted: (groupId: number) => void
   messageRead: (messageId: number) => void
   groupMarkedAsRead: (groupId: number) => void
   typingUsers: (users: { id: number; username: string }[]) => void

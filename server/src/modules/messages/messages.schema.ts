@@ -13,7 +13,10 @@ export const messages = pgTable(
     receiverId: bigint('receiver_id', { mode: 'number' }).references(
       () => users.id,
     ),
-    groupId: bigint('group_id', { mode: 'number' }).references(() => groups.id),
+    groupId: bigint('group_id', { mode: 'number' }).references(
+      () => groups.id,
+      { onDelete: 'cascade' },
+    ),
     content: text('content').notNull(),
   },
   table => ({
@@ -27,7 +30,7 @@ export const messageRecipients = pgTable(
   {
     ...baseSchema,
     messageId: bigint('message_id', { mode: 'number' })
-      .references(() => messages.id)
+      .references(() => messages.id, { onDelete: 'cascade' })
       .notNull(),
     recipientId: bigint('recipient_id', { mode: 'number' })
       .references(() => users.id)

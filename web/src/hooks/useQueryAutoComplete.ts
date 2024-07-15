@@ -37,13 +37,14 @@ export const useQueryAutoComplete = <
     isError,
     error,
   } = useQuery({
-    enabled: search.length > 1,
     ...options,
+    enabled: options.enabled && search.length > 1,
     queryKey: [...options.queryKey, search] as unknown as TQueryKey,
   })
 
   useEffect(() => {
     inputValue.length > 1 ? openDropdown() : closeDropdown()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValue])
 
   const handleInputBlur = useCallback(
@@ -51,6 +52,7 @@ export const useQueryAutoComplete = <
       e.stopPropagation()
       setTimeout(closeDropdown, 100)
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
 
@@ -67,6 +69,7 @@ export const useQueryAutoComplete = <
     onSelect(suggestion)
     closeDropdown()
     setHighlightedIndex(-1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleKeyDown = useCallback(
@@ -90,6 +93,7 @@ export const useQueryAutoComplete = <
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [highlightedIndex, suggestions],
   )
 

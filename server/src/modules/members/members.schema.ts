@@ -19,7 +19,7 @@ export const members = pgTable(
       .references(() => users.id),
     groupId: bigint('group_id', { mode: 'number' })
       .notNull()
-      .references(() => groups.id),
+      .references(() => groups.id, { onDelete: 'cascade' }),
     role: memberRoleEnum('role').notNull().default('member'),
   },
   table => ({

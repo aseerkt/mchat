@@ -2,7 +2,7 @@ import { cn } from '@/utils/style'
 
 type ChipProps = {
   label: React.ReactNode
-  onDelete: () => void
+  onDelete?: () => void
   icon?: React.ReactNode
   className?: string
 }

@@ -35,3 +35,6 @@ export const createNewGroup = async (args: ICreateGroupArgs): Promise<IGroup> =>
 
 export const joinGroups = async (args: IJoinGroupArgs): Promise<IMember[]> =>
   fetcher('members', { method: 'POST', body: JSON.stringify(args) })
+
+export const deleteGroup = async (groupId: number) =>
+  fetcher(`groups/${groupId}`, { method: 'DELETE' })

@@ -8,7 +8,7 @@ import {
 import { getGroupRoomId } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
 import { badRequest, notFound } from '@/utils/api'
-import { and, asc, eq, getTableColumns, gt } from 'drizzle-orm'
+import { and, asc, eq, getTableColumns, gt, like } from 'drizzle-orm'
 import { RequestHandler } from 'express'
 import { users } from '../users/users.schema'
 import { MemberRole, members } from './members.schema'
@@ -74,6 +74,9 @@ export const getGroupMembers: RequestHandler = async (req, res, next) => {
         where: and(
           eq(members.groupId, Number(req.params.groupId)),
           cursor ? gt(users.username, cursor as string) : undefined,
+          req.query.query
+            ? like(users.username, `%${req.query.query}%`)
+            : undefined,
         ),
       },
     )
