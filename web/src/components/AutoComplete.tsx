@@ -79,7 +79,11 @@ export const AutoComplete = <
       />
     )
   } else if (isDropdownVisible) {
-    content = <small className='text-gray-500'>No results</small>
+    content = (
+      <Alert severity='info' size='sm' className='mt-2'>
+        No results
+      </Alert>
+    )
   }
 
   return (
@@ -87,7 +91,7 @@ export const AutoComplete = <
       {label && <label className='mb-1 inline-block'>{label}</label>}
       <div
         tabIndex={0}
-        className='relative flex flex-col rounded border p-2 focus-within:border-2 focus-within:border-black'
+        className='relative flex flex-col rounded p-2 ring-1 ring-gray-400 focus-within:ring-2 focus-within:ring-black'
         ref={wrapperRef}
         onClick={handleInputFocus}
         onFocus={handleInputFocus}

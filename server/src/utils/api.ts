@@ -12,6 +12,6 @@ export function notAuthorized(res: Response) {
   res.status(403).json({ message: 'Not authorized' })
 }
 
-export function badRequest(res: Response, message = 'Something went wrong') {
+export function badRequest(res: Response, message = 'Bad request') {
   res.status(400).json({ message })
 }

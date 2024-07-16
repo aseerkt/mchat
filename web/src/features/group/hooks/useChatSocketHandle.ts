@@ -5,13 +5,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { produce } from 'immer'
 import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  IGroup,
-  IGroupWithLastMessage,
-  IPaginatedInfiniteGroups,
-} from '../group.interface'
+import { IChat, IGroup, IPaginatedInfiniteChats } from '../group.interface'
 
-export const useGroupSocketHandle = () => {
+export const useChatSocketHandle = () => {
   const { auth } = useAuth()
   const params = useParams()
   const queryClient = useQueryClient()
@@ -22,10 +18,10 @@ export const useGroupSocketHandle = () => {
 
     const socket = getSocketIO()
 
-    function updateGroupList(
-      dataUpdater: (data: IPaginatedInfiniteGroups) => IPaginatedInfiniteGroups,
+    function updateChatList(
+      dataUpdater: (data: IPaginatedInfiniteChats) => IPaginatedInfiniteChats,
     ) {
-      queryClient.setQueryData<IPaginatedInfiniteGroups>(
+      queryClient.setQueryData<IPaginatedInfiniteChats>(
         ['userGroups', auth],
         data => {
           if (!data) return
@@ -35,10 +31,11 @@ export const useGroupSocketHandle = () => {
     }
 
     function handleNewGroup(group: IGroup) {
-      updateGroupList(data => {
+      updateChatList(data => {
         const updatedData = produce(data, draft => {
           draft.pages[0].data.unshift({
             ...group,
+            chatName: group.name,
             lastActivity: group.createdAt,
             unreadCount: 0,
           })
@@ -47,59 +44,70 @@ export const useGroupSocketHandle = () => {
       })
     }
 
-    function handleNewMessage(message: IMessage & { groupName: string }) {
-      updateGroupList(data => {
-        const updatedData = produce(data, draft => {
-          let messageGroup: IGroupWithLastMessage | undefined
+    function handleNewMessage(message: IMessage & { chatName: string }) {
+      updateChatList(data => {
+        return produce(data, draft => {
+          let chat: IChat | undefined
 
           draft.pages.forEach(page => {
-            const groupIndex = page.data.findIndex(
-              group => group.groupId === message.groupId,
+            const chatIndex = page.data.findIndex(chat =>
+              message.groupId
+                ? chat.groupId === message.groupId
+                : chat.receiverId === message.receiverId,
             )
-            if (groupIndex !== -1) {
-              messageGroup = page.data[groupIndex]
-              page.data.splice(groupIndex, 1)
+            if (chatIndex !== -1) {
+              chat = page.data[chatIndex]
+              page.data.splice(chatIndex, 1)
             }
           })
 
-          const group: IGroupWithLastMessage = {
-            groupId: messageGroup?.groupId || message.groupId,
-            name: messageGroup?.name || message.groupName,
+          const group: IChat = {
+            groupId: chat?.groupId || message.groupId,
+            receiverId: chat?.groupId || message.receiverId,
+            chatName: chat?.chatName || message.chatName,
             lastActivity: message.createdAt,
-            unreadCount: messageGroup?.unreadCount || 0,
+            unreadCount: chat?.unreadCount || 0,
             lastMessage: {
               messageId: message.id,
               content: message.content,
             },
           }
 
-          if (params.groupId === message.groupId.toString()) {
+          if (params.groupId === message.groupId?.toString()) {
             socket.emit('markMessageAsRead', message.id)
           } else {
             group.unreadCount++
           }
           draft.pages[0].data.unshift(group)
         })
-        return updatedData
       })
     }
 
-    function handleGroupMarkedAsRead(groupId: number) {
-      updateGroupList(data => {
-        const updatedData = produce(data, draft => {
+    function handleGroupMarkedAsRead({
+      groupId,
+      receiverId,
+    }: {
+      groupId?: number
+      receiverId?: number
+    }) {
+      updateChatList(data => {
+        return produce(data, draft => {
           draft.pages.forEach(page => {
-            const group = page.data.find(group => group.groupId === groupId)
-            if (group) {
-              group.unreadCount = 0
+            const chat = page.data.find(chat =>
+              groupId
+                ? chat.groupId === groupId
+                : chat.receiverId === receiverId,
+            )
+            if (chat) {
+              chat.unreadCount = 0
             }
           })
         })
-        return updatedData
       })
     }
 
     const deleteGroupEntry = (
-      data: IPaginatedInfiniteGroups,
+      data: IPaginatedInfiniteChats,
       groupId: number,
     ) => {
       const updatedData = produce(data, draft =>
@@ -119,7 +127,7 @@ export const useGroupSocketHandle = () => {
     }
 
     function handleDeleteGroup(groupId: number) {
-      updateGroupList(data => deleteGroupEntry(data, groupId))
+      updateChatList(data => deleteGroupEntry(data, groupId))
     }
 
     function handleMemberLeft({
@@ -129,7 +137,7 @@ export const useGroupSocketHandle = () => {
       groupId: number
       memberId: number
     }) {
-      updateGroupList(data => {
+      updateChatList(data => {
         if (auth?.id === memberId) {
           return deleteGroupEntry(data, groupId)
         }
@@ -139,14 +147,14 @@ export const useGroupSocketHandle = () => {
 
     socket.on('newGroup', handleNewGroup)
     socket.on('newMessage', handleNewMessage)
-    socket.on('groupMarkedAsRead', handleGroupMarkedAsRead)
+    socket.on('chatMarkedAsRead', handleGroupMarkedAsRead)
     socket.on('groupDeleted', handleDeleteGroup)
     socket.on('memberLeft', handleMemberLeft)
 
     return () => {
       socket.off('newGroup', handleNewGroup)
       socket.off('newMessage', handleNewMessage)
-      socket.off('groupMarkedAsRead', handleGroupMarkedAsRead)
+      socket.off('chatMarkedAsRead', handleGroupMarkedAsRead)
       socket.off('groupDeleted', handleDeleteGroup)
       socket.off('memberLeft', handleMemberLeft)
     }

@@ -10,23 +10,24 @@ import { getSocketIO } from '@/utils/socket'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { produce } from 'immer'
 import { Fragment, useEffect, useRef } from 'react'
-import { fetchGroupMessages } from '../message.service'
+import { fetchMessages } from '../message.service'
 import { MessageItem } from './MessageItem'
 
 interface MessageListProps {
-  groupId: number
+  groupId?: number
+  receiverId?: number
 }
 
-export const MessageList = ({ groupId }: MessageListProps) => {
+export const MessageList = ({ groupId, receiverId }: MessageListProps) => {
   const { auth } = useAuth()
 
   const queryClient = useQueryClient()
 
   const { data, hasNextPage, fetchNextPage, isLoading, error, isSuccess } =
     useInfiniteQuery({
-      queryKey: ['messages', groupId],
+      queryKey: ['messages', { groupId, receiverId }],
       queryFn: ({ pageParam }) =>
-        fetchGroupMessages({ groupId, limit: 15, cursor: pageParam }),
+        fetchMessages({ groupId, receiverId, limit: 15, cursor: pageParam }),
       initialPageParam: null as number | null,
       getNextPageParam: lastPage =>
         lastPage.cursor ? lastPage.cursor : undefined,
@@ -38,14 +39,17 @@ export const MessageList = ({ groupId }: MessageListProps) => {
     const socket = getSocketIO()
 
     function updateMessage(message: IMessage) {
-      if (message.groupId !== groupId) {
+      if (groupId && message.groupId !== groupId) {
+        return
+      }
+      if (receiverId && message.receiverId !== receiverId) {
         return
       }
       function scrollToBottom() {
         listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
       }
       queryClient.setQueryData<TMessageInfiniteData>(
-        ['messages', groupId],
+        ['messages', { groupId, receiverId }],
         data => {
           if (!data) return
 
@@ -63,7 +67,7 @@ export const MessageList = ({ groupId }: MessageListProps) => {
       socket.off('newMessage', updateMessage)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId])
+  }, [groupId, receiverId])
 
   const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 

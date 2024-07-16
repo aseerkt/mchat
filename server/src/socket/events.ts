@@ -3,12 +3,14 @@ import { groups } from '@/modules/groups/groups.schema'
 import { members } from '@/modules/members/members.schema'
 import {
   insertMessage,
-  markGroupMessagesAsRead,
+  markChatMessagesAsRead,
   markMessageAsRead,
 } from '@/modules/messages/messages.service'
 import {
   addUserSocket,
+  getMultipleUserSockets,
   getTypingUsers,
+  getUserSockets,
   markUserOffline,
   markUserOnline,
   removeTypingUser,
@@ -18,13 +20,21 @@ import {
 import { eq } from 'drizzle-orm'
 import { config } from '../config'
 import { getGroupRoomId } from './helpers'
-import { TypedIOServer, TypedSocket } from './socket.interface'
+import { ChatMode, TypedIOServer, TypedSocket } from './socket.interface'
 
 export const groupRoomPrefix = 'group'
 
-async function emitTypingUsers(socket: TypedSocket, groupId: number) {
-  const typingUsers = await getTypingUsers(groupId)
-  socket.broadcast.to(getGroupRoomId(groupId)).emit('typingUsers', typingUsers)
+async function emitTypingUsers(
+  socket: TypedSocket,
+  { chatId, mode }: { chatId: number; mode: ChatMode },
+) {
+  const typingUsers = await getTypingUsers(chatId, mode)
+  if (mode === 'group') {
+    socket.broadcast.to(getGroupRoomId(chatId)).emit('typingUsers', typingUsers)
+  } else {
+    const sockets = await getUserSockets(chatId)
+    socket.to(sockets).emit('typingUsers', typingUsers)
+  }
 }
 
 export const registerSocketEvents = (io: TypedIOServer) => {
@@ -51,27 +61,52 @@ export const registerSocketEvents = (io: TypedIOServer) => {
       socket.join(getGroupRoomId(groupId))
     })
 
-    socket.on('userStartedTyping', async groupId => {
-      await setTypingUser(
-        groupId,
-        socket.data.user.id,
-        socket.data.user.username,
-      )
-      await emitTypingUsers(socket, groupId)
+    socket.on('userStartedTyping', async ({ chatId, mode }) => {
+      await setTypingUser({
+        chatId,
+        mode,
+        userId: socket.data.user.id,
+        username: socket.data.user.username,
+      })
+      await emitTypingUsers(socket, { chatId, mode })
     })
 
-    socket.on('userStoppedTyping', async groupId => {
-      await removeTypingUser(groupId, socket.data.user.id)
-      await emitTypingUsers(socket, groupId)
+    socket.on('userStoppedTyping', async ({ chatId, mode }) => {
+      await removeTypingUser({ chatId, mode, userId: socket.data.user.id })
+      await emitTypingUsers(socket, { chatId, mode })
     })
 
-    socket.on('createMessage', async ({ groupId, text }, cb) => {
+    socket.on('createMessage', async ({ groupId, receiverId, text }, cb) => {
       try {
-        const message = await insertMessage(groupId, text, socket.data.user.id)
-        io.to(groupId.toString()).emit('newMessage', {
+        if (!groupId && !receiverId) {
+          throw new Error('Please provide either group id or receiver id')
+        }
+
+        const message = await insertMessage({
+          groupId,
+          receiverId,
+          content: text,
+          senderId: socket.data.user.id,
+        })
+
+        const newMessage = {
           ...message,
           username: socket.data.user.username,
-        })
+        }
+
+        if (message.groupId) {
+          // group message
+          io.to(message.groupId.toString()).emit('newMessage', newMessage)
+        } else if (message.receiverId) {
+          // direct message
+          const sockets = await getMultipleUserSockets([
+            message.receiverId,
+            socket.data.user.id,
+          ])
+          if (sockets.length) {
+            io.to(sockets).emit('newMessage', newMessage)
+          }
+        }
         cb({ message })
       } catch (error) {
         cb({ error })
@@ -87,15 +122,16 @@ export const registerSocketEvents = (io: TypedIOServer) => {
       io.to(messageSenderSocketIds).emit('messageRead', messageId)
     })
 
-    socket.on('markGroupMessagesAsRead', async groupId => {
-      const socketIds = await markGroupMessagesAsRead(
+    socket.on('markChatMessagesAsRead', async ({ groupId, receiverId }) => {
+      const socketIds = await markChatMessagesAsRead({
         groupId,
-        socket.data.user.id,
-      )
+        receiverId,
+        recipientId: socket.data.user.id,
+      })
 
       if (socketIds?.length) {
         // let the current user know that the unread messages of the group is marked as read
-        io.to(socketIds).emit('groupMarkedAsRead', groupId)
+        io.to(socketIds).emit('chatMarkedAsRead', { groupId, receiverId })
         // TODO: let the message senders know their message is read
       }
     })

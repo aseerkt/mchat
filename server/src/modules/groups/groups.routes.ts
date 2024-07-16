@@ -1,7 +1,7 @@
-import { hasGroupPermission } from '@/middlewares'
+import { hasChatPermission } from '@/middlewares'
 import { Router } from 'express'
 import { getGroupMember, getGroupMembers } from '../members/members.controller'
-import { createMessage, listMessages } from '../messages/messages.controller'
+import { createMessage } from '../messages/messages.controller'
 import {
   addGroupMembers,
   changeMemberRole,
@@ -21,36 +21,35 @@ export const router = Router()
 router.post('/', createGroup)
 router.get('/', listGroups)
 
-router.get('/:groupId', hasGroupPermission('member'), getGroup)
-router.delete('/:groupId', hasGroupPermission('owner'), deleteGroup)
+router.get('/:groupId', hasChatPermission('member'), getGroup)
+router.delete('/:groupId', hasChatPermission('owner'), deleteGroup)
 
 // Group Member Handler
 
-router.delete('/:groupId/leave', hasGroupPermission('member'), leaveGroup)
+router.delete('/:groupId/leave', hasChatPermission('member'), leaveGroup)
 router.delete(
   '/:groupId/members/:memberId',
-  hasGroupPermission('admin'),
+  hasChatPermission('admin'),
   kickMember,
 )
-router.post('/:groupId/members', hasGroupPermission('admin'), addGroupMembers)
-router.get('/:groupId/members', hasGroupPermission('member'), getGroupMembers)
+router.post('/:groupId/members', hasChatPermission('admin'), addGroupMembers)
+router.get('/:groupId/members', hasChatPermission('member'), getGroupMembers)
 router.get(
   '/:groupId/members/:userId',
-  hasGroupPermission('member'),
+  hasChatPermission('member'),
   getGroupMember,
 )
 router.patch(
   '/:groupId/members/:userId',
-  hasGroupPermission('admin'),
+  hasChatPermission('admin'),
   changeMemberRole,
 )
 router.get(
   '/:groupId/non-members',
-  hasGroupPermission('admin'),
+  hasChatPermission('admin'),
   getNonGroupMembers,
 )
 
 // Message handler
 
-router.get('/:groupId/messages', hasGroupPermission('member'), listMessages)
-router.post('/:groupId/messages', hasGroupPermission('member'), createMessage)
+router.post('/:groupId/messages', hasChatPermission('member'), createMessage)

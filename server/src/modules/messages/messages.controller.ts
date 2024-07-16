@@ -23,6 +23,8 @@ export const createMessage: RequestHandler = async (req, res, next) => {
 
 export const listMessages: RequestHandler = async (req, res, next) => {
   try {
+    const groupId = Number(req.query.groupId)
+    const receiverId = Number(req.query.receiverId)
     const { cursor, limit } = getPaginationParams(req.query, 'number')
     const result = await withPagination(
       db
@@ -35,7 +37,8 @@ export const listMessages: RequestHandler = async (req, res, next) => {
         cursorSelect: 'id',
         orderBy: [desc(messages.id)],
         where: and(
-          eq(messages.groupId, Number(req.params.groupId)),
+          groupId ? eq(messages.groupId, groupId) : undefined,
+          receiverId ? eq(messages.receiverId, receiverId) : undefined,
           cursor ? lt(messages.id, cursor as number) : undefined,
         ),
       },

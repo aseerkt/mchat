@@ -1,4 +1,5 @@
 import { db } from '@/database'
+import { notFound } from '@/utils/api'
 import { signToken } from '@/utils/jwt'
 import { removeAttrFromObject } from '@/utils/object'
 import { hash, verify } from 'argon2'
@@ -91,6 +92,25 @@ export const getUsers: RequestHandler = async (req, res, next) => {
       .orderBy(users.username)
 
     res.json(rows)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getUser: RequestHandler = async (req, res, next) => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...columns } = getTableColumns(users)
+
+    const [user] = await db
+      .select(columns)
+      .from(users)
+      .where(eq(users.id, Number(req.params.userId)))
+      .limit(1)
+    if (!user) {
+      return notFound(res, 'User')
+    }
+    res.json(user)
   } catch (error) {
     next(error)
   }

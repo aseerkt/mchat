@@ -33,6 +33,8 @@ interface AvatarProps {
 }
 
 export const Avatar = memo(({ name, id }: AvatarProps) => {
+  if (!name) return null
+
   const initials = getInitials(name)
   const { bgColor, textColor } = stringToColor(name + id)
 

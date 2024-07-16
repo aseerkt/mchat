@@ -159,7 +159,7 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       db
         .with(groupMessagesWithRowNumber)
         .select({
-          name: groups.name,
+          chatName: groups.name,
           groupId: groupMessagesWithRowNumber.groupId,
           receiverId: groupMessagesWithRowNumber.receiverId,
           lastMessage: {
@@ -222,7 +222,7 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
         db
           .with(directMessagesWithRowNumber)
           .select({
-            name: users.username,
+            chatName: users.username,
             groupId: directMessagesWithRowNumber.groupId,
             receiverId: directMessagesWithRowNumber.receiverId,
             lastMessage: {
@@ -305,7 +305,7 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       .select({
         groupId: combinedChats.groupId,
         receiverId: combinedChats.receiverId,
-        name: combinedChats.name,
+        chatName: combinedChats.chatName,
         lastMessage: combinedChats.lastMessage,
         lastActivity: combinedChats.lastActivity,
         unreadCount: coalesce<number>(unreadCounts.unreadCount, 0)

@@ -11,10 +11,10 @@ export interface IGroup {
   createdAt: string
 }
 
-export interface IGroupWithLastMessage {
+export interface IChat {
   groupId?: number
   receiverId?: number
-  name: string
+  chatName: string
   lastMessage?: {
     messageId: number
     content: string
@@ -23,9 +23,7 @@ export interface IGroupWithLastMessage {
   lastActivity: string
 }
 
-export type IPaginatedInfiniteGroups = InfiniteData<
-  IPaginatedResult<IGroupWithLastMessage>
->
+export type IPaginatedInfiniteChats = InfiniteData<IPaginatedResult<IChat>>
 
 export type TGetUserGroupsQueryVariables = TPaginatedParams & {
   userId: number
