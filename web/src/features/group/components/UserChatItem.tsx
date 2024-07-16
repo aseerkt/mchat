@@ -4,47 +4,47 @@ import { cn } from '@/utils/style'
 import { NavLink } from 'react-router-dom'
 import { IGroupWithLastMessage } from '../group.interface'
 
-interface UserGroupItemProps {
-  group: IGroupWithLastMessage
+interface UserChatItemProps {
+  chat: IGroupWithLastMessage
 }
 
-export const UserGroupItem = ({ group }: UserGroupItemProps) => {
+export const UserChatItem = ({ chat }: UserChatItemProps) => {
   return (
     <NavLink
-      to={`/chat/${group.id}`}
+      to={`/chat/${chat.groupId}`}
       className={({ isActive }) =>
         cn('border-b p-4 hover:bg-slate-100', isActive ? 'bg-gray-300' : '')
       }
     >
       <div className='flex justify-between'>
-        <Avatar name={group.name} id={group.id} />
+        <Avatar name={chat.name} id={chat.groupId! || chat.receiverId!} />
         <div className='ml-3 flex flex-1 flex-col overflow-hidden'>
           <b
             className='overflow-hidden text-ellipsis whitespace-nowrap text-nowrap font-semibold'
-            title={group.name}
+            title={chat.name}
           >
-            {group.name}
+            {chat.name}
           </b>
           <span className='w-[95%] overflow-hidden text-ellipsis whitespace-nowrap text-nowrap text-xs text-gray-500'>
-            {group.lastMessage?.content}
+            {chat.lastMessage?.content}
           </span>
         </div>
         <div className='flex flex-col items-end'>
           <span
             className={cn(
               'text-xs text-gray-500',
-              group.unreadCount > 0 ? 'text-green-600' : 'text-gray-500',
+              chat.unreadCount > 0 ? 'text-green-600' : 'text-gray-500',
             )}
           >
-            {formatGroupDate(group.lastActivity)}
+            {formatGroupDate(chat.lastActivity)}
           </span>
           <span
             className={cn(
               'flex h-6 w-6 items-center justify-center rounded-full text-center text-xs text-white',
-              group.unreadCount > 0 ? 'bg-green-600' : 'hidden',
+              chat.unreadCount > 0 ? 'bg-green-600' : 'hidden',
             )}
           >
-            {group.unreadCount}
+            {chat.unreadCount}
           </span>
         </div>
       </div>

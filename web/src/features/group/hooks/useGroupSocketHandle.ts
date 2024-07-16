@@ -54,7 +54,7 @@ export const useGroupSocketHandle = () => {
 
           draft.pages.forEach(page => {
             const groupIndex = page.data.findIndex(
-              group => group.id === message.groupId,
+              group => group.groupId === message.groupId,
             )
             if (groupIndex !== -1) {
               messageGroup = page.data[groupIndex]
@@ -63,14 +63,13 @@ export const useGroupSocketHandle = () => {
           })
 
           const group: IGroupWithLastMessage = {
-            id: messageGroup?.id || message.groupId,
+            groupId: messageGroup?.groupId || message.groupId,
             name: messageGroup?.name || message.groupName,
             lastActivity: message.createdAt,
             unreadCount: messageGroup?.unreadCount || 0,
             lastMessage: {
-              id: message.id,
+              messageId: message.id,
               content: message.content,
-              senderId: message.senderId,
             },
           }
 
@@ -89,7 +88,7 @@ export const useGroupSocketHandle = () => {
       updateGroupList(data => {
         const updatedData = produce(data, draft => {
           draft.pages.forEach(page => {
-            const group = page.data.find(group => group.id === groupId)
+            const group = page.data.find(group => group.groupId === groupId)
             if (group) {
               group.unreadCount = 0
             }
@@ -105,7 +104,9 @@ export const useGroupSocketHandle = () => {
     ) => {
       const updatedData = produce(data, draft =>
         draft.pages.forEach(page => {
-          const groupIndex = page.data.findIndex(group => group.id === groupId)
+          const groupIndex = page.data.findIndex(
+            group => group.groupId === groupId,
+          )
           if (groupIndex !== -1) {
             page.data.splice(groupIndex, 1)
           }

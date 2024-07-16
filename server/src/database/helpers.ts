@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { isValidDate } from '@/utils/validations'
-import { ColumnBaseConfig, ColumnDataType, SQL } from 'drizzle-orm'
+import {
+  AnyColumn,
+  ColumnBaseConfig,
+  ColumnDataType,
+  sql,
+  SQL,
+  SQLWrapper,
+} from 'drizzle-orm'
 import { PgColumn, PgSelect } from 'drizzle-orm/pg-core'
 import get from 'lodash/get'
 import { defaultLimit } from './constants'
@@ -65,3 +72,27 @@ export const withPagination = async <T extends PgSelect>(
         : null,
   }
 }
+
+export const rowNumber = () => {
+  return {
+    over: <TReturnType>({
+      partitionBy,
+      orderBy,
+      as,
+    }: {
+      partitionBy: AnyColumn | SQLWrapper
+      orderBy: SQL
+      as: string
+    }) =>
+      sql<TReturnType>`ROW_NUMBER() OVER (PARTITION BY ${partitionBy} ORDER BY ${orderBy})`.as(
+        as,
+      ),
+  }
+}
+
+export const coalesce = <T>(
+  value: SQL.Aliased<T> | SQL<T> | AnyColumn,
+  defaultValue: SQL.Aliased<T> | SQL<T> | AnyColumn | number,
+) => sql<T>`COALESCE (${value}, ${defaultValue})`
+
+export const nullAs = (as: string) => sql`null`.as(as)

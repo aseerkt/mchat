@@ -11,12 +11,13 @@ export interface IGroup {
   createdAt: string
 }
 
-export interface IGroupWithLastMessage
-  extends Omit<IGroup, 'createdAt' | 'ownerId'> {
+export interface IGroupWithLastMessage {
+  groupId?: number
+  receiverId?: number
+  name: string
   lastMessage?: {
-    id: number
+    messageId: number
     content: string
-    senderId: number
   }
   unreadCount: number
   lastActivity: string

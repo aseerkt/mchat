@@ -6,9 +6,9 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { Fragment, useRef } from 'react'
 import { fetchUserGroups } from '../group.service'
 import { useGroupSocketHandle } from '../hooks/useGroupSocketHandle'
-import { UserGroupItem } from './UserGroupItem'
+import { UserChatItem } from './UserChatItem'
 
-export const UserGroupList = () => {
+export const UserChatList = () => {
   const { auth } = useAuth()
   const { data, isLoading, isSuccess, hasNextPage, fetchNextPage, error } =
     useInfiniteQuery({
@@ -46,8 +46,8 @@ export const UserGroupList = () => {
       <ul ref={listRef} className='flex h-full flex-col overflow-y-auto'>
         {data.pages.map((page, i) => (
           <Fragment key={i}>
-            {page.data.map(group => (
-              <UserGroupItem key={group.id} group={group} />
+            {page.data.map(chat => (
+              <UserChatItem key={chat.groupId || chat.receiverId} chat={chat} />
             ))}
           </Fragment>
         ))}
