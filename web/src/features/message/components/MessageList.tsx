@@ -15,19 +15,24 @@ import { MessageItem } from './MessageItem'
 
 interface MessageListProps {
   groupId?: number
-  receiverId?: number
+  partnerId?: number
 }
 
-export const MessageList = ({ groupId, receiverId }: MessageListProps) => {
+export const MessageList = ({ groupId, partnerId }: MessageListProps) => {
   const { auth } = useAuth()
 
   const queryClient = useQueryClient()
 
   const { data, hasNextPage, fetchNextPage, isLoading, error, isSuccess } =
     useInfiniteQuery({
-      queryKey: ['messages', { groupId, receiverId }],
+      queryKey: ['messages', { groupId, partnerId }],
       queryFn: ({ pageParam }) =>
-        fetchMessages({ groupId, receiverId, limit: 15, cursor: pageParam }),
+        fetchMessages({
+          groupId,
+          partnerId,
+          limit: 15,
+          cursor: pageParam,
+        }),
       initialPageParam: null as number | null,
       getNextPageParam: lastPage =>
         lastPage.cursor ? lastPage.cursor : undefined,
@@ -42,14 +47,20 @@ export const MessageList = ({ groupId, receiverId }: MessageListProps) => {
       if (groupId && message.groupId !== groupId) {
         return
       }
-      if (receiverId && message.receiverId !== receiverId) {
+      if (
+        partnerId &&
+        ![message.senderId, message.receiverId].includes(partnerId)
+      ) {
         return
       }
       function scrollToBottom() {
         listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
+        if (message.receiverId === auth?.id) {
+          socket.emit('markMessageAsRead', message.id)
+        }
       }
       queryClient.setQueryData<TMessageInfiniteData>(
-        ['messages', { groupId, receiverId }],
+        ['messages', { groupId, partnerId }],
         data => {
           if (!data) return
 
@@ -67,7 +78,7 @@ export const MessageList = ({ groupId, receiverId }: MessageListProps) => {
       socket.off('newMessage', updateMessage)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId, receiverId])
+  }, [groupId, partnerId])
 
   const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 

@@ -9,9 +9,53 @@ import { IChat, IGroup, IPaginatedInfiniteChats } from '../group.interface'
 
 export const useChatSocketHandle = () => {
   const { auth } = useAuth()
-  const params = useParams()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const params = useParams()
+
+  function getUnreadCount(checker: (chat: IChat) => boolean) {
+    if (!auth) return 0
+    const chatListData = queryClient.getQueryData<IPaginatedInfiniteChats>([
+      'userGroups',
+      auth,
+    ])
+    let unreadCount = 0
+    chatListData?.pages.forEach(page =>
+      page.data.forEach(chat => {
+        if (checker(chat)) {
+          unreadCount = chat.unreadCount
+        }
+      }),
+    )
+    return unreadCount
+  }
+
+  useEffect(() => {
+    const partnerId = Number(params.partnerId)
+    if (partnerId) {
+      const socket = getSocketIO()
+      socket.emit('joinDm', partnerId)
+
+      const unreadCount = getUnreadCount(chat => chat.partnerId === partnerId)
+      if (unreadCount) {
+        socket.emit('markChatMessagesAsRead', { receiverId: partnerId })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.partnerId])
+
+  useEffect(() => {
+    const groupId = Number(params.groupId)
+    if (groupId) {
+      const socket = getSocketIO()
+      socket.emit('joinGroup', groupId)
+      const unreadCount = getUnreadCount(chat => chat.groupId === groupId)
+      if (unreadCount) {
+        socket.emit('markChatMessagesAsRead', { groupId })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.groupId])
 
   useEffect(() => {
     if (!auth) return
@@ -53,7 +97,8 @@ export const useChatSocketHandle = () => {
             const chatIndex = page.data.findIndex(chat =>
               message.groupId
                 ? chat.groupId === message.groupId
-                : chat.receiverId === message.receiverId,
+                : chat.partnerId === message.receiverId ||
+                  chat.partnerId === message.senderId,
             )
             if (chatIndex !== -1) {
               chat = page.data[chatIndex]
@@ -61,9 +106,13 @@ export const useChatSocketHandle = () => {
             }
           })
 
-          const group: IChat = {
+          const updatedChat: IChat = {
             groupId: chat?.groupId || message.groupId,
-            receiverId: chat?.groupId || message.receiverId,
+            partnerId:
+              chat?.partnerId ||
+              (message.receiverId === auth?.id
+                ? message.senderId
+                : message.receiverId),
             chatName: chat?.chatName || message.chatName,
             lastActivity: message.createdAt,
             unreadCount: chat?.unreadCount || 0,
@@ -73,12 +122,14 @@ export const useChatSocketHandle = () => {
             },
           }
 
-          if (params.groupId === message.groupId?.toString()) {
-            socket.emit('markMessageAsRead', message.id)
-          } else {
-            group.unreadCount++
+          // if not current chat increment unread count
+          if (
+            message.groupId?.toString() !== params.groupId ||
+            updatedChat.partnerId?.toString() !== params.partnerId
+          ) {
+            updatedChat.unreadCount++
           }
-          draft.pages[0].data.unshift(group)
+          draft.pages[0].data.unshift(updatedChat)
         })
       })
     }
@@ -96,7 +147,7 @@ export const useChatSocketHandle = () => {
             const chat = page.data.find(chat =>
               groupId
                 ? chat.groupId === groupId
-                : chat.receiverId === receiverId,
+                : chat.partnerId === receiverId,
             )
             if (chat) {
               chat.unreadCount = 0
@@ -159,5 +210,5 @@ export const useChatSocketHandle = () => {
       socket.off('memberLeft', handleMemberLeft)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth, params.groupId])
+  }, [auth, params.groupId, params.partnerId])
 }

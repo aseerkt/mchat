@@ -16,7 +16,7 @@ export interface IMessage {
 
 export interface IGetChatMessagesArgs extends TPaginatedParams {
   groupId?: number
-  receiverId?: number
+  partnerId?: number
 }
 
 export type TMessageInfiniteData = InfiniteData<

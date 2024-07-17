@@ -47,7 +47,7 @@ export const UserChatList = () => {
         {data.pages.map((page, i) => (
           <Fragment key={i}>
             {page.data.map(chat => (
-              <UserChatItem key={chat.groupId || chat.receiverId} chat={chat} />
+              <UserChatItem key={chat.groupId || chat.partnerId} chat={chat} />
             ))}
           </Fragment>
         ))}

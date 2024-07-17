@@ -40,11 +40,11 @@ export const hasChatPermission =
         req.params.groupId || req.query.groupId || req.body.groupId,
       )
 
-      const receiverId = Number(
-        req.params.receiverId || req.query.receiverId || req.body.receiverId,
+      const partnerId = Number(
+        req.params.partnerId || req.query.partnerId || req.body.partnerId,
       )
 
-      if (!groupId && !receiverId) {
+      if (!groupId && !partnerId) {
         return badRequest(res)
       }
 

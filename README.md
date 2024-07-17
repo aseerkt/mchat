@@ -115,6 +115,7 @@ pnpm --filter web test
 - [x] leave group, transfer ownership, delete group
 - [x] delete group
 - [x] alert component
+- [x] direct message 
 - [ ] confirm dialog
 - [ ] read receipts
 - [ ] e2e encryption

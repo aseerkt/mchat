@@ -1,6 +1,7 @@
 import { Avatar } from '@/components/Avatar'
 import { formatGroupDate } from '@/utils/date'
 import { cn } from '@/utils/style'
+import { Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { IChat } from '../group.interface'
 
@@ -11,13 +12,20 @@ interface UserChatItemProps {
 export const UserChatItem = ({ chat }: UserChatItemProps) => {
   return (
     <NavLink
-      to={`/chat/${chat.groupId ? 'group' : 'direct'}/${chat.groupId || chat.receiverId}`}
+      to={`/chat/${chat.groupId ? 'group' : 'direct'}/${chat.groupId || chat.partnerId}`}
       className={({ isActive }) =>
         cn('border-b p-4 hover:bg-slate-100', isActive ? 'bg-gray-300' : '')
       }
     >
       <div className='flex justify-between'>
-        <Avatar name={chat.chatName} id={chat.groupId! || chat.receiverId!} />
+        <div className='relative h-max'>
+          <Avatar name={chat.chatName} id={(chat.groupId || chat.partnerId)!} />
+          {chat.groupId && (
+            <div className='absolute bottom-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-black text-white'>
+              {<Users size={10} />}
+            </div>
+          )}
+        </div>
         <div className='ml-3 flex flex-1 flex-col overflow-hidden'>
           <b
             className='overflow-hidden text-ellipsis whitespace-nowrap text-nowrap font-semibold'

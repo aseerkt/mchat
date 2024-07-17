@@ -1,5 +1,4 @@
 import { db } from '@/database'
-import { getUserSockets } from '@/redis/handlers'
 import { and, eq, isNull } from 'drizzle-orm'
 import { groups } from '../groups/groups.schema'
 import { checkPermission } from '../members/members.service'
@@ -83,12 +82,15 @@ export const markMessageAsRead = async (
     }
   }
 
-  await db.insert(messageRecipients).values({
-    messageId,
-    recipientId,
-  })
+  await db
+    .insert(messageRecipients)
+    .values({
+      messageId,
+      recipientId,
+    })
+    .onConflictDoNothing()
 
-  return getUserSockets(message.senderId)
+  return message.senderId
 }
 
 export const markChatMessagesAsRead = async ({
@@ -140,7 +142,6 @@ export const markChatMessagesAsRead = async ({
         recipientId,
       })),
     )
-
-    return getUserSockets(recipientId)
   }
+  return unreadMessages
 }

@@ -13,7 +13,7 @@ export interface IGroup {
 
 export interface IChat {
   groupId?: number
-  receiverId?: number
+  partnerId?: number
   chatName: string
   lastMessage?: {
     messageId: number

@@ -26,7 +26,7 @@ const ChatLayout = () => {
         <div
           className={cn(
             'flex w-full flex-shrink-0 flex-col md:w-[280px] md:border-r-2',
-            params.groupId && 'hidden md:flex',
+            (params.groupId || params.partnerId) && 'hidden md:flex',
           )}
         >
           <ChatUser isConnected={isConnected} />

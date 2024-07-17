@@ -11,10 +11,8 @@ import {
 import { useHasPermission } from '@/features/member/hooks'
 import { MessageComposer, MessageList } from '@/features/message/components'
 import { useDisclosure } from '@/hooks/useDisclosure'
-import { getSocketIO } from '@/utils/socket'
 import { cn } from '@/utils/style'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 export const Component = () => {
@@ -23,15 +21,6 @@ export const Component = () => {
   const groupId = Number(params.groupId)
 
   const { isOpen, toggle } = useDisclosure()
-
-  useEffect(() => {
-    const socket = getSocketIO()
-    if (groupId) {
-      socket.emit('joinGroup', Number(groupId))
-      // TODO: only mark group as read if it has unread messages
-      socket.emit('markChatMessagesAsRead', { groupId })
-    }
-  }, [groupId])
 
   const { hasPermission } = useHasPermission(groupId)
 

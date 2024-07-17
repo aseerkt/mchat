@@ -20,6 +20,7 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   joinGroup: (groupId: number) => void
+  joinDm: (partnerId: number) => void
   createMessage: (
     args: { groupId?: number; receiverId?: number; text: string },
     callback: (response: { message?: IMessage; error?: unknown }) => void,
@@ -29,8 +30,7 @@ export interface ClientToServerEvents {
     groupId?: number
     receiverId?: number
   }) => void
-  userStartedTyping: (args: { chatId: number; mode: ChatMode }) => void
-  userStoppedTyping: (args: { chatId: number; mode: ChatMode }) => void
+  typing: (args: { chatId: number; mode: ChatMode; isTyping: boolean }) => void
 }
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>

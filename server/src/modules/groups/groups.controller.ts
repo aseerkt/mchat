@@ -7,7 +7,7 @@ import {
   withPagination,
 } from '@/database/helpers'
 import { deleteGroupRoles, deleteMemberRole } from '@/redis/handlers'
-import { getGroupRoomId } from '@/socket/helpers'
+import { roomKeys } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
 import { badRequest, notAuthorized, notFound } from '@/utils/api'
 import {
@@ -16,6 +16,7 @@ import {
   desc,
   eq,
   getTableColumns,
+  isNotNull,
   isNull,
   like,
   lt,
@@ -146,13 +147,14 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
         db
           .select({
             ...getTableColumns(messages),
-            seqNum: rowNumber().over<number>({
+            rowNumber: rowNumber().over<number>({
               partitionBy: messages.groupId,
               orderBy: desc(messages.createdAt),
-              as: 'seq_num',
+              as: 'row_number',
             }),
           })
-          .from(messages),
+          .from(messages)
+          .where(isNotNull(messages.groupId)),
       )
 
     const groupsWithLastMessage = db.$with('groups_with_last_message').as(
@@ -161,7 +163,7 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
         .select({
           chatName: groups.name,
           groupId: groupMessagesWithRowNumber.groupId,
-          receiverId: groupMessagesWithRowNumber.receiverId,
+          partnerId: groupMessagesWithRowNumber.receiverId,
           lastMessage: {
             messageId: sql`${groupMessagesWithRowNumber.id}`.as('message_id'),
             content: groupMessagesWithRowNumber.content,
@@ -176,33 +178,35 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
           groupMessagesWithRowNumber,
           and(
             eq(groups.id, groupMessagesWithRowNumber.groupId),
-            eq(groupMessagesWithRowNumber.seqNum, 1),
+            eq(groupMessagesWithRowNumber.rowNumber, 1),
           ),
         )
         .innerJoin(members, eq(members.groupId, groups.id))
         .where(eq(members.userId, req.user!.id)),
     )
 
-    const directMessagesWithRowNumber = db
-      .$with('direct_messages_with_row_number')
+    const directMessagesWithPartner = db
+      .$with('direct_messages_with_partner')
       .as(
         db
           .select({
             ...getTableColumns(messages),
-            seqNum: sql<number>`ROW_NUMBER() OVER (
-              PARTITION BY 
-                CASE 
-                  WHEN ${messages.senderId} < ${messages.receiverId} 
-                  THEN ${messages.senderId} 
-                  ELSE ${messages.receiverId} 
-                END, 
-                CASE 
-                  WHEN ${messages.senderId} < ${messages.receiverId} 
-                  THEN ${messages.receiverId} 
-                  ELSE ${messages.senderId} 
-                END 
-              ORDER BY ${desc(messages.createdAt)}
-            )`.as('seq_num'),
+            partnerId: sql<number>`
+              CASE
+                WHEN ${messages.senderId} = ${req.user!.id} THEN ${messages.receiverId}
+                ELSE ${messages.senderId}
+              END
+            `.as('partner_id'),
+            rowNumber: rowNumber().over({
+              partitionBy: sql<number>`
+              CASE
+                WHEN ${messages.senderId} = ${req.user!.id} THEN ${messages.receiverId}
+                ELSE ${messages.senderId}
+              END
+            `,
+              orderBy: desc(messages.createdAt),
+              as: 'row_number',
+            }),
           })
           .from(messages)
           .where(
@@ -220,25 +224,20 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       .$with('direct_messages_with_last_activity')
       .as(
         db
-          .with(directMessagesWithRowNumber)
+          .with(directMessagesWithPartner)
           .select({
             chatName: users.username,
-            groupId: directMessagesWithRowNumber.groupId,
-            receiverId: directMessagesWithRowNumber.receiverId,
+            groupId: directMessagesWithPartner.groupId,
+            partnerId: directMessagesWithPartner.partnerId,
             lastMessage: {
-              messageId: sql`${directMessagesWithRowNumber.id}`.as(
-                'message_id',
-              ),
-              content: directMessagesWithRowNumber.content,
+              messageId: sql`${directMessagesWithPartner.id}`.as('message_id'),
+              content: directMessagesWithPartner.content,
             },
-            lastActivity: directMessagesWithRowNumber.createdAt,
+            lastActivity: directMessagesWithPartner.createdAt,
           })
-          .from(directMessagesWithRowNumber)
-          .innerJoin(
-            users,
-            eq(directMessagesWithRowNumber.receiverId, users.id),
-          )
-          .where(eq(directMessagesWithRowNumber.seqNum, 1)),
+          .from(directMessagesWithPartner)
+          .innerJoin(users, eq(directMessagesWithPartner.partnerId, users.id))
+          .where(eq(directMessagesWithPartner.rowNumber, 1)),
       )
 
     const unreadCounts = db.$with('unread_counts').as(
@@ -304,7 +303,7 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       .with(combinedChats, unreadCounts)
       .select({
         groupId: combinedChats.groupId,
-        receiverId: combinedChats.receiverId,
+        partnerId: combinedChats.partnerId,
         chatName: combinedChats.chatName,
         lastMessage: combinedChats.lastMessage,
         lastActivity: combinedChats.lastActivity,
@@ -317,7 +316,7 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
         unreadCounts,
         and(
           eq(combinedChats.groupId, unreadCounts.groupId),
-          eq(combinedChats.receiverId, unreadCounts.receiverId),
+          eq(combinedChats.partnerId, unreadCounts.receiverId),
         ),
       )
       .$dynamic()
@@ -365,7 +364,10 @@ export const addGroupMembers: RequestHandler = async (req, res, next) => {
 
     // let existing members know new member is joined
 
-    io.to(getGroupRoomId(req.params.groupId)).emit('newMembers', newMembers)
+    io.to(roomKeys.CURRENT_GROUP_KEY(Number(req.params.groupId))).emit(
+      'newMembers',
+      newMembers,
+    )
 
     res.json(newMembers)
   } catch (error) {

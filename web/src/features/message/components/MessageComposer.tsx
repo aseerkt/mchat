@@ -33,10 +33,10 @@ export const MessageComposer = ({
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     } else {
-      socketRef.current.emit('userStartedTyping', payload)
+      socketRef.current.emit('typing', { isTyping: true, ...payload })
     }
     timeoutRef.current = setTimeout(() => {
-      socketRef.current.emit('userStoppedTyping', payload)
+      socketRef.current.emit('typing', { isTyping: false, ...payload })
       timeoutRef.current = undefined
     }, 1000)
   }

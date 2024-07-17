@@ -96,3 +96,6 @@ export const coalesce = <T>(
 ) => sql<T>`COALESCE (${value}, ${defaultValue})`
 
 export const nullAs = (as: string) => sql`null`.as(as)
+
+export const columnAs = <T>(column: AnyColumn, as: string) =>
+  sql<T>`${column}`.as(as)
