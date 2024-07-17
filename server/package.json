@@ -21,8 +21,7 @@
   "author": "Aseer KT",
   "license": "ISC",
   "dependencies": {
-    "@socket.io/cluster-adapter": "^0.2.2",
-    "@socket.io/sticky": "^1.0.4",
+    "@socket.io/redis-streams-adapter": "^0.2.2",
     "argon2": "^0.40.3",
     "colors": "^1.4.0",
     "cors": "^2.8.5",

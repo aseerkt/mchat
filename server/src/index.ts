@@ -1,21 +1,16 @@
-import {
-  createAdapter as createClusterAdapter,
-  setupPrimary,
-} from '@socket.io/cluster-adapter'
-import { setupMaster, setupWorker } from '@socket.io/sticky'
+import { createAdapter } from '@socket.io/redis-streams-adapter'
 import 'colors'
 import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
-import cluster from 'node:cluster'
 import { createServer } from 'node:http'
-import { availableParallelism } from 'node:os'
 import { Server } from 'socket.io'
 import swaggerUi from 'swagger-ui-express'
 import { config } from './config'
 import { connectDB } from './database'
 import { errorHandler } from './middlewares'
+import { getRedisClient } from './redis'
 import rootRouter from './routes'
 import { registerSocketEvents } from './socket/events'
 import { socketAuthMiddleware } from './socket/middlewares'
@@ -28,40 +23,10 @@ import {
 import swaggerDocument from './swagger-output.json'
 
 const createApp = async () => {
-  if (cluster.isPrimary && config.isProd) {
-    console.log(`Primary ${process.pid} is running`)
-
-    const numCPUs = availableParallelism()
-
-    const httpServer = createServer()
-
-    // setup sticky sessions
-    setupMaster(httpServer, { loadBalancingMethod: 'least-connection' })
-
-    // setup connection between the workers
-    setupPrimary()
-
-    httpServer.listen(config.port, () => {
-      console.log(`Server running at http://localhost:${config.port}`.blue.bold)
-    })
-
-    for (let i = 0; i < numCPUs; i++) {
-      // Spawn a new worker process.
-      // This can only be called from the primary process.
-      cluster.fork()
-    }
-
-    cluster.on('exit', worker => {
-      console.log(`worker ${worker.process.pid} died`)
-      cluster.fork()
-    })
-
-    return
-  }
-
   console.log(`Worker ${process.pid} started`)
 
   await connectDB()
+  const redisClient = getRedisClient()
 
   const app = express()
 
@@ -81,15 +46,8 @@ const createApp = async () => {
     SocketData
   >(server, {
     cors: { origin: config.corsOrigin },
+    adapter: createAdapter(redisClient),
   })
-
-  if (config.isProd) {
-    // use cluster adapter
-    io.adapter(createClusterAdapter())
-
-    // setup connection with primary process
-    setupWorker(io)
-  }
 
   io.use(socketAuthMiddleware)
 
@@ -108,11 +66,9 @@ const createApp = async () => {
 
   app.use(errorHandler)
 
-  if (!config.isProd) {
-    server.listen(config.port, () => {
-      console.log(`Server running at http://localhost:${config.port}`.blue.bold)
-    })
-  }
+  server.listen(config.port, () => {
+    console.log(`Server running at http://localhost:${config.port}`.blue.bold)
+  })
 
   return { server }
 }
