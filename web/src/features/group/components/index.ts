@@ -1,5 +1,4 @@
 export { CreateGroup } from './CreateGroup'
-export { GroupHeader } from './GroupHeader'
 export { JoinGroup } from './JoinGroup'
-export { UserGroupItem } from './UserGroupItem'
-export { UserGroupList } from './UserGroupList'
+export { UserChatItem as UserGroupItem } from './UserChatItem'
+export { UserChatList as UserGroupList } from './UserChatList'

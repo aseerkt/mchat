@@ -1,9 +1,6 @@
 import { db } from '@/database'
-import {
-  getMemberRole,
-  getMultipleUserSockets,
-  setMemberRolesForAGroup,
-} from '@/redis/handlers'
+import { getMemberRole, setMemberRolesForAGroup } from '@/redis/handlers'
+import { roomKeys } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
 import { and, eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
@@ -60,26 +57,12 @@ export const addMembers = async (
 
   setMemberRolesForAGroup(group.id, memberRoles)
 
-  const userSockets = await joinMultiSocketRooms(io, memberIds, [group.id])
-
-  if (userSockets.length) {
-    io.to(userSockets).emit('newGroup', group)
+  for (const memberId of memberIds) {
+    // new member to join group room
+    io.in(roomKeys.USER_KEY(memberId)).socketsJoin(roomKeys.GROUP_KEY(group.id))
+    // emit newGroup event to new member sockets
+    io.to(roomKeys.USER_KEY(memberId)).emit('newGroup', group)
   }
 
   return newMembers
-}
-
-export const joinMultiSocketRooms = async (
-  io: TypedIOServer,
-  userIds: number[],
-  groupIds: number[],
-) => {
-  const userSockets = await getMultipleUserSockets(userIds)
-
-  for (const socketId of userSockets) {
-    const socket = io.sockets.sockets.get(socketId)
-    socket?.join(groupIds.map(String))
-  }
-
-  return userSockets
 }

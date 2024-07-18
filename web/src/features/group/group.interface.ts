@@ -11,20 +11,19 @@ export interface IGroup {
   createdAt: string
 }
 
-export interface IGroupWithLastMessage
-  extends Omit<IGroup, 'createdAt' | 'ownerId'> {
+export interface IChat {
+  groupId?: number
+  partnerId?: number
+  chatName: string
   lastMessage?: {
-    id: number
+    messageId: number
     content: string
-    senderId: number
   }
   unreadCount: number
   lastActivity: string
 }
 
-export type IPaginatedInfiniteGroups = InfiniteData<
-  IPaginatedResult<IGroupWithLastMessage>
->
+export type IPaginatedInfiniteChats = InfiniteData<IPaginatedResult<IChat>>
 
 export type TGetUserGroupsQueryVariables = TPaginatedParams & {
   userId: number

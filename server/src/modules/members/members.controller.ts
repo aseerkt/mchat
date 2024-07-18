@@ -1,11 +1,7 @@
 import { db } from '@/database'
 import { getPaginationParams, withPagination } from '@/database/helpers'
-import {
-  checkOnlineUsers,
-  getMultipleUserSockets,
-  setGroupMemberRoleTxn,
-} from '@/redis/handlers'
-import { getGroupRoomId } from '@/socket/helpers'
+import { checkOnlineUsers, setGroupMemberRoleTxn } from '@/redis/handlers'
+import { roomKeys } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
 import { badRequest, notFound } from '@/utils/api'
 import { and, asc, eq, getTableColumns, gt, like } from 'drizzle-orm'
@@ -36,18 +32,23 @@ export const joinRooms: RequestHandler = async (req, res, next) => {
 
     rows.forEach(member => {
       groupMemberRoles[member.groupId] = [member.userId, 'member']
-      io.to(getGroupRoomId(member.groupId)).emit('newMember', {
+      io.to(roomKeys.CURRENT_GROUP_KEY(member.groupId)).emit('newMember', {
         ...member,
         username: req.user!.username,
       })
     })
 
-    const currentUserSockets = await getMultipleUserSockets([req.user!.id])
+    // get sockets for current user id
 
-    currentUserSockets.forEach(socketId => {
-      const socket = io.sockets.sockets.get(socketId)
-      socket?.join(rows.map(member => member.groupId.toString()))
-    })
+    const currentUserSockets = await io
+      .in(roomKeys.USER_KEY(req.user!.id))
+      .fetchSockets()
+
+    // join group rooms
+
+    for (const socket of currentUserSockets) {
+      socket?.join(rows.map(member => roomKeys.GROUP_KEY(member.groupId)))
+    }
 
     setGroupMemberRoleTxn(groupMemberRoles)
 

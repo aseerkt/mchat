@@ -1,27 +1,57 @@
-import logoutSvg from '@/assets/logout-2-svgrepo-com.svg'
-import { Logo } from '@/components/Logo'
-import { useAuth } from '@/hooks/useAuth'
-import { getSocketIO } from '@/utils/socket'
-import { removeToken } from '@/utils/token'
+import backArrow from '@/assets/back-svgrepo-com.svg'
+import usersSvg from '@/assets/users-svgrepo-com.svg'
+import { Alert } from '@/components/Alert'
+import { NavLink } from 'react-router-dom'
 
-export const ChatHeader = () => {
-  const { setAuth } = useAuth()
+interface ChatHeaderProps {
+  error: Error | null
+  chatId?: number
+  chatName?: string
+  toggleGroupInfo?: () => void
+}
 
-  const logout = () => {
-    const socket = getSocketIO()
-    socket.disconnect()
-    setAuth(undefined)
-    removeToken()
+export const ChatHeader = ({
+  error,
+  chatId,
+  chatName,
+  toggleGroupInfo,
+}: ChatHeaderProps) => {
+  let content
+
+  if (chatId) {
+    content = (
+      <>
+        <h3 className='text-lg font-bold'>{chatName}</h3>
+        {toggleGroupInfo && (
+          <button onClick={toggleGroupInfo} className='ml-auto'>
+            <img
+              src={usersSvg}
+              alt='open member drawer'
+              height={24}
+              width={24}
+            />
+          </button>
+        )}
+      </>
+    )
+  } else if (error) {
+    content = (
+      <Alert severity='error' size='sm'>
+        Unable to fetch chat
+      </Alert>
+    )
   }
 
   return (
-    <header className='sticky inset-x-0 top-0 flex h-20 items-center justify-between border-b px-6 shadow'>
-      <Logo />
-      <div className='flex items-center gap-x-4'>
-        <button aria-label='logout' title='Logout' onClick={logout}>
-          <img src={logoutSvg} alt='logout' width={20} height={20} />
-        </button>
-      </div>
+    <header className='flex h-14 w-full shrink-0 items-center border-b px-4'>
+      <NavLink
+        aria-label='back to groups'
+        className='mr-4 inline-flex flex-shrink-0 md:hidden'
+        to={'/chat'}
+      >
+        <img className='h-4 w-4' src={backArrow} alt='back-arrow' />
+      </NavLink>
+      {content}
     </header>
   )
 }

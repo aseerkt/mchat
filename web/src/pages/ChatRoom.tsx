@@ -1,7 +1,8 @@
-import { TypingIndicator } from '@/features/chat/components'
+import { PageLoader } from '@/components/PageLoader'
+import { ChatHeader, TypingIndicator } from '@/features/chat/components'
 import { GroupInfo } from '@/features/chat/layouts'
-import { GroupHeader } from '@/features/group/components'
 import { DeleteGroup } from '@/features/group/components/DeleteGroup'
+import { fetchGroup } from '@/features/group/group.service'
 import {
   AddMembers,
   LeaveGroup,
@@ -10,9 +11,8 @@ import {
 import { useHasPermission } from '@/features/member/hooks'
 import { MessageComposer, MessageList } from '@/features/message/components'
 import { useDisclosure } from '@/hooks/useDisclosure'
-import { getSocketIO } from '@/utils/socket'
 import { cn } from '@/utils/style'
-import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 
 export const Component = () => {
@@ -22,18 +22,21 @@ export const Component = () => {
 
   const { isOpen, toggle } = useDisclosure()
 
-  useEffect(() => {
-    const socket = getSocketIO()
-    if (groupId) {
-      socket.emit('joinGroup', Number(groupId))
-      // TODO: only mark group as read if it has unread messages
-      socket.emit('markGroupMessagesAsRead', groupId)
-    }
-  }, [groupId])
-
   const { hasPermission } = useHasPermission(groupId)
 
-  if (!groupId) return null
+  const {
+    data: group,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['currentGroup', groupId],
+    queryFn: ({ queryKey }) => fetchGroup(queryKey[1] as number),
+    enabled: Boolean(groupId),
+  })
+
+  if (isLoading) {
+    return <PageLoader />
+  }
 
   return (
     <>
@@ -43,7 +46,12 @@ export const Component = () => {
           isOpen && 'hidden md:flex',
         )}
       >
-        <GroupHeader groupId={groupId} showMembers={toggle} />
+        <ChatHeader
+          chatId={group?.id}
+          chatName={group?.name}
+          error={error}
+          toggleGroupInfo={toggle}
+        />
         <MessageList groupId={groupId} />
         <TypingIndicator />
         <MessageComposer groupId={groupId} />

@@ -5,9 +5,9 @@ import {
 import { fetcher, stringifyQueryParams } from '@/utils/api'
 import { IMember } from '../member/member.interface'
 import {
+  IChat,
   ICreateGroupArgs,
   IGroup,
-  IGroupWithLastMessage,
   IJoinGroupArgs,
   TGetUserGroupsQueryVariables,
 } from './group.interface'
@@ -15,9 +15,8 @@ import {
 export const fetchUserGroups = async ({
   userId,
   ...params
-}: TGetUserGroupsQueryVariables): Promise<
-  IPaginatedResult<IGroupWithLastMessage>
-> => fetcher(`users/${userId}/groups?${stringifyQueryParams(params)}`)
+}: TGetUserGroupsQueryVariables): Promise<IPaginatedResult<IChat>> =>
+  fetcher(`users/${userId}/groups?${stringifyQueryParams(params)}`)
 
 export const fetchGroupsToJoin = async (
   params: TPaginatedParams,

@@ -10,23 +10,29 @@ import { getSocketIO } from '@/utils/socket'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { produce } from 'immer'
 import { Fragment, useEffect, useRef } from 'react'
-import { fetchGroupMessages } from '../message.service'
+import { fetchMessages } from '../message.service'
 import { MessageItem } from './MessageItem'
 
 interface MessageListProps {
-  groupId: number
+  groupId?: number
+  partnerId?: number
 }
 
-export const MessageList = ({ groupId }: MessageListProps) => {
+export const MessageList = ({ groupId, partnerId }: MessageListProps) => {
   const { auth } = useAuth()
 
   const queryClient = useQueryClient()
 
   const { data, hasNextPage, fetchNextPage, isLoading, error, isSuccess } =
     useInfiniteQuery({
-      queryKey: ['messages', groupId],
+      queryKey: ['messages', { groupId, partnerId }],
       queryFn: ({ pageParam }) =>
-        fetchGroupMessages({ groupId, limit: 15, cursor: pageParam }),
+        fetchMessages({
+          groupId,
+          partnerId,
+          limit: 15,
+          cursor: pageParam,
+        }),
       initialPageParam: null as number | null,
       getNextPageParam: lastPage =>
         lastPage.cursor ? lastPage.cursor : undefined,
@@ -38,14 +44,23 @@ export const MessageList = ({ groupId }: MessageListProps) => {
     const socket = getSocketIO()
 
     function updateMessage(message: IMessage) {
-      if (message.groupId !== groupId) {
+      if (groupId && message.groupId !== groupId) {
+        return
+      }
+      if (
+        partnerId &&
+        ![message.senderId, message.receiverId].includes(partnerId)
+      ) {
         return
       }
       function scrollToBottom() {
         listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
+        if (message.receiverId === auth?.id) {
+          socket.emit('markMessageAsRead', message.id)
+        }
       }
       queryClient.setQueryData<TMessageInfiniteData>(
-        ['messages', groupId],
+        ['messages', { groupId, partnerId }],
         data => {
           if (!data) return
 
@@ -63,7 +78,7 @@ export const MessageList = ({ groupId }: MessageListProps) => {
       socket.off('newMessage', updateMessage)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId])
+  }, [groupId, partnerId])
 
   const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 

@@ -1,7 +1,13 @@
 import { db } from '@/database'
-import { getPaginationParams, withPagination } from '@/database/helpers'
+import {
+  coalesce,
+  getPaginationParams,
+  nullAs,
+  rowNumber,
+  withPagination,
+} from '@/database/helpers'
 import { deleteGroupRoles, deleteMemberRole } from '@/redis/handlers'
-import { getGroupRoomId } from '@/socket/helpers'
+import { roomKeys } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
 import { badRequest, notAuthorized, notFound } from '@/utils/api'
 import {
@@ -10,12 +16,16 @@ import {
   desc,
   eq,
   getTableColumns,
+  isNotNull,
   isNull,
   like,
   lt,
+  notExists,
   notInArray,
+  or,
   sql,
 } from 'drizzle-orm'
+import { unionAll } from 'drizzle-orm/pg-core'
 import { RequestHandler } from 'express'
 import { members } from '../members/members.schema'
 import { addMembers } from '../members/members.service'
@@ -131,79 +141,183 @@ export const listGroups: RequestHandler = async (req, res, next) => {
 
 export const listUserGroups: RequestHandler = async (req, res, next) => {
   try {
-    const messagesWithSequence = db.$with('messages_with_sequence').as(
-      db
-        .select({
-          ...getTableColumns(messages),
-          seqNum:
-            sql<number>`ROW_NUMBER() OVER (PARTITION BY ${messages.groupId} ORDER BY ${desc(messages.createdAt)})`.as(
-              'seq_num',
-            ),
-        })
-        .from(messages),
-    )
+    const groupMessagesWithRowNumber = db
+      .$with('group_messages_with_row_number')
+      .as(
+        db
+          .select({
+            ...getTableColumns(messages),
+            rowNumber: rowNumber().over<number>({
+              partitionBy: messages.groupId,
+              orderBy: desc(messages.createdAt),
+              as: 'row_number',
+            }),
+          })
+          .from(messages)
+          .where(isNotNull(messages.groupId)),
+      )
 
     const groupsWithLastMessage = db.$with('groups_with_last_message').as(
       db
-        .with(messagesWithSequence)
+        .with(groupMessagesWithRowNumber)
         .select({
-          ...getTableColumns(groups),
+          chatName: groups.name,
+          groupId: groupMessagesWithRowNumber.groupId,
+          partnerId: groupMessagesWithRowNumber.receiverId,
           lastMessage: {
-            id: sql`${messagesWithSequence.id}`.as('message_id'),
-            content: messagesWithSequence.content,
-            senderId: messagesWithSequence.senderId,
+            messageId: sql`${groupMessagesWithRowNumber.id}`.as('message_id'),
+            content: groupMessagesWithRowNumber.content,
           },
-          lastActivity:
-            sql<string>`COALESCE (${messagesWithSequence.createdAt}, ${groups.createdAt})`.as(
-              'last_activity',
-            ),
+          lastActivity: coalesce(
+            groupMessagesWithRowNumber.createdAt,
+            groups.createdAt,
+          ).as('last_activity'),
         })
         .from(groups)
         .leftJoin(
-          messagesWithSequence,
+          groupMessagesWithRowNumber,
           and(
-            eq(groups.id, messagesWithSequence.groupId),
-            eq(messagesWithSequence.seqNum, 1),
+            eq(groups.id, groupMessagesWithRowNumber.groupId),
+            eq(groupMessagesWithRowNumber.rowNumber, 1),
           ),
         )
         .innerJoin(members, eq(members.groupId, groups.id))
         .where(eq(members.userId, req.user!.id)),
     )
 
-    const unreadCounts = db.$with('unread_counts').as(
-      db
-        .select({
-          groupId: groups.id,
-          unreadCount: count(messages.id).as('unread_count'),
-        })
-        .from(groups)
-        .leftJoin(messages, eq(groups.id, messages.groupId))
-        .leftJoin(
-          messageRecipients,
-          and(
-            eq(messageRecipients.messageId, messages.id),
-            eq(messageRecipients.recipientId, req.user!.id),
+    const directMessagesWithPartner = db
+      .$with('direct_messages_with_partner')
+      .as(
+        db
+          .select({
+            ...getTableColumns(messages),
+            partnerId: sql<number>`
+              CASE
+                WHEN ${messages.senderId} = ${req.user!.id} THEN ${messages.receiverId}
+                ELSE ${messages.senderId}
+              END
+            `.as('partner_id'),
+            rowNumber: rowNumber().over({
+              partitionBy: sql<number>`
+              CASE
+                WHEN ${messages.senderId} = ${req.user!.id} THEN ${messages.receiverId}
+                ELSE ${messages.senderId}
+              END
+            `,
+              orderBy: desc(messages.createdAt),
+              as: 'row_number',
+            }),
+          })
+          .from(messages)
+          .where(
+            and(
+              isNull(messages.groupId),
+              or(
+                eq(messages.senderId, req.user!.id),
+                eq(messages.receiverId, req.user!.id),
+              ),
+            ),
           ),
-        )
-        .where(isNull(messageRecipients.messageId))
-        .groupBy(groups.id),
+      )
+
+    const directMessagesWithLastActivity = db
+      .$with('direct_messages_with_last_activity')
+      .as(
+        db
+          .with(directMessagesWithPartner)
+          .select({
+            chatName: users.username,
+            groupId: directMessagesWithPartner.groupId,
+            partnerId: directMessagesWithPartner.partnerId,
+            lastMessage: {
+              messageId: sql`${directMessagesWithPartner.id}`.as('message_id'),
+              content: directMessagesWithPartner.content,
+            },
+            lastActivity: directMessagesWithPartner.createdAt,
+          })
+          .from(directMessagesWithPartner)
+          .innerJoin(users, eq(directMessagesWithPartner.partnerId, users.id))
+          .where(eq(directMessagesWithPartner.rowNumber, 1)),
+      )
+
+    const unreadCounts = db.$with('unread_counts').as(
+      unionAll(
+        db
+          .select({
+            groupId: sql`${groups.id}`.as('unread_group_id'),
+            receiverId: nullAs('unread_receiver_id'),
+            unreadCount: count(messages.id).as('unread_count'),
+          })
+          .from(groups)
+          .leftJoin(messages, eq(groups.id, messages.groupId))
+          .leftJoin(
+            messageRecipients,
+            and(
+              eq(messageRecipients.messageId, messages.id),
+              eq(messageRecipients.recipientId, req.user!.id),
+            ),
+          )
+          .where(isNull(messageRecipients.messageId))
+          .groupBy(groups.id),
+        db
+          .select({
+            groupId: nullAs('unread_group_id'),
+            receiverId: sql`${messages.receiverId}`.as('unread_receiver_id'),
+            unreadCount: count(messages.id).as('unread_count'),
+          })
+          .from(messages)
+          .where(
+            and(
+              isNull(messages.groupId),
+              eq(messages.receiverId, req.user!.id),
+              notExists(
+                db
+                  .select()
+                  .from(messageRecipients)
+                  .where(
+                    and(
+                      eq(messageRecipients.messageId, messages.id),
+                      eq(messageRecipients.recipientId, req.user!.id),
+                    ),
+                  ),
+              ),
+            ),
+          )
+          .groupBy(messages.receiverId),
+      ),
     )
 
+    const combinedChats = db
+      .$with('combined_chats')
+      .as(
+        unionAll(
+          db.with(groupsWithLastMessage).select().from(groupsWithLastMessage),
+          db
+            .with(directMessagesWithLastActivity)
+            .select()
+            .from(directMessagesWithLastActivity),
+        ),
+      )
+
     const qb = db
-      .with(groupsWithLastMessage, unreadCounts)
+      .with(combinedChats, unreadCounts)
       .select({
-        lastMessage: groupsWithLastMessage.lastMessage,
-        lastActivity: groupsWithLastMessage.lastActivity,
-        id: groupsWithLastMessage.id,
-        name: groupsWithLastMessage.name,
-        unreadCount: sql<number>`COALESCE (${unreadCounts.unreadCount}, 0)`
+        groupId: combinedChats.groupId,
+        partnerId: combinedChats.partnerId,
+        chatName: combinedChats.chatName,
+        lastMessage: combinedChats.lastMessage,
+        lastActivity: combinedChats.lastActivity,
+        unreadCount: coalesce<number>(unreadCounts.unreadCount, 0)
           .mapWith(Number)
           .as('unread_count'),
       })
-      .from(groupsWithLastMessage)
+      .from(combinedChats)
       .leftJoin(
         unreadCounts,
-        eq(unreadCounts.groupId, groupsWithLastMessage.id),
+        and(
+          eq(combinedChats.groupId, unreadCounts.groupId),
+          eq(combinedChats.partnerId, unreadCounts.receiverId),
+        ),
       )
       .$dynamic()
 
@@ -250,7 +364,10 @@ export const addGroupMembers: RequestHandler = async (req, res, next) => {
 
     // let existing members know new member is joined
 
-    io.to(getGroupRoomId(req.params.groupId)).emit('newMembers', newMembers)
+    io.to(roomKeys.CURRENT_GROUP_KEY(Number(req.params.groupId))).emit(
+      'newMembers',
+      newMembers,
+    )
 
     res.json(newMembers)
   } catch (error) {

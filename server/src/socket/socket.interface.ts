@@ -3,11 +3,13 @@ import { Member } from '@/modules/members/members.schema'
 import { Message } from '@/modules/messages/messages.schema'
 import { Server, Socket } from 'socket.io'
 
+export type ChatMode = 'group' | 'direct'
+
 export interface ServerToClientEvents {
   userOnline: (userId: number) => void
   userOffline: (userId: number) => void
   newMessage: (
-    message: Message & { username: string; groupName: string },
+    message: Message & { username: string; chatName: string },
   ) => void
   newMember: (member: Member & { username: string }) => void
   newMembers: (member: Member[]) => void
@@ -15,20 +17,23 @@ export interface ServerToClientEvents {
   newGroup: (group: Group) => void
   groupDeleted: (groupId: number) => void
   messageRead: (messageId: number) => void
-  groupMarkedAsRead: (groupId: number) => void
+  chatMarkedAsRead: (args: { groupId?: number; receiverId?: number }) => void
   typingUsers: (users: { id: number; username: string }[]) => void
 }
 
 export interface ClientToServerEvents {
   joinGroup: (groupId: number) => void
+  joinDm: (partnerId: number) => void
   createMessage: (
-    args: { groupId: number; text: string },
+    args: { groupId?: number; receiverId?: number; text: string },
     callback: (response: { message?: Message; error?: unknown }) => void,
   ) => void
   markMessageAsRead: (messageId: number) => void
-  markGroupMessagesAsRead: (groupId: number) => void
-  userStartedTyping: (groupId: number) => void
-  userStoppedTyping: (groupId: number) => void
+  markChatMessagesAsRead: (args: {
+    groupId?: number
+    receiverId?: number
+  }) => void
+  typing: (args: { chatId: number; mode: ChatMode; isTyping: boolean }) => void
 }
 
 export interface InterServerEvents {

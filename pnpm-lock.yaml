@@ -41,12 +41,9 @@ importers:
 
   server:
     dependencies:
-      '@socket.io/cluster-adapter':
+      '@socket.io/redis-streams-adapter':
         specifier: ^0.2.2
         version: 0.2.2(socket.io-adapter@2.5.5)
-      '@socket.io/sticky':
-        specifier: ^1.0.4
-        version: 1.0.4
       argon2:
         specifier: ^0.40.3
         version: 0.40.3
@@ -156,6 +153,9 @@ importers:
       immer:
         specifier: ^10.1.1
         version: 10.1.1
+      lucide-react:
+        specifier: ^0.408.0
+        version: 0.408.0(react@18.3.1)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -1417,6 +1417,10 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
+  '@msgpack/msgpack@2.8.0':
+    resolution: {integrity: sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==}
+    engines: {node: '>= 10'}
+
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -1578,17 +1582,14 @@ packages:
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
 
-  '@socket.io/cluster-adapter@0.2.2':
-    resolution: {integrity: sha512-/tNcY6qQx0BOgjl4mFk3YxX6pjaPdEyeWhP88Ea9gTlISY4SfA7t8VxbryeAs5/9QgXzChlvSN/i37Gog3kWag==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      socket.io-adapter: ^2.4.0
-
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
 
-  '@socket.io/sticky@1.0.4':
-    resolution: {integrity: sha512-VuauT5CJLvzYtKIgouFSQ8rUaygseR+zRutnwh6ZA2QYcXx+8g52EoJ8V2SLxfo+Tfs3ELUDy08oEXxlWNrxaw==}
+  '@socket.io/redis-streams-adapter@0.2.2':
+    resolution: {integrity: sha512-BMPa6oGC0wFgpMXoGksbJ75zMBwk+79pxjHc2YusdoK+X0BxN4fTsqEBuFV7yeXi9ekbi87rwlsT61+WZGVW9g==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      socket.io-adapter: ^2.5.4
 
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     resolution: {integrity: sha512-lR8q/9W7hZpMWweNiAKU7NQerBnzQQLvi8qnTDU/fxItPhtZVMbPV3lbCwjhIlNBe9Bbr5V+KHshvWmVSG9cxQ==}
@@ -3398,6 +3399,11 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
+
+  lucide-react@0.408.0:
+    resolution: {integrity: sha512-8kETAAeWmOvtGIr7HPHm51DXoxlfkNncQ5FZWXR+abX8saQwMYXANWIkUstaYtcKSo/imOe/q+tVFA8ANzdSVA==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -5990,6 +5996,8 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.4.15
     optional: true
 
+  '@msgpack/msgpack@2.8.0': {}
+
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -6112,16 +6120,15 @@ snapshots:
 
   '@sinclair/typebox@0.27.8': {}
 
-  '@socket.io/cluster-adapter@0.2.2(socket.io-adapter@2.5.5)':
+  '@socket.io/component-emitter@3.1.2': {}
+
+  '@socket.io/redis-streams-adapter@0.2.2(socket.io-adapter@2.5.5)':
     dependencies:
+      '@msgpack/msgpack': 2.8.0
       debug: 4.3.5
       socket.io-adapter: 2.5.5
     transitivePeerDependencies:
       - supports-color
-
-  '@socket.io/component-emitter@3.1.2': {}
-
-  '@socket.io/sticky@1.0.4': {}
 
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     dependencies:
@@ -8115,6 +8122,10 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lucide-react@0.408.0(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   lz-string@1.5.0: {}
 

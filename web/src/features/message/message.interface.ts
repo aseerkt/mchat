@@ -6,15 +6,17 @@ import { InfiniteData } from '@tanstack/react-query'
 
 export interface IMessage {
   id: number
-  groupId: number
+  groupId?: number
+  receiverId?: number
   senderId: number
   username: string
   content: string
   createdAt: string
 }
 
-export interface IGetGroupMessagesArgs extends TPaginatedParams {
-  groupId: number
+export interface IGetChatMessagesArgs extends TPaginatedParams {
+  groupId?: number
+  partnerId?: number
 }
 
 export type TMessageInfiniteData = InfiniteData<

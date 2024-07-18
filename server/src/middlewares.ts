@@ -2,7 +2,7 @@ import { ErrorRequestHandler, RequestHandler } from 'express'
 import { config } from './config'
 import { MemberRole } from './modules/members/members.schema'
 import { checkPermission } from './modules/members/members.service'
-import { notAuthenticated, notAuthorized } from './utils/api'
+import { badRequest, notAuthenticated, notAuthorized } from './utils/api'
 import { verifyToken } from './utils/jwt'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -32,7 +32,7 @@ export const auth: RequestHandler = (req, res, next) => {
   }
 }
 
-export const hasGroupPermission =
+export const hasChatPermission =
   (role: MemberRole): RequestHandler =>
   async (req, res, next) => {
     try {
@@ -40,23 +40,29 @@ export const hasGroupPermission =
         req.params.groupId || req.query.groupId || req.body.groupId,
       )
 
-      if (Number.isNaN(groupId)) {
-        return notAuthorized(res)
-      }
-
-      const { isAllowed, memberRole } = await checkPermission(
-        groupId,
-        req.user!.id,
-        role,
+      const partnerId = Number(
+        req.params.partnerId || req.query.partnerId || req.body.partnerId,
       )
 
-      if (!isAllowed) {
-        return notAuthorized(res)
+      if (!groupId && !partnerId) {
+        return badRequest(res)
       }
 
-      req.member = {
-        groupId: groupId,
-        role: memberRole!,
+      if (groupId) {
+        const { isAllowed, memberRole } = await checkPermission(
+          groupId,
+          req.user!.id,
+          role,
+        )
+
+        if (!isAllowed) {
+          return notAuthorized(res)
+        }
+
+        req.member = {
+          groupId: groupId,
+          role: memberRole!,
+        }
       }
 
       next()

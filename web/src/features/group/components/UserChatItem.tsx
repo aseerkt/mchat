@@ -1,50 +1,58 @@
 import { Avatar } from '@/components/Avatar'
 import { formatGroupDate } from '@/utils/date'
 import { cn } from '@/utils/style'
+import { Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
-import { IGroupWithLastMessage } from '../group.interface'
+import { IChat } from '../group.interface'
 
-interface UserGroupItemProps {
-  group: IGroupWithLastMessage
+interface UserChatItemProps {
+  chat: IChat
 }
 
-export const UserGroupItem = ({ group }: UserGroupItemProps) => {
+export const UserChatItem = ({ chat }: UserChatItemProps) => {
   return (
     <NavLink
-      to={`/chat/${group.id}`}
+      to={`/chat/${chat.groupId ? 'group' : 'direct'}/${chat.groupId || chat.partnerId}`}
       className={({ isActive }) =>
         cn('border-b p-4 hover:bg-slate-100', isActive ? 'bg-gray-300' : '')
       }
     >
       <div className='flex justify-between'>
-        <Avatar name={group.name} id={group.id} />
+        <div className='relative h-max'>
+          <Avatar name={chat.chatName} id={(chat.groupId || chat.partnerId)!} />
+          {chat.groupId && (
+            <div className='absolute bottom-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-black text-white'>
+              {<Users size={10} />}
+            </div>
+          )}
+        </div>
         <div className='ml-3 flex flex-1 flex-col overflow-hidden'>
           <b
             className='overflow-hidden text-ellipsis whitespace-nowrap text-nowrap font-semibold'
-            title={group.name}
+            title={chat.chatName}
           >
-            {group.name}
+            {chat.chatName}
           </b>
           <span className='w-[95%] overflow-hidden text-ellipsis whitespace-nowrap text-nowrap text-xs text-gray-500'>
-            {group.lastMessage?.content}
+            {chat.lastMessage?.content}
           </span>
         </div>
         <div className='flex flex-col items-end'>
           <span
             className={cn(
               'text-xs text-gray-500',
-              group.unreadCount > 0 ? 'text-green-600' : 'text-gray-500',
+              chat.unreadCount > 0 ? 'text-green-600' : 'text-gray-500',
             )}
           >
-            {formatGroupDate(group.lastActivity)}
+            {formatGroupDate(chat.lastActivity)}
           </span>
           <span
             className={cn(
               'flex h-6 w-6 items-center justify-center rounded-full text-center text-xs text-white',
-              group.unreadCount > 0 ? 'bg-green-600' : 'hidden',
+              chat.unreadCount > 0 ? 'bg-green-600' : 'hidden',
             )}
           >
-            {group.unreadCount}
+            {chat.unreadCount}
           </span>
         </div>
       </div>

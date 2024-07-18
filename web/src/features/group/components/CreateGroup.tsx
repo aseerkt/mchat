@@ -24,7 +24,7 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
       if (result.id) {
         toast({ title: `Group "${name}" created`, severity: 'success' })
         onComplete()
-        navigate(`/chat/${result.id}`)
+        navigate(`/chat/group/${result.id}`)
       }
     },
     onError: error => {

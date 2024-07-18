@@ -6,10 +6,14 @@ import { getSocketIO } from '@/utils/socket'
 import { useRef, useState } from 'react'
 
 interface MessageComposerProps {
-  groupId: number
+  groupId?: number
+  receiverId?: number
 }
 
-export const MessageComposer = ({ groupId }: MessageComposerProps) => {
+export const MessageComposer = ({
+  groupId,
+  receiverId,
+}: MessageComposerProps) => {
   const { toast } = useToast()
   const [text, setText] = useState('')
   const [disabled, setDisabled] = useState(false)
@@ -17,17 +21,22 @@ export const MessageComposer = ({ groupId }: MessageComposerProps) => {
   const timeoutRef = useRef<NodeJS.Timeout>()
   const textAreaRef = useRef<HTMLInputElement>(null)
 
-  useAutoFocus(textAreaRef, [groupId])
+  useAutoFocus(textAreaRef, [groupId, receiverId])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value)
+
+    const payload = {
+      chatId: (groupId ?? receiverId)!,
+      mode: groupId ? 'group' : 'direct',
+    } as const
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     } else {
-      socketRef.current.emit('userStartedTyping', groupId)
+      socketRef.current.emit('typing', { isTyping: true, ...payload })
     }
     timeoutRef.current = setTimeout(() => {
-      socketRef.current.emit('userStoppedTyping', groupId)
+      socketRef.current.emit('typing', { isTyping: false, ...payload })
       timeoutRef.current = undefined
     }, 1000)
   }
@@ -40,7 +49,7 @@ export const MessageComposer = ({ groupId }: MessageComposerProps) => {
     try {
       const response = await socketRef.current
         .timeout(5000)
-        .emitWithAck('createMessage', { groupId, text })
+        .emitWithAck('createMessage', { groupId, receiverId, text })
 
       if (response.message) {
         setText('')

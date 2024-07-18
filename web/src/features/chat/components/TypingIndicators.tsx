@@ -10,8 +10,13 @@ export const TypingIndicator = () => {
   } else {
     content = (
       <small className='text-sm text-gray-500'>
-        <b>{users.map(user => user.username).join(', ')} </b>
-        {users.length === 1 ? 'is' : 'are'} typing...
+        <b>
+          {users
+            .map(user => user.username)
+            .slice(0, 3)
+            .join(', ')}{' '}
+        </b>
+        {users.length === 1 ? 'is' : `${ users.length }are`} typing...
       </small>
     )
   }

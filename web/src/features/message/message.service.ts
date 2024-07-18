@@ -1,9 +1,8 @@
 import { IPaginatedResult } from '@/interfaces/common.interface'
 import { fetcher, stringifyQueryParams } from '@/utils/api'
-import { IGetGroupMessagesArgs, IMessage } from './message.interface'
+import { IGetChatMessagesArgs, IMessage } from './message.interface'
 
-export const fetchGroupMessages = async ({
-  groupId,
+export const fetchMessages = async ({
   ...params
-}: IGetGroupMessagesArgs): Promise<IPaginatedResult<IMessage>> =>
-  fetcher(`groups/${groupId}/messages?${stringifyQueryParams(params)}`)
+}: IGetChatMessagesArgs): Promise<IPaginatedResult<IMessage>> =>
+  fetcher(`messages?${stringifyQueryParams(params)}`)
