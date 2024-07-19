@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './useAuth'
 
-const GUEST_ROUTES = ['/login', '/signup']
+const GUEST_ROUTES = ['/auth/login', '/auth/signup']
 
 export const useAuthRedirect = () => {
   const { auth } = useAuth()
@@ -13,11 +13,11 @@ export const useAuthRedirect = () => {
     let navigateTo: string | undefined
 
     if (location.pathname === '/') {
-      navigateTo = auth ? '/chat' : '/login'
+      navigateTo = auth ? '/chat' : '/auth/login'
     } else if (auth && GUEST_ROUTES.includes(location.pathname)) {
       navigateTo = '/'
     } else if (!auth && !GUEST_ROUTES.includes(location.pathname)) {
-      navigateTo = '/login'
+      navigateTo = '/auth/login'
     }
 
     if (navigateTo) {

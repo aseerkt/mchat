@@ -89,7 +89,6 @@ export const getGroupMembers: RequestHandler = async (req, res, next) => {
     const userIds = result.data.map(member => member.userId)
 
     const onlineMembers = await checkOnlineUsers(userIds)
-    console.log('online_members', onlineMembers)
 
     const membersWithOnlineStatus = result.data.map((member, index) => ({
       ...member,

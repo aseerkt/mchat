@@ -23,8 +23,6 @@ import {
 import swaggerDocument from './swagger-output.json'
 
 const createApp = async () => {
-  console.log(`Worker ${process.pid} started`)
-
   await connectDB()
   const redisClient = getRedisClient()
 

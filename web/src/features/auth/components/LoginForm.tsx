@@ -50,6 +50,7 @@ export const LoginForm = () => {
         autoComplete='username'
         {...register('username', validators.username)}
         error={errors.username}
+        autoFocus
       />
       <Input
         type='password'
@@ -62,7 +63,10 @@ export const LoginForm = () => {
         Continue
       </Button>
       <small>
-        Don't have account? <NavLink to='/signup'>Create account</NavLink>
+        Don't have account?{' '}
+        <NavLink className='text-blue-700' to='/auth/signup'>
+          Create account
+        </NavLink>
       </small>
     </form>
   )

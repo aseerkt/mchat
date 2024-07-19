@@ -1,11 +1,7 @@
-import { AuthFormWrapper, SignUpForm } from '../features/auth/components'
+import { SignUpForm } from '../features/auth/components'
 
 export const Component = () => {
-  return (
-    <AuthFormWrapper title='Signup'>
-      <SignUpForm />
-    </AuthFormWrapper>
-  )
+  return <SignUpForm />
 }
 
 Component.displayName = 'SignUp'

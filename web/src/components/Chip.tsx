@@ -23,7 +23,6 @@ const Chip = ({ label, onDelete, icon, className }: ChipProps) => {
           className='inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border-2 border-gray-700 font-bold hover:border-red-600 hover:text-red-600'
           aria-label='Delete chip'
           onClick={e => {
-            console.log('chip x select', e)
             e.stopPropagation()
             onDelete()
           }}

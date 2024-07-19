@@ -10,8 +10,16 @@ export const router = createBrowserRouter([
     errorElement: <ErrorFallback />,
     children: [
       { path: '/', lazy: () => import('./pages/Home') },
-      { path: '/login', lazy: () => import('./pages/Login') },
-      { path: '/signup', lazy: () => import('./pages/SignUp') },
+      {
+        path: '/auth',
+        Component: lazy(
+          () => import('./features/auth/layouts/AuthFormWrapper'),
+        ),
+        children: [
+          { path: 'login', lazy: () => import('./pages/Login') },
+          { path: 'signup', lazy: () => import('./pages/SignUp') },
+        ],
+      },
       {
         path: '/chat',
         Component: lazy(() => import('./features/chat/layouts/ChatLayout')),

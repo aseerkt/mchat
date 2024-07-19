@@ -50,6 +50,8 @@ export const SignUpForm = () => {
         label='Full name'
         {...register('fullName', validators.fullName)}
         error={errors.fullName}
+        placeholder='eg: Aseer KT'
+        autoFocus
       />
       <Input
         type='text'
@@ -57,6 +59,7 @@ export const SignUpForm = () => {
         autoComplete='username'
         {...register('username', validators.username)}
         error={errors.username}
+        placeholder='eg: aseerkt'
       />
       <Input
         type='password'
@@ -64,12 +67,16 @@ export const SignUpForm = () => {
         autoComplete='current-password'
         {...register('password', validators.password)}
         error={errors.password}
+        placeholder='eg: supersecret'
       />
       <Button type='submit' disabled={isPending}>
         Create account
       </Button>
       <small>
-        Already have an account? <NavLink to='/login'>Login</NavLink>
+        Already have an account?{' '}
+        <NavLink className='text-blue-700' to='/auth/login'>
+          Login
+        </NavLink>
       </small>
     </form>
   )

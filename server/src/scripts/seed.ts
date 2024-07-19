@@ -20,7 +20,7 @@ async function seedDatabase() {
     await connectDB()
 
     console.time('seed')
-    console.log('Dropping collections'.yellow.bold)
+    console.log('Dropping tables'.yellow.bold)
 
     await db.delete(messages)
     await db.delete(members)
