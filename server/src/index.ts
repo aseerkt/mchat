@@ -5,6 +5,7 @@ import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import { createServer } from 'node:http'
+import path from 'node:path'
 import { Server } from 'socket.io'
 import swaggerUi from 'swagger-ui-express'
 import { config } from './config'
@@ -53,9 +54,7 @@ const createApp = async () => {
 
   app.set('io', io)
 
-  app.get('/', (_, res) => {
-    res.send('<h1>Welcome to mChat API</h1>')
-  })
+  
 
   app.use(rootRouter)
 
@@ -63,6 +62,13 @@ const createApp = async () => {
   app.get('/api-docs', swaggerUi.setup(swaggerDocument))
 
   app.use(errorHandler)
+
+  if (config.isProd) {
+    app.use(express.static(path.join('../../web/dist')))
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../../web/dist/index.html'))
+    })
+  }
 
   server.listen(config.port, () => {
     console.log(`Server running at http://localhost:${config.port}`.blue.bold)
