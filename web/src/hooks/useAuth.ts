@@ -24,7 +24,7 @@ export const useAuthSetter = () => {
   }, [])
 
   const clearAuth = useCallback(() => {
-    queryClient.setQueryData(['userToken'], () => undefined)
+    queryClient.setQueryData(['userToken'], () => null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

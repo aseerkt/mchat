@@ -1,11 +1,15 @@
 import { config } from '@/config'
+
+if (!config.isProd) {
+  process.env.DEBUG = 'ioredis:*'
+}
+
 import Redis from 'ioredis'
 
 let redisClient: Redis
 
 export function getRedisClient() {
   if (!redisClient) {
-    process.env.DEBUG = config.isProd ? '' : 'ioredis:*'
     redisClient = new Redis({
       host: config.redisHost,
       port: +config.redisPort,

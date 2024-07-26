@@ -41,7 +41,7 @@ export const recreateAccessToken: RequestHandler = async (req, res) => {
 
     const isValid = await isRefreshTokenValid(
       refreshPayload.id,
-      refreshToken.tokenId,
+      refreshPayload.tokenId,
       refreshToken,
     )
 
@@ -74,6 +74,7 @@ export const logout: RequestHandler = async (req, res, next) => {
     }
     await invalidateRefreshToken(req.user!.id, refreshPayload.tokenId)
     clearRefreshTokenCookie(res)
+    res.sendStatus(200)
   } catch (error) {
     next(error)
   }
