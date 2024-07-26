@@ -35,9 +35,15 @@ export const recreateAccessToken: RequestHandler = async (req, res) => {
   }
 
   try {
-    const refreshPayload = verifyRefreshToken(refreshToken) as UserPayload
+    const refreshPayload = verifyRefreshToken(refreshToken) as UserPayload & {
+      tokenId: string
+    }
 
-    const isValid = await isRefreshTokenValid(refreshPayload.id, refreshToken)
+    const isValid = await isRefreshTokenValid(
+      refreshPayload.id,
+      refreshToken.tokenId,
+      refreshToken,
+    )
 
     if (!isValid) {
       return notAuthorized(res)
@@ -61,7 +67,12 @@ export const recreateAccessToken: RequestHandler = async (req, res) => {
 
 export const logout: RequestHandler = async (req, res, next) => {
   try {
-    await invalidateRefreshToken(req.user!.id, req.cookies[config.jwtKey])
+    const refreshPayload = verifyRefreshToken(
+      req.cookies[config.jwtKey],
+    ) as UserPayload & {
+      tokenId: string
+    }
+    await invalidateRefreshToken(req.user!.id, refreshPayload.tokenId)
     clearRefreshTokenCookie(res)
   } catch (error) {
     next(error)

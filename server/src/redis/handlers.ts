@@ -17,17 +17,28 @@ export const redisKeys = {
 
 // USER REFRESH TOKENS
 
-export const addRefreshToken = (userId: number, token: string) => {
-  return redisClient.sadd(redisKeys.USER_TOKEN(userId), token)
+export const addRefreshToken = (
+  userId: number,
+  tokenId: string,
+  token: string,
+) => {
+  return redisClient.hset(redisKeys.USER_TOKEN(userId), tokenId, token)
 }
 
-export const invalidateRefreshToken = (userId: number, token: string) => {
-  return redisClient.srem(redisKeys.USER_TOKEN(userId), token)
+export const invalidateRefreshToken = (userId: number, tokenId: string) => {
+  return redisClient.hdel(redisKeys.USER_TOKEN(userId), tokenId)
 }
 
-export const isRefreshTokenValid = async (userId: number, token: string) => {
-  const value = await redisClient.sismember(redisKeys.USER_TOKEN(userId), token)
-  return value == 1
+export const isRefreshTokenValid = async (
+  userId: number,
+  tokenId: string,
+  token: string,
+) => {
+  const redisToken = await redisClient.hget(
+    redisKeys.USER_TOKEN(userId),
+    tokenId,
+  )
+  return redisToken === token
 }
 
 // MEMBER ROLES

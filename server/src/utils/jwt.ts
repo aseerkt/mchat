@@ -1,6 +1,7 @@
 import { addRefreshToken } from '@/redis/handlers'
 import { CookieOptions, Response } from 'express'
 import jwt from 'jsonwebtoken'
+import { v4 as uuidv4 } from 'uuid'
 import { config } from '../config'
 
 const refreshTokenCookieOptions: CookieOptions = {
@@ -26,11 +27,16 @@ export const verifyRefreshToken = (token: string) =>
 
 export const signTokens = async (res: Response, payload: UserPayload) => {
   const accessToken = signAccessToken(payload)
-  const refreshToken = jwt.sign(payload, config.refreshTokenSecret, {
-    expiresIn: config.refreshTokenExpiry,
-  })
+  const tokenId = uuidv4()
+  const refreshToken = jwt.sign(
+    { ...payload, tokenId },
+    config.refreshTokenSecret,
+    {
+      expiresIn: config.refreshTokenExpiry,
+    },
+  )
 
-  await addRefreshToken(payload.id, refreshToken)
+  await addRefreshToken(payload.id, tokenId, refreshToken)
 
   res.cookie(config.jwtKey, refreshToken, refreshTokenCookieOptions)
 
