@@ -1,40 +1,41 @@
-import { config } from '../config'
+import { fetcher } from './api'
 
-let globalToken = ''
+class Token {
+  #token?: string
 
-export const getToken = () => {
-  if (!globalToken) {
-    return localStorage.getItem(config.tokenKey)
+  get() {
+    return this.#token
   }
-  return globalToken
+
+  set(token: string) {
+    this.#token = token
+  }
+
+  remove() {
+    this.#token = undefined
+  }
+
+  async recreate() {
+    const { accessToken } = await fetcher('refresh')
+    this.#token = accessToken
+  }
+
+  decode() {
+    if (!this.#token) return
+
+    const base64Url = this.#token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split('')
+        .map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        })
+        .join(''),
+    )
+    return JSON.parse(jsonPayload)
+  }
 }
 
-export const setToken = (token: string) => {
-  globalToken = token
-  localStorage.setItem(config.tokenKey, token)
-}
-
-export const removeToken = () => {
-  globalToken = ''
-  localStorage.removeItem(config.tokenKey)
-}
-
-export const decodeToken = () => {
-  const token = getToken()
-
-  if (!token) return
-
-  const base64Url = token.split('.')[1]
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-  const jsonPayload = decodeURIComponent(
-    window
-      .atob(base64)
-      .split('')
-      .map(function (c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-      })
-      .join(''),
-  )
-
-  return JSON.parse(jsonPayload)
-}
+export const accessToken = new Token()

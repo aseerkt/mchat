@@ -1,21 +1,19 @@
 import { Outlet } from 'react-router-dom'
+import { PageLoader } from './components/PageLoader'
 import { Toaster } from './components/Toaster'
 import { useAuthRedirect } from './hooks/useAuthRedirect'
-import { UserProvider } from './providers/UserProvider'
 
-const AuthRedirect = () => {
-  useAuthRedirect()
-  return null
+const AuthWrapper = ({ children }: React.PropsWithChildren) => {
+  const { isLoading } = useAuthRedirect()
+
+  return isLoading ? <PageLoader /> : <>{children}</>
 }
 
-function App() {
+export default function App() {
   return (
-    <UserProvider>
-      <AuthRedirect />
+    <AuthWrapper>
       <Outlet />
       <Toaster />
-    </UserProvider>
+    </AuthWrapper>
   )
 }
-
-export default App

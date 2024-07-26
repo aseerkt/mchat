@@ -8,7 +8,7 @@ export function getRedisClient() {
     process.env.DEBUG = config.isProd ? '' : 'ioredis:*'
     redisClient = new Redis({
       host: config.redisHost,
-      port: Number(config.redisPort),
+      port: +config.redisPort,
     })
 
     redisClient.on('connect', () => {

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.48.0",
+    "@tanstack/react-query-devtools": "^5.51.11",
     "clsx": "^2.1.1",
     "cva": "npm:class-variance-authority@^0.7.0",
     "immer": "^10.1.1",

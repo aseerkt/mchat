@@ -1,5 +1,6 @@
 import { createAdapter } from '@socket.io/redis-streams-adapter'
 import 'colors'
+import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
@@ -30,11 +31,13 @@ const createApp = async () => {
   const app = express()
 
   app.use(
-    cors({ origin: config.corsOrigin }),
-    helmet(),
+    express.urlencoded({ extended: true }),
     express.json(),
+    cors({ origin: config.corsOrigin, credentials: true }),
+    helmet(),
     morgan(config.isProd ? 'combined' : 'dev'),
   )
+  app.use(cookieParser())
 
   const server = createServer(app)
 
@@ -44,7 +47,7 @@ const createApp = async () => {
     InterServerEvents,
     SocketData
   >(server, {
-    cors: { origin: config.corsOrigin },
+    cors: { origin: config.corsOrigin, credentials: true },
     adapter: createAdapter(redisClient),
   })
 
@@ -53,8 +56,6 @@ const createApp = async () => {
   registerSocketEvents(io)
 
   app.set('io', io)
-
-  
 
   app.use(rootRouter)
 

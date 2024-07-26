@@ -5,6 +5,8 @@ export const ErrorFallback = () => {
 
   let content
 
+  console.log(error)
+
   if (isRouteErrorResponse(error)) {
     if (error.status === 404) {
       content = <div>This page doesn't exist!</div>

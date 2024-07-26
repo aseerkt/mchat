@@ -11,9 +11,23 @@ import { useSocketConnect } from '@/hooks/useSocketConnect'
 import { cn } from '@/utils/style'
 import { Outlet, useParams } from 'react-router-dom'
 
-const ChatLayout = () => {
-  const { isConnected } = useSocketConnect()
+const ChatScrollArea = ({ children }: { children: React.ReactNode }) => {
   const params = useParams()
+
+  return (
+    <div
+      className={cn(
+        'flex w-full flex-shrink-0 flex-col md:w-[280px] md:border-r-2',
+        (params.groupId || params.partnerId) && 'hidden md:flex',
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
+export const Component = () => {
+  const { isConnected } = useSocketConnect()
 
   if (!isConnected) {
     return <PageLoader />
@@ -23,12 +37,7 @@ const ChatLayout = () => {
     <div className='flex h-screen w-screen flex-col overflow-hidden'>
       <Header />
       <div className='flex flex-1 overflow-hidden'>
-        <div
-          className={cn(
-            'flex w-full flex-shrink-0 flex-col md:w-[280px] md:border-r-2',
-            (params.groupId || params.partnerId) && 'hidden md:flex',
-          )}
-        >
+        <ChatScrollArea>
           <ChatUser isConnected={isConnected} />
           <UserGroupList />
           <div className='flex shrink-0 flex-wrap justify-center gap-3 border-t px-3 py-4'>
@@ -36,7 +45,7 @@ const ChatLayout = () => {
             <CreateGroup />
             <CreateDM />
           </div>
-        </div>
+        </ChatScrollArea>
         <div className='flex h-full flex-1 overflow-hidden'>
           <Outlet />
         </div>
@@ -45,4 +54,4 @@ const ChatLayout = () => {
   )
 }
 
-export default ChatLayout
+Component.displayName = 'ChatLayout'

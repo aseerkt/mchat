@@ -13,3 +13,14 @@ export interface ILoginVariables {
 export interface ISignUpVariables extends ILoginVariables {
   fullName: string
 }
+
+export interface IAuthPayload {
+  id: number
+  username: string
+  fullName: string
+}
+
+export interface IAuthResponse {
+  user: IAuthPayload
+  token: string
+}

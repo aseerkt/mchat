@@ -1,9 +1,9 @@
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthSetter } from '@/hooks/useAuth'
 import useForm from '@/hooks/useForm'
 import { useToast } from '@/hooks/useToast'
-import { setToken } from '@/utils/token'
+import { accessToken } from '@/utils/token'
 import { isRequired } from '@/utils/validators'
 import { useMutation } from '@tanstack/react-query'
 import { NavLink } from 'react-router-dom'
@@ -18,7 +18,7 @@ const validators = {
 
 export const SignUpForm = () => {
   const { toast } = useToast()
-  const { setAuth } = useAuth()
+  const { setAuth } = useAuthSetter()
   const { register, handleSubmit, errors } = useForm({
     initialValues: { fullName: '', username: '', password: '' },
   })
@@ -31,8 +31,8 @@ export const SignUpForm = () => {
     mutationFn: signup,
     onSuccess: data => {
       if (data.user && data.token) {
-        setToken(data.token)
-        setAuth(data.user)
+        accessToken.set(data.token)
+        setAuth(data)
         toast({ title: 'Sign up success', severity: 'success' })
       }
     },

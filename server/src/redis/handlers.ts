@@ -12,6 +12,22 @@ export const redisKeys = {
   TYPING_USERS: (chatId: number, mode: ChatMode) =>
     `typing_users:${mode}:${chatId}:`,
   MEMBER_ROLES: (groupId: number) => `group:${groupId}:member_roles`,
+  USER_TOKEN: (userId: number) => `user:${userId}:tokens`,
+}
+
+// USER REFRESH TOKENS
+
+export const addRefreshToken = (userId: number, token: string) => {
+  return redisClient.sadd(redisKeys.USER_TOKEN(userId), token)
+}
+
+export const invalidateRefreshToken = (userId: number, token: string) => {
+  return redisClient.srem(redisKeys.USER_TOKEN(userId), token)
+}
+
+export const isRefreshTokenValid = async (userId: number, token: string) => {
+  const value = await redisClient.sismember(redisKeys.USER_TOKEN(userId), token)
+  return value == 1
 }
 
 // MEMBER ROLES

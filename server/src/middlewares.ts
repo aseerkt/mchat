@@ -3,7 +3,7 @@ import { config } from './config'
 import { MemberRole } from './modules/members/members.schema'
 import { checkPermission } from './modules/members/members.service'
 import { badRequest, notAuthenticated, notAuthorized } from './utils/api'
-import { verifyToken } from './utils/jwt'
+import { verifyAccessToken } from './utils/jwt'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
@@ -22,7 +22,7 @@ export const auth: RequestHandler = (req, res, next) => {
       return notAuthenticated(res)
     }
 
-    const payload = verifyToken(token) as UserPayload
+    const payload = verifyAccessToken(token) as UserPayload
 
     req.user = payload
 

@@ -1,4 +1,3 @@
-import { lazy } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import App from './App'
 import { ErrorFallback } from './components/ErrorFallback'
@@ -12,9 +11,7 @@ export const router = createBrowserRouter([
       { path: '/', lazy: () => import('./pages/Home') },
       {
         path: '/auth',
-        Component: lazy(
-          () => import('./features/auth/layouts/AuthFormWrapper'),
-        ),
+        lazy: () => import('./features/auth/layouts/AuthFormWrapper'),
         children: [
           { path: 'login', lazy: () => import('./pages/Login') },
           { path: 'signup', lazy: () => import('./pages/SignUp') },
@@ -22,7 +19,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '/chat',
-        Component: lazy(() => import('./features/chat/layouts/ChatLayout')),
+        lazy: () => import('./features/chat/layouts/ChatLayout'),
         children: [
           { path: '', lazy: () => import('./pages/ChatHome') },
           { path: 'group/:groupId', lazy: () => import('./pages/ChatRoom') },

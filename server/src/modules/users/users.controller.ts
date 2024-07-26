@@ -1,6 +1,6 @@
 import { db } from '@/database'
 import { notFound } from '@/utils/api'
-import { signToken } from '@/utils/jwt'
+import { signTokens } from '@/utils/jwt'
 import { removeAttrFromObject } from '@/utils/object'
 import { hash, verify } from 'argon2'
 import { and, eq, getTableColumns, like, ne } from 'drizzle-orm'
@@ -10,6 +10,7 @@ import { users } from './users.schema'
 export const signUpUser: RequestHandler = async (req, res, next) => {
   try {
     const { username, password, fullName } = req.body
+    console.log('req.body', req.body)
     const rows = await db
       .select({ username: users.username })
       .from(users)
@@ -32,13 +33,13 @@ export const signUpUser: RequestHandler = async (req, res, next) => {
         createdAt: users.createdAt,
       })
 
-    const token = signToken({
+    const accessToken = await signTokens(res, {
       id: user.id,
       username: user.username,
       fullName: user.fullName,
     })
 
-    res.status(201).json({ user: user, token })
+    res.status(201).json({ user: user, token: accessToken })
   } catch (error) {
     next(error)
   }
@@ -63,13 +64,16 @@ export const loginUser: RequestHandler = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid username/password' })
     }
 
-    const token = signToken({
+    const accessToken = await signTokens(res, {
       id: user.id,
       username: user.username,
       fullName: user.fullName,
     })
 
-    res.json({ user: removeAttrFromObject(user, 'password'), token })
+    res.json({
+      user: removeAttrFromObject(user, 'password'),
+      token: accessToken,
+    })
   } catch (error) {
     next(error)
   }
