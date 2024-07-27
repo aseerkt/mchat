@@ -5,7 +5,12 @@ import { TypedIOServer } from '@/socket/socket.interface'
 import { and, eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { Group } from '../groups/groups.schema'
-import { MemberRole, NewMember, memberRoles, members } from './members.schema'
+import {
+  MemberRole,
+  NewMember,
+  memberRoles,
+  membersTable,
+} from './members.schema'
 
 export const checkPermission = async (
   groupId: number,
@@ -16,9 +21,11 @@ export const checkPermission = async (
 
   if (!memberRole) {
     const [member] = await db
-      .select({ role: members.role })
-      .from(members)
-      .where(and(eq(members.groupId, groupId), eq(members.userId, userId)))
+      .select({ role: membersTable.role })
+      .from(membersTable)
+      .where(
+        and(eq(membersTable.groupId, groupId), eq(membersTable.userId, userId)),
+      )
       .limit(1)
 
     if (!member) {
@@ -47,7 +54,10 @@ export const addMembers = async (
     role: mid === group.ownerId ? 'owner' : 'member',
   }))
 
-  const newMembers = await db.insert(members).values(memberValues).returning()
+  const newMembers = await db
+    .insert(membersTable)
+    .values(memberValues)
+    .returning()
 
   const memberRoles: Record<string, MemberRole> = {}
 

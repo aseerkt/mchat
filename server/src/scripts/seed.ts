@@ -1,8 +1,8 @@
 import { connectDB, db } from '@/database'
-import { NewGroup, groups } from '@/modules/groups/groups.schema'
-import { NewMember, members } from '@/modules/members/members.schema'
-import { NewMessage, messages } from '@/modules/messages/messages.schema'
-import { NewUser, users } from '@/modules/users/users.schema'
+import { NewGroup, groupsTable } from '@/modules/groups/groups.schema'
+import { NewMember, membersTable } from '@/modules/members/members.schema'
+import { NewMessage, messagesTable } from '@/modules/messages/messages.schema'
+import { NewUser, usersTable } from '@/modules/users/users.schema'
 import { faker } from '@faker-js/faker'
 import { hash } from 'argon2'
 import 'colors'
@@ -22,10 +22,10 @@ async function seedDatabase() {
     console.time('seed')
     console.log('Dropping tables'.yellow.bold)
 
-    await db.delete(messages)
-    await db.delete(members)
-    await db.delete(groups)
-    await db.delete(users)
+    await db.delete(messagesTable)
+    await db.delete(membersTable)
+    await db.delete(groupsTable)
+    await db.delete(usersTable)
 
     console.log('Seed started'.blue.bold)
 
@@ -41,10 +41,12 @@ async function seedDatabase() {
           fullName: faker.person.fullName(),
         })
       }
-      await db.insert(users).values(userValues)
+      await db.insert(usersTable).values(userValues)
     }
 
-    const insertedUsers = await db.select({ id: users.id }).from(users)
+    const insertedUsers = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
 
     // Batch insert groups
     for (let i = 0; i < USER_COUNT * GROUP_COUNT_PER_USER; i += BATCH_SIZE) {
@@ -60,12 +62,12 @@ async function seedDatabase() {
           ownerId: insertedUsers[userIndex].id,
         })
       }
-      await db.insert(groups).values(groupValues)
+      await db.insert(groupsTable).values(groupValues)
     }
 
     const insertedGroups = await db
-      .select({ id: groups.id, ownerId: groups.ownerId })
-      .from(groups)
+      .select({ id: groupsTable.id, ownerId: groupsTable.ownerId })
+      .from(groupsTable)
 
     // Batch insert members and messages
     for (let i = 0; i < insertedGroups.length; i++) {
@@ -107,9 +109,11 @@ async function seedDatabase() {
 
       // Insert members and messages in batches
       for (let k = 0; k < memberValues.length; k += BATCH_SIZE) {
-        await db.insert(members).values(memberValues.slice(k, k + BATCH_SIZE))
         await db
-          .insert(messages)
+          .insert(membersTable)
+          .values(memberValues.slice(k, k + BATCH_SIZE))
+        await db
+          .insert(messagesTable)
           .values(
             messageValues.slice(
               k * MESSAGE_PER_MEMBER,

@@ -6,8 +6,8 @@ import { TypedIOServer } from '@/socket/socket.interface'
 import { badRequest, notFound } from '@/utils/api'
 import { and, asc, eq, getTableColumns, gt, like } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { users } from '../users/users.schema'
-import { MemberRole, members } from './members.schema'
+import { usersTable } from '../users/users.schema'
+import { MemberRole, membersTable } from './members.schema'
 
 export const joinRooms: RequestHandler = async (req, res, next) => {
   try {
@@ -17,7 +17,7 @@ export const joinRooms: RequestHandler = async (req, res, next) => {
     }
 
     const rows = await db
-      .insert(members)
+      .insert(membersTable)
       .values(
         (groupIds as number[]).map(groupId => ({
           groupId: Number(groupId),
@@ -63,20 +63,23 @@ export const getGroupMembers: RequestHandler = async (req, res, next) => {
     const { cursor, limit } = getPaginationParams(req.query)
     const result = await withPagination(
       db
-        .select({ ...getTableColumns(members), username: users.username })
-        .from(members)
-        .innerJoin(users, eq(members.userId, users.id))
+        .select({
+          ...getTableColumns(membersTable),
+          username: usersTable.username,
+        })
+        .from(membersTable)
+        .innerJoin(usersTable, eq(membersTable.userId, usersTable.id))
         .$dynamic(),
 
       {
         limit,
         cursorSelect: 'username',
-        orderBy: [asc(users.username)],
+        orderBy: [asc(usersTable.username)],
         where: and(
-          eq(members.groupId, Number(req.params.groupId)),
-          cursor ? gt(users.username, cursor as string) : undefined,
+          eq(membersTable.groupId, Number(req.params.groupId)),
+          cursor ? gt(usersTable.username, cursor as string) : undefined,
           req.query.query
-            ? like(users.username, `%${req.query.query}%`)
+            ? like(usersTable.username, `%${req.query.query}%`)
             : undefined,
         ),
       },
@@ -105,18 +108,18 @@ export const getGroupMember: RequestHandler = async (req, res, next) => {
   try {
     const [member] = await db
       .select({
-        ...getTableColumns(members),
-        fullName: users.fullName,
-        username: users.username,
+        ...getTableColumns(membersTable),
+        fullName: usersTable.fullName,
+        username: usersTable.username,
       })
-      .from(members)
+      .from(membersTable)
       .where(
         and(
-          eq(members.userId, Number(req.params.userId)),
-          eq(members.groupId, Number(req.params.groupId)),
+          eq(membersTable.userId, Number(req.params.userId)),
+          eq(membersTable.groupId, Number(req.params.groupId)),
         ),
       )
-      .innerJoin(users, eq(members.userId, users.id))
+      .innerJoin(usersTable, eq(membersTable.userId, usersTable.id))
 
     if (!member) {
       return notFound(res, 'Member')

@@ -5,16 +5,16 @@ import { removeAttrFromObject } from '@/utils/object'
 import { hash, verify } from 'argon2'
 import { and, eq, getTableColumns, like, ne } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { users } from './users.schema'
+import { usersTable } from './users.schema'
 
 export const signUpUser: RequestHandler = async (req, res, next) => {
   try {
     const { username, password, fullName } = req.body
     console.log('req.body', req.body)
     const rows = await db
-      .select({ username: users.username })
-      .from(users)
-      .where(eq(users.username, username))
+      .select({ username: usersTable.username })
+      .from(usersTable)
+      .where(eq(usersTable.username, username))
       .limit(1)
 
     if (rows.length) {
@@ -24,13 +24,13 @@ export const signUpUser: RequestHandler = async (req, res, next) => {
     const hashedPassword = await hash(password)
 
     const [user] = await db
-      .insert(users)
+      .insert(usersTable)
       .values({ username, fullName, password: hashedPassword })
       .returning({
-        id: users.id,
-        username: users.username,
-        fullName: users.fullName,
-        createdAt: users.createdAt,
+        id: usersTable.id,
+        username: usersTable.username,
+        fullName: usersTable.fullName,
+        createdAt: usersTable.createdAt,
       })
 
     const accessToken = await signTokens(res, {
@@ -50,8 +50,8 @@ export const loginUser: RequestHandler = async (req, res, next) => {
     const { username, password } = req.body
     const [user] = await db
       .select()
-      .from(users)
-      .where(eq(users.username, username))
+      .from(usersTable)
+      .where(eq(usersTable.username, username))
       .limit(1)
 
     if (!user) {
@@ -82,18 +82,18 @@ export const loginUser: RequestHandler = async (req, res, next) => {
 export const getUsers: RequestHandler = async (req, res, next) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...columns } = getTableColumns(users)
+    const { password, ...columns } = getTableColumns(usersTable)
     const rows = await db
       .select(columns)
-      .from(users)
+      .from(usersTable)
       .where(
         and(
-          like(users.username, `%${req.query.query}%`),
-          ne(users.id, req.user!.id),
+          like(usersTable.username, `%${req.query.query}%`),
+          ne(usersTable.id, req.user!.id),
         ),
       )
       .limit(Number(req.query.limit) || 5)
-      .orderBy(users.username)
+      .orderBy(usersTable.username)
 
     res.json(rows)
   } catch (error) {
@@ -104,12 +104,12 @@ export const getUsers: RequestHandler = async (req, res, next) => {
 export const getUser: RequestHandler = async (req, res, next) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...columns } = getTableColumns(users)
+    const { password, ...columns } = getTableColumns(usersTable)
 
     const [user] = await db
       .select(columns)
-      .from(users)
-      .where(eq(users.id, Number(req.params.userId)))
+      .from(usersTable)
+      .where(eq(usersTable.id, Number(req.params.userId)))
       .limit(1)
     if (!user) {
       return notFound(res, 'User')

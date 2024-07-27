@@ -27,11 +27,14 @@ import {
 } from 'drizzle-orm'
 import { unionAll } from 'drizzle-orm/pg-core'
 import { RequestHandler } from 'express'
-import { members } from '../members/members.schema'
+import { membersTable } from '../members/members.schema'
 import { addMembers } from '../members/members.service'
-import { messageRecipients, messages } from '../messages/messages.schema'
-import { users } from '../users/users.schema'
-import { groups } from './groups.schema'
+import {
+  messageRecipientsTable,
+  messagesTable,
+} from '../messages/messages.schema'
+import { usersTable } from '../users/users.schema'
+import { groupsTable } from './groups.schema'
 
 // CREATE
 
@@ -39,7 +42,7 @@ export const createGroup: RequestHandler = async (req, res, next) => {
   try {
     const group = await db.transaction(async tx => {
       const [group] = await tx
-        .insert(groups)
+        .insert(groupsTable)
         .values({ name: req.body.name, ownerId: req.user!.id })
         .returning()
 
@@ -66,8 +69,8 @@ export const getGroup: RequestHandler = async (req, res, next) => {
   try {
     const [group] = await db
       .select()
-      .from(groups)
-      .where(eq(groups.id, Number(req.params.groupId)))
+      .from(groupsTable)
+      .where(eq(groupsTable.id, Number(req.params.groupId)))
 
     if (!group) {
       return notFound(res, 'Group')
@@ -81,25 +84,25 @@ export const getGroup: RequestHandler = async (req, res, next) => {
 export const getNonGroupMembers: RequestHandler = async (req, res, next) => {
   try {
     const groupMembers = await db
-      .select({ userId: members.userId })
-      .from(members)
-      .where(eq(members.groupId, Number(req.params.groupId)))
+      .select({ userId: membersTable.userId })
+      .from(membersTable)
+      .where(eq(membersTable.groupId, Number(req.params.groupId)))
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...columns } = getTableColumns(users)
+    const { password, ...columns } = getTableColumns(usersTable)
     const rows = await db
       .select(columns)
-      .from(users)
+      .from(usersTable)
       .where(
         and(
-          like(users.username, `%${req.query.query}%`),
+          like(usersTable.username, `%${req.query.query}%`),
           notInArray(
-            users.id,
+            usersTable.id,
             groupMembers.map(m => m.userId),
           ),
         ),
       )
       .limit(Number(req.query.limit) || 5)
-      .orderBy(users.username)
+      .orderBy(usersTable.username)
 
     res.json(rows)
   } catch (error) {
@@ -110,11 +113,14 @@ export const getNonGroupMembers: RequestHandler = async (req, res, next) => {
 export const listGroups: RequestHandler = async (req, res, next) => {
   try {
     const userGroupIds = await db
-      .select({ groupId: members.groupId })
-      .from(members)
-      .where(eq(members.userId, req.user!.id))
+      .select({ groupId: membersTable.groupId })
+      .from(membersTable)
+      .where(eq(membersTable.userId, req.user!.id))
 
-    const qb = db.select(getTableColumns(groups)).from(groups).$dynamic()
+    const qb = db
+      .select(getTableColumns(groupsTable))
+      .from(groupsTable)
+      .$dynamic()
 
     const { cursor, limit } = getPaginationParams(req.query, 'number')
 
@@ -124,13 +130,13 @@ export const listGroups: RequestHandler = async (req, res, next) => {
       where: and(
         userGroupIds.length
           ? notInArray(
-              groups.id,
+              groupsTable.id,
               userGroupIds.map(m => m.groupId),
             )
           : undefined,
-        cursor ? lt(groups.id, cursor as number) : undefined,
+        cursor ? lt(groupsTable.id, cursor as number) : undefined,
       ),
-      orderBy: [desc(groups.id)],
+      orderBy: [desc(groupsTable.id)],
     })
 
     res.json(result)
@@ -146,22 +152,22 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       .as(
         db
           .select({
-            ...getTableColumns(messages),
+            ...getTableColumns(messagesTable),
             rowNumber: rowNumber().over<number>({
-              partitionBy: messages.groupId,
-              orderBy: desc(messages.createdAt),
+              partitionBy: messagesTable.groupId,
+              orderBy: desc(messagesTable.createdAt),
               as: 'row_number',
             }),
           })
-          .from(messages)
-          .where(isNotNull(messages.groupId)),
+          .from(messagesTable)
+          .where(isNotNull(messagesTable.groupId)),
       )
 
     const groupsWithLastMessage = db.$with('groups_with_last_message').as(
       db
         .with(groupMessagesWithRowNumber)
         .select({
-          chatName: groups.name,
+          chatName: groupsTable.name,
           groupId: groupMessagesWithRowNumber.groupId,
           partnerId: groupMessagesWithRowNumber.receiverId,
           lastMessage: {
@@ -170,19 +176,19 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
           },
           lastActivity: coalesce(
             groupMessagesWithRowNumber.createdAt,
-            groups.createdAt,
+            groupsTable.createdAt,
           ).as('last_activity'),
         })
-        .from(groups)
+        .from(groupsTable)
         .leftJoin(
           groupMessagesWithRowNumber,
           and(
-            eq(groups.id, groupMessagesWithRowNumber.groupId),
+            eq(groupsTable.id, groupMessagesWithRowNumber.groupId),
             eq(groupMessagesWithRowNumber.rowNumber, 1),
           ),
         )
-        .innerJoin(members, eq(members.groupId, groups.id))
-        .where(eq(members.userId, req.user!.id)),
+        .innerJoin(membersTable, eq(membersTable.groupId, groupsTable.id))
+        .where(eq(membersTable.userId, req.user!.id)),
     )
 
     const directMessagesWithPartner = db
@@ -190,31 +196,31 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       .as(
         db
           .select({
-            ...getTableColumns(messages),
+            ...getTableColumns(messagesTable),
             partnerId: sql<number>`
               CASE
-                WHEN ${messages.senderId} = ${req.user!.id} THEN ${messages.receiverId}
-                ELSE ${messages.senderId}
+                WHEN ${messagesTable.senderId} = ${req.user!.id} THEN ${messagesTable.receiverId}
+                ELSE ${messagesTable.senderId}
               END
             `.as('partner_id'),
             rowNumber: rowNumber().over({
               partitionBy: sql<number>`
               CASE
-                WHEN ${messages.senderId} = ${req.user!.id} THEN ${messages.receiverId}
-                ELSE ${messages.senderId}
+                WHEN ${messagesTable.senderId} = ${req.user!.id} THEN ${messagesTable.receiverId}
+                ELSE ${messagesTable.senderId}
               END
             `,
-              orderBy: desc(messages.createdAt),
+              orderBy: desc(messagesTable.createdAt),
               as: 'row_number',
             }),
           })
-          .from(messages)
+          .from(messagesTable)
           .where(
             and(
-              isNull(messages.groupId),
+              isNull(messagesTable.groupId),
               or(
-                eq(messages.senderId, req.user!.id),
-                eq(messages.receiverId, req.user!.id),
+                eq(messagesTable.senderId, req.user!.id),
+                eq(messagesTable.receiverId, req.user!.id),
               ),
             ),
           ),
@@ -226,7 +232,7 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
         db
           .with(directMessagesWithPartner)
           .select({
-            chatName: users.username,
+            chatName: usersTable.username,
             groupId: directMessagesWithPartner.groupId,
             partnerId: directMessagesWithPartner.partnerId,
             lastMessage: {
@@ -236,7 +242,10 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
             lastActivity: directMessagesWithPartner.createdAt,
           })
           .from(directMessagesWithPartner)
-          .innerJoin(users, eq(directMessagesWithPartner.partnerId, users.id))
+          .innerJoin(
+            usersTable,
+            eq(directMessagesWithPartner.partnerId, usersTable.id),
+          )
           .where(eq(directMessagesWithPartner.rowNumber, 1)),
       )
 
@@ -244,46 +253,48 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       unionAll(
         db
           .select({
-            groupId: sql`${groups.id}`.as('unread_group_id'),
+            groupId: sql`${groupsTable.id}`.as('unread_group_id'),
             receiverId: nullAs('unread_receiver_id'),
-            unreadCount: count(messages.id).as('unread_count'),
+            unreadCount: count(messagesTable.id).as('unread_count'),
           })
-          .from(groups)
-          .leftJoin(messages, eq(groups.id, messages.groupId))
+          .from(groupsTable)
+          .leftJoin(messagesTable, eq(groupsTable.id, messagesTable.groupId))
           .leftJoin(
-            messageRecipients,
+            messageRecipientsTable,
             and(
-              eq(messageRecipients.messageId, messages.id),
-              eq(messageRecipients.recipientId, req.user!.id),
+              eq(messageRecipientsTable.messageId, messagesTable.id),
+              eq(messageRecipientsTable.recipientId, req.user!.id),
             ),
           )
-          .where(isNull(messageRecipients.messageId))
-          .groupBy(groups.id),
+          .where(isNull(messageRecipientsTable.messageId))
+          .groupBy(groupsTable.id),
         db
           .select({
             groupId: nullAs('unread_group_id'),
-            receiverId: sql`${messages.receiverId}`.as('unread_receiver_id'),
-            unreadCount: count(messages.id).as('unread_count'),
+            receiverId: sql`${messagesTable.receiverId}`.as(
+              'unread_receiver_id',
+            ),
+            unreadCount: count(messagesTable.id).as('unread_count'),
           })
-          .from(messages)
+          .from(messagesTable)
           .where(
             and(
-              isNull(messages.groupId),
-              eq(messages.receiverId, req.user!.id),
+              isNull(messagesTable.groupId),
+              eq(messagesTable.receiverId, req.user!.id),
               notExists(
                 db
                   .select()
-                  .from(messageRecipients)
+                  .from(messageRecipientsTable)
                   .where(
                     and(
-                      eq(messageRecipients.messageId, messages.id),
-                      eq(messageRecipients.recipientId, req.user!.id),
+                      eq(messageRecipientsTable.messageId, messagesTable.id),
+                      eq(messageRecipientsTable.recipientId, req.user!.id),
                     ),
                   ),
               ),
             ),
           )
-          .groupBy(messages.receiverId),
+          .groupBy(messagesTable.receiverId),
       ),
     )
 
@@ -345,8 +356,8 @@ export const addGroupMembers: RequestHandler = async (req, res, next) => {
     const groupId = Number(req.params.groupId)
     const [group] = await db
       .select()
-      .from(groups)
-      .where(eq(groups.id, groupId))
+      .from(groupsTable)
+      .where(eq(groupsTable.id, groupId))
       .limit(1)
 
     if (!group) {
@@ -378,15 +389,15 @@ export const addGroupMembers: RequestHandler = async (req, res, next) => {
 export const changeMemberRole: RequestHandler = async (req, res, next) => {
   try {
     const [member] = await db
-      .select({ role: members.role })
-      .from(members)
+      .select({ role: membersTable.role })
+      .from(membersTable)
       .where(
         and(
-          eq(members.userId, Number(req.params.userId)),
-          eq(members.groupId, Number(req.params.groupId)),
+          eq(membersTable.userId, Number(req.params.userId)),
+          eq(membersTable.groupId, Number(req.params.groupId)),
         ),
       )
-      .innerJoin(users, eq(members.userId, users.id))
+      .innerJoin(usersTable, eq(membersTable.userId, usersTable.id))
 
     if (!member) {
       return notFound(res, 'Member')
@@ -414,12 +425,12 @@ export const changeMemberRole: RequestHandler = async (req, res, next) => {
 
     if (isRoleChangePermissible) {
       await db
-        .update(members)
+        .update(membersTable)
         .set({ role: req.body.role })
         .where(
           and(
-            eq(members.userId, Number(req.params.userId)),
-            eq(members.groupId, Number(req.params.groupId)),
+            eq(membersTable.userId, Number(req.params.userId)),
+            eq(membersTable.groupId, Number(req.params.groupId)),
           ),
         )
       return res.json({ message: 'Role changed successfully' })
@@ -437,7 +448,7 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
     const groupId = Number(req.params.groupId)
 
     await db.transaction(async tx => {
-      await tx.delete(groups).where(eq(groups.id, groupId))
+      await tx.delete(groupsTable).where(eq(groupsTable.id, groupId))
       await deleteGroupRoles(groupId)
     })
 
@@ -467,17 +478,23 @@ export const leaveGroup: RequestHandler = async (req, res, next) => {
     await db.transaction(async tx => {
       if (req.member?.role === 'owner') {
         await tx
-          .update(members)
+          .update(membersTable)
           .set({ role: 'owner' })
           .where(
-            and(eq(members.groupId, groupId), eq(members.userId, newOwnerId)),
+            and(
+              eq(membersTable.groupId, groupId),
+              eq(membersTable.userId, newOwnerId),
+            ),
           )
       }
 
       await tx
-        .delete(members)
+        .delete(membersTable)
         .where(
-          and(eq(members.groupId, groupId), eq(members.userId, req.user!.id)),
+          and(
+            eq(membersTable.groupId, groupId),
+            eq(membersTable.userId, req.user!.id),
+          ),
         )
       await deleteMemberRole(groupId, req.user!.id)
     })
@@ -503,8 +520,13 @@ export const kickMember: RequestHandler = async (req, res, next) => {
       return badRequest(res, 'Cannot kick yourself')
     }
     await db
-      .delete(members)
-      .where(and(eq(members.groupId, groupId), eq(members.userId, memberId)))
+      .delete(membersTable)
+      .where(
+        and(
+          eq(membersTable.groupId, groupId),
+          eq(membersTable.userId, memberId),
+        ),
+      )
     await deleteMemberRole(groupId, memberId)
     // TODO: send socket io event to kicked member as well existing members
     const io = req.app.get('io') as TypedIOServer

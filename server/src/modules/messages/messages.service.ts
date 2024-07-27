@@ -1,9 +1,9 @@
 import { db } from '@/database'
 import { and, eq, isNull } from 'drizzle-orm'
-import { groups } from '../groups/groups.schema'
+import { groupsTable } from '../groups/groups.schema'
 import { checkPermission } from '../members/members.service'
-import { users } from '../users/users.schema'
-import { messageRecipients, messages } from './messages.schema'
+import { usersTable } from '../users/users.schema'
+import { messageRecipientsTable, messagesTable } from './messages.schema'
 
 export const insertMessage = async ({
   groupId,
@@ -23,22 +23,22 @@ export const insertMessage = async ({
       throw new Error('createMessage: Not authorized')
     }
     const [group] = await db
-      .select({ name: groups.name })
-      .from(groups)
-      .where(eq(groups.id, groupId))
+      .select({ name: groupsTable.name })
+      .from(groupsTable)
+      .where(eq(groupsTable.id, groupId))
     chatName = group.name
   }
 
   if (receiverId) {
     const [receiver] = await db
-      .select({ username: users.username })
-      .from(users)
-      .where(eq(users.id, receiverId))
+      .select({ username: usersTable.username })
+      .from(usersTable)
+      .where(eq(usersTable.id, receiverId))
     chatName = receiver.username
   }
 
   const [message] = await db
-    .insert(messages)
+    .insert(messagesTable)
     .values({
       groupId,
       receiverId,
@@ -55,12 +55,12 @@ export const markMessageAsRead = async (
 ) => {
   const [message] = await db
     .select({
-      senderId: messages.senderId,
-      receiverId: messages.receiverId,
-      groupId: messages.groupId,
+      senderId: messagesTable.senderId,
+      receiverId: messagesTable.receiverId,
+      groupId: messagesTable.groupId,
     })
-    .from(messages)
-    .where(eq(messages.id, messageId))
+    .from(messagesTable)
+    .where(eq(messagesTable.id, messageId))
     .limit(1)
   if (!message.groupId && !message.receiverId) {
     throw new Error(
@@ -83,7 +83,7 @@ export const markMessageAsRead = async (
   }
 
   await db
-    .insert(messageRecipients)
+    .insert(messageRecipientsTable)
     .values({
       messageId,
       recipientId,
@@ -118,25 +118,25 @@ export const markChatMessagesAsRead = async ({
   }
 
   const unreadMessages = await db
-    .select({ messageId: messages.id, senderId: messages.senderId })
-    .from(messages)
+    .select({ messageId: messagesTable.id, senderId: messagesTable.senderId })
+    .from(messagesTable)
     .leftJoin(
-      messageRecipients,
+      messageRecipientsTable,
       and(
-        eq(messageRecipients.messageId, messages.id),
-        eq(messageRecipients.recipientId, recipientId),
+        eq(messageRecipientsTable.messageId, messagesTable.id),
+        eq(messageRecipientsTable.recipientId, recipientId),
       ),
     )
     .where(
       and(
-        groupId ? eq(messages.groupId, groupId) : undefined,
-        receiverId ? eq(messages.receiverId, receiverId) : undefined,
-        isNull(messageRecipients.messageId),
+        groupId ? eq(messagesTable.groupId, groupId) : undefined,
+        receiverId ? eq(messagesTable.receiverId, receiverId) : undefined,
+        isNull(messageRecipientsTable.messageId),
       ),
     )
 
   if (unreadMessages.length) {
-    await db.insert(messageRecipients).values(
+    await db.insert(messageRecipientsTable).values(
       unreadMessages.map(message => ({
         messageId: message.messageId,
         recipientId,

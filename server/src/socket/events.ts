@@ -1,6 +1,6 @@
 import { db } from '@/database'
-import { groups } from '@/modules/groups/groups.schema'
-import { members } from '@/modules/members/members.schema'
+import { groupsTable } from '@/modules/groups/groups.schema'
+import { membersTable } from '@/modules/members/members.schema'
 import {
   insertMessage,
   markChatMessagesAsRead,
@@ -42,10 +42,10 @@ export const registerSocketEvents = (io: TypedIOServer) => {
     socket.broadcast.emit('userOnline', socket.data.user.id)
 
     const userGroups = await db
-      .select({ id: groups.id })
-      .from(groups)
-      .innerJoin(members, eq(members.groupId, groups.id))
-      .where(eq(members.userId, socket.data.user.id))
+      .select({ id: groupsTable.id })
+      .from(groupsTable)
+      .innerJoin(membersTable, eq(membersTable.groupId, groupsTable.id))
+      .where(eq(membersTable.userId, socket.data.user.id))
 
     socket.join(roomKeys.USER_KEY(socket.data.user.id))
     socket.join(userGroups.map(group => roomKeys.GROUP_KEY(group.id)))

@@ -2,13 +2,13 @@ import { db } from '@/database'
 import { getPaginationParams, withPagination } from '@/database/helpers'
 import { and, desc, eq, getTableColumns, lt, or } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { users } from '../users/users.schema'
-import { messages } from './messages.schema'
+import { usersTable } from '../users/users.schema'
+import { messagesTable } from './messages.schema'
 
 export const createMessage: RequestHandler = async (req, res, next) => {
   try {
     const [message] = await db
-      .insert(messages)
+      .insert(messagesTable)
       .values({
         groupId: req.body.groupId,
         content: req.body.text,
@@ -28,23 +28,26 @@ export const listMessages: RequestHandler = async (req, res, next) => {
     const { cursor, limit } = getPaginationParams(req.query, 'number')
     const result = await withPagination(
       db
-        .select({ ...getTableColumns(messages), username: users.username })
-        .from(messages)
-        .innerJoin(users, eq(messages.senderId, users.id))
+        .select({
+          ...getTableColumns(messagesTable),
+          username: usersTable.username,
+        })
+        .from(messagesTable)
+        .innerJoin(usersTable, eq(messagesTable.senderId, usersTable.id))
         .$dynamic(),
       {
         limit,
         cursorSelect: 'id',
-        orderBy: [desc(messages.id)],
+        orderBy: [desc(messagesTable.id)],
         where: and(
-          groupId ? eq(messages.groupId, groupId) : undefined,
+          groupId ? eq(messagesTable.groupId, groupId) : undefined,
           partnerId
             ? or(
-                eq(messages.receiverId, partnerId),
-                eq(messages.senderId, partnerId),
+                eq(messagesTable.receiverId, partnerId),
+                eq(messagesTable.senderId, partnerId),
               )
             : undefined,
-          cursor ? lt(messages.id, cursor as number) : undefined,
+          cursor ? lt(messagesTable.id, cursor as number) : undefined,
         ),
       },
     )
