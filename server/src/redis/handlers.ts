@@ -38,7 +38,6 @@ export const isRefreshTokenValid = async (
     redisKeys.USER_TOKEN(userId),
     tokenId,
   )
-  console.log('redis access token', redisToken, tokenId)
   return redisToken === token
 }
 

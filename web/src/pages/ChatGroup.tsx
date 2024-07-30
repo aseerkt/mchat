@@ -1,5 +1,5 @@
 import { PageLoader } from '@/components/PageLoader'
-import { ChatHeader, TypingIndicator } from '@/features/chat/components'
+import { ChatHeader } from '@/features/chat/components'
 import { GroupInfo } from '@/features/chat/layouts'
 import { DeleteGroup } from '@/features/group/components/DeleteGroup'
 import { fetchGroup } from '@/features/group/group.service'
@@ -9,7 +9,7 @@ import {
   MemberList,
 } from '@/features/member/components'
 import { useHasPermission } from '@/features/member/hooks'
-import { MessageComposer, MessageList } from '@/features/message/components'
+import { MessageContainer } from '@/features/message/components'
 import { useDisclosure } from '@/hooks/useDisclosure'
 import { cn } from '@/utils/style'
 import { useQuery } from '@tanstack/react-query'
@@ -52,9 +52,7 @@ export const Component = () => {
           error={error}
           toggleGroupInfo={toggle}
         />
-        <MessageList groupId={groupId} />
-        <TypingIndicator />
-        <MessageComposer groupId={groupId} />
+        <MessageContainer groupId={groupId} />
       </div>
       <GroupInfo isOpen={isOpen} onClose={toggle} groupId={groupId}>
         <MemberList groupId={groupId} />
@@ -68,4 +66,4 @@ export const Component = () => {
   )
 }
 
-Component.displayName = 'ChatRoom'
+Component.displayName = 'ChatGroup'

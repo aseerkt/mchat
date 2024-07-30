@@ -1,27 +1,31 @@
 import { Alert } from '@/components/Alert'
 import { Skeleton } from '@/components/Skeleton'
-import {
-  IMessage,
-  TMessageInfiniteData,
-} from '@/features/message/message.interface'
+import { IMessage } from '@/features/message/message.interface'
 import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
-import { getSocketIO } from '@/utils/socket'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { produce } from 'immer'
-import { Fragment, useEffect, useRef } from 'react'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { Fragment, useCallback, useRef, useState } from 'react'
+import { useMessageSocketHandle } from '../hooks/useMessageSocketHandle'
 import { fetchMessages } from '../message.service'
+import { MessageActions } from './MessageActions'
 import { MessageItem } from './MessageItem'
 
 interface MessageListProps {
   groupId?: number
   partnerId?: number
+  onReplyAction?: (message: IMessage) => void
 }
 
-export const MessageList = ({ groupId, partnerId }: MessageListProps) => {
+export const MessageList = ({
+  groupId,
+  partnerId,
+  onReplyAction,
+}: MessageListProps) => {
   const { auth } = useAuth()
-
-  const queryClient = useQueryClient()
+  const [messageAnchor, setMessageAnchor] = useState<{
+    message: IMessage
+    anchorRef: React.RefObject<HTMLButtonElement>
+  } | null>()
 
   const { data, hasNextPage, fetchNextPage, isLoading, error, isSuccess } =
     useInfiniteQuery({
@@ -40,45 +44,26 @@ export const MessageList = ({ groupId, partnerId }: MessageListProps) => {
 
   const listRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const socket = getSocketIO()
+  function scrollToBottom() {
+    setTimeout(() => {
+      listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
+    }, 100)
+  }
 
-    function updateMessage(message: IMessage) {
-      if (groupId && message.groupId !== groupId) {
-        return
-      }
-      if (
-        partnerId &&
-        ![message.senderId, message.receiverId].includes(partnerId)
-      ) {
-        return
-      }
-      function scrollToBottom() {
-        listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
-        if (message.receiverId === auth?.id) {
-          socket.emit('markMessageAsRead', message.id)
-        }
-      }
-      queryClient.setQueryData<TMessageInfiniteData>(
-        ['messages', { groupId, partnerId }],
-        data => {
-          if (!data) return
+  useMessageSocketHandle({
+    groupId,
+    partnerId,
+    afterNewMessage: scrollToBottom,
+  })
 
-          const updatedData = produce(data, draft => {
-            draft.pages[0].data.unshift(message)
-          })
-          return updatedData
-        },
-      )
-      setTimeout(scrollToBottom, 100)
-    }
+  const handleMessageAction = useCallback(
+    (message: IMessage, anchorRef: React.RefObject<HTMLButtonElement>) => {
+      setMessageAnchor({ message, anchorRef })
+    },
+    [],
+  )
 
-    socket.on('newMessage', updateMessage)
-    return () => {
-      socket.off('newMessage', updateMessage)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId, partnerId])
+  const resetMessageAction = useCallback(() => setMessageAnchor(null), [])
 
   const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 
@@ -98,6 +83,9 @@ export const MessageList = ({ groupId, partnerId }: MessageListProps) => {
             key={message.id}
             message={message}
             isCurrentUser={message.senderId === auth?.id}
+            onMessageAction={handleMessageAction}
+            hasActionAnchor={message.id === messageAnchor?.message.id}
+            onReplyAction={onReplyAction}
           />
         ))}
       </Fragment>
@@ -110,10 +98,17 @@ export const MessageList = ({ groupId, partnerId }: MessageListProps) => {
     <main className='flex-1 overflow-hidden'>
       <div
         ref={listRef}
-        className='flex h-full flex-col-reverse justify-start gap-2 overflow-y-auto p-3'
+        className='flex h-full flex-col-reverse justify-start gap-2 overflow-y-auto py-3'
       >
         {content}
         {scrollElement}
+        {messageAnchor && (
+          <MessageActions
+            anchorRef={messageAnchor.anchorRef}
+            message={messageAnchor.message}
+            onClose={resetMessageAction}
+          />
+        )}
       </div>
     </main>
   )

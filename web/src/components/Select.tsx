@@ -1,7 +1,8 @@
 import { useDisclosure } from '@/hooks/useDisclosure'
+import { useKeyboardListNavigation } from '@/hooks/useKeyboardListNavigation'
 import { cn } from '@/utils/style'
-import { useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useRef } from 'react'
+import { Menu, MenuItem } from './Menu'
 
 export const Select = <TValue extends number | string>(props: {
   options: {
@@ -24,42 +25,20 @@ export const Select = <TValue extends number | string>(props: {
     disabled,
   } = props
 
-  const wrapperRef = useRef<HTMLDivElement>(null)
   const { isOpen, toggle, close } = useDisclosure()
-  const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const anchorRef = useRef<HTMLDivElement>(null)
 
-  const selectStyles = (() => {
-    const wrapperRect = wrapperRef.current?.getBoundingClientRect()
-    if (!wrapperRect) return
-    return {
-      width: wrapperRect.width,
-      top: wrapperRect.bottom,
-      left: wrapperRect.left,
-    }
-  })()
+  const { handleKeyDown, highlightedIndex } = useKeyboardListNavigation({
+    listLength: options.length,
+    onEnter(highlightedIndex) {
+      handleSelect(options[highlightedIndex])
+    },
+  })
 
   const handleSelect = (option: (typeof options)[0]) => {
     if (!option.disabled || option.value === value) {
       onSelect(option.value)
       close()
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    e.stopPropagation()
-    switch (e.key) {
-      case 'ArrowDown':
-        setHighlightedIndex(prevIndex =>
-          prevIndex >= options.length - 1 ? 0 : prevIndex + 1,
-        )
-        break
-      case 'ArrowUp':
-        setHighlightedIndex(prevIndex =>
-          prevIndex <= 0 ? options.length - 1 : prevIndex - 1,
-        )
-        break
-      case 'Enter':
-        handleSelect(options[highlightedIndex])
     }
   }
 
@@ -75,7 +54,7 @@ export const Select = <TValue extends number | string>(props: {
       onKeyDown={handleKeyDown}
       role='combobox'
       aria-disabled={disabled}
-      ref={wrapperRef}
+      ref={anchorRef}
     >
       <div className='flex gap-2'>
         <div>{displayValue(value) || placeholder}</div>
@@ -91,37 +70,24 @@ export const Select = <TValue extends number | string>(props: {
           </svg>
         </span>
       </div>
-      {isOpen &&
-        !disabled &&
-        createPortal(
-          <ul
-            className='fixed rounded border bg-white shadow'
-            role='listbox'
-            style={selectStyles}
-          >
-            {options.map((option, index) => (
-              <li
-                key={option.value}
-                role='option'
-                onMouseDown={e => {
-                  e.stopPropagation()
-                  handleSelect(option)
-                }}
-                aria-selected={option.value === value}
-                aria-disabled={option.disabled}
-                className={cn(
-                  'cursor-pointer px-2 py-1 hover:bg-gray-400',
-                  option.value === value && 'bg-gray-300',
-                  option.disabled && 'cursor-not-allowed text-gray-400',
-                  highlightedIndex === index && 'bg-gray-400',
-                )}
-              >
-                {option.label}
-              </li>
-            ))}
-          </ul>,
-          document.body,
-        )}
+      {isOpen && !disabled && (
+        <Menu anchorRef={anchorRef} anchorFullWidth role='listbox'>
+          {options.map((option, index) => (
+            <MenuItem
+              key={option.value}
+              role='option'
+              onSelect={() => {
+                handleSelect(option)
+              }}
+              isSelected={option.value === value}
+              isDisabled={option.disabled}
+              isHighlighted={highlightedIndex === index}
+            >
+              {option.label}
+            </MenuItem>
+          ))}
+        </Menu>
+      )}
     </div>
   )
 }

@@ -12,6 +12,9 @@ export interface IMessage {
   username: string
   content: string
   createdAt: string
+  isDeleted: boolean
+  parentMessageId?: number
+  parentMessage?: Pick<IMessage, 'id' | 'content' | 'username' | 'isDeleted'>
 }
 
 export interface IGetChatMessagesArgs extends TPaginatedParams {
@@ -23,3 +26,11 @@ export type TMessageInfiniteData = InfiniteData<
   IPaginatedResult<IMessage>,
   string
 >
+
+export interface IMessageRecipient {
+  messageId: number
+  userId: number
+  username: string
+  fullName: string
+  readAt: string
+}

@@ -1,3 +1,2 @@
-export { MessageComposer } from './MessageComposer'
+export { MessageContainer } from './MessageContainer'
 export { MessageItem } from './MessageItem'
-export { MessageList } from './MessageList'

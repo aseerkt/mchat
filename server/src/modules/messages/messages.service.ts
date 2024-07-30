@@ -10,11 +10,13 @@ export const insertMessage = async ({
   receiverId,
   content,
   senderId,
+  parentMessageId,
 }: {
   groupId?: number
   receiverId?: number
   content: string
   senderId: number
+  parentMessageId?: number
 }) => {
   let chatName = ''
   if (groupId) {
@@ -44,6 +46,7 @@ export const insertMessage = async ({
       receiverId,
       content,
       senderId,
+      parentMessageId,
     })
     .returning()
   return { ...message, chatName }
@@ -144,4 +147,21 @@ export const markChatMessagesAsRead = async ({
     )
   }
   return unreadMessages
+}
+
+export const checkMessageOwnerShip = async (
+  messageId: number,
+  userId: number,
+) => {
+  const [message] = await db
+    .select({
+      senderId: messagesTable.senderId,
+      receiverId: messagesTable.receiverId,
+      groupId: messagesTable.groupId,
+    })
+    .from(messagesTable)
+    .where(eq(messagesTable.id, messageId))
+    .limit(1)
+
+  return { isOwner: message?.senderId === userId, message }
 }

@@ -10,7 +10,6 @@ import { usersTable } from './users.schema'
 export const signUpUser: RequestHandler = async (req, res, next) => {
   try {
     const { username, password, fullName } = req.body
-    console.log('req.body', req.body)
     const rows = await db
       .select({ username: usersTable.username })
       .from(usersTable)

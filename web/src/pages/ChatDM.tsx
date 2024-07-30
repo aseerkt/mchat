@@ -1,6 +1,6 @@
 import { PageLoader } from '@/components/PageLoader'
-import { ChatHeader, TypingIndicator } from '@/features/chat/components'
-import { MessageComposer, MessageList } from '@/features/message/components'
+import { ChatHeader } from '@/features/chat/components'
+import { MessageContainer } from '@/features/message/components'
 import { fetchUser } from '@/features/user/user.service'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
@@ -32,9 +32,7 @@ export const Component = () => {
           chatName={receiver?.username}
           error={error}
         />
-        <MessageList partnerId={partnerId} />
-        <TypingIndicator />
-        <MessageComposer receiverId={partnerId} />
+        <MessageContainer partnerId={partnerId} />
       </div>
     </>
   )

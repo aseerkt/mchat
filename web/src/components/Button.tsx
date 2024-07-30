@@ -15,6 +15,7 @@ const buttonVariants = cva(
       },
       color: {
         default: '',
+        info: 'border-blue-500',
         error: 'border-red-500',
         success: 'border-green-500',
       },
@@ -44,6 +45,16 @@ const buttonVariants = cva(
         variant: 'secondary',
         color: 'success',
         class: 'text-green-500 ',
+      },
+      {
+        variant: 'primary',
+        color: 'success',
+        class: 'bg-blue-500',
+      },
+      {
+        variant: 'secondary',
+        color: 'success',
+        class: 'text-blue-500 ',
       },
     ],
   },

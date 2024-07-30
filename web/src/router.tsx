@@ -22,7 +22,7 @@ export const router = createBrowserRouter([
         lazy: () => import('./features/chat/layouts/ChatLayout'),
         children: [
           { path: '', lazy: () => import('./pages/ChatHome') },
-          { path: 'group/:groupId', lazy: () => import('./pages/ChatRoom') },
+          { path: 'group/:groupId', lazy: () => import('./pages/ChatGroup') },
           {
             path: 'direct/:partnerId',
             lazy: () => import('./pages/ChatDM'),

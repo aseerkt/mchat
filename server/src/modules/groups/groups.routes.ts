@@ -1,7 +1,6 @@
 import { hasChatPermission } from '@/middlewares'
 import { Router } from 'express'
 import { getGroupMember, getGroupMembers } from '../members/members.controller'
-import { createMessage } from '../messages/messages.controller'
 import {
   addGroupMembers,
   changeMemberRole,
@@ -49,7 +48,3 @@ router.get(
   hasChatPermission('admin'),
   getNonGroupMembers,
 )
-
-// Message handler
-
-router.post('/:groupId/messages', hasChatPermission('member'), createMessage)

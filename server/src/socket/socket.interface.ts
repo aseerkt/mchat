@@ -17,6 +17,7 @@ export interface ServerToClientEvents {
   newGroup: (group: Group) => void
   groupDeleted: (groupId: number) => void
   messageRead: (messageId: number) => void
+  messageDeleted: (messageId: number) => void
   chatMarkedAsRead: (args: { groupId?: number; receiverId?: number }) => void
   typingUsers: (users: { id: number; username: string }[]) => void
 }
@@ -25,7 +26,12 @@ export interface ClientToServerEvents {
   joinGroup: (groupId: number) => void
   joinDm: (partnerId: number) => void
   createMessage: (
-    args: { groupId?: number; receiverId?: number; text: string },
+    args: {
+      groupId?: number
+      receiverId?: number
+      text: string
+      parentMessageId?: number
+    },
     callback: (response: { message?: Message; error?: unknown }) => void,
   ) => void
   markMessageAsRead: (messageId: number) => void

@@ -4,15 +4,20 @@ import { useAutoFocus } from '@/hooks/useAutoFocus'
 import { useToast } from '@/hooks/useToast'
 import { getSocketIO } from '@/utils/socket'
 import { useRef, useState } from 'react'
+import { IMessage } from '../message.interface'
 
 interface MessageComposerProps {
   groupId?: number
   receiverId?: number
+  replyMessage?: IMessage
+  cancelReply?: () => void
 }
 
 export const MessageComposer = ({
   groupId,
   receiverId,
+  replyMessage,
+  cancelReply,
 }: MessageComposerProps) => {
   const { toast } = useToast()
   const [text, setText] = useState('')
@@ -21,7 +26,7 @@ export const MessageComposer = ({
   const timeoutRef = useRef<NodeJS.Timeout>()
   const textAreaRef = useRef<HTMLInputElement>(null)
 
-  useAutoFocus(textAreaRef, [groupId, receiverId])
+  useAutoFocus(textAreaRef, [groupId, receiverId, replyMessage])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value)
@@ -49,10 +54,16 @@ export const MessageComposer = ({
     try {
       const response = await socketRef.current
         .timeout(5000)
-        .emitWithAck('createMessage', { groupId, receiverId, text })
+        .emitWithAck('createMessage', {
+          groupId,
+          receiverId,
+          text,
+          parentMessageId: replyMessage?.id,
+        })
 
       if (response.message) {
         setText('')
+        if (cancelReply) cancelReply()
       } else if (response.error) {
         throw response.error
       }
@@ -81,19 +92,47 @@ export const MessageComposer = ({
   }
 
   return (
-    <form className='flex shrink-0 gap-2 border-t p-3' onSubmit={handleSubmit}>
-      <input
-        ref={textAreaRef}
-        className='w-full flex-1 rounded border p-3'
-        value={text}
-        autoFocus
-        placeholder='Send message...'
-        onKeyDown={handleKeyDown}
-        onChange={handleChange}
-      />
-      <Button disabled={disabled} aria-label='send message'>
-        <img src={sendSvg} alt='send' height={24} width={24} />
-      </Button>
+    <form
+      className='flex shrink-0 flex-col gap-2 border-t p-3'
+      onSubmit={handleSubmit}
+    >
+      {replyMessage && (
+        <div className='flex flex-col'>
+          <p className='mb-1 text-sm font-semibold text-blue-500'>Reply</p>
+          <div className='flex w-full items-center gap-2'>
+            <div className='flex flex-1 gap-2 overflow-hidden rounded-md border pr-3'>
+              <div className='min-h-full w-1 bg-gray-400'> </div>
+              <div className='py-1'>
+                <b>{replyMessage.username}</b>
+                <p>{replyMessage.content}</p>
+              </div>
+            </div>
+            <Button
+              size='sm'
+              variant='secondary'
+              className='text-xs font-semibold'
+              aria-label='cancel reply'
+              onClick={cancelReply}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+      <div className='flex gap-2'>
+        <input
+          ref={textAreaRef}
+          className='w-full flex-1 rounded border p-3'
+          value={text}
+          autoFocus
+          placeholder='Send message...'
+          onKeyDown={handleKeyDown}
+          onChange={handleChange}
+        />
+        <Button disabled={disabled} aria-label='send message'>
+          <img src={sendSvg} alt='send' height={24} width={24} />
+        </Button>
+      </div>
     </form>
   )
 }

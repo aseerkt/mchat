@@ -42,7 +42,6 @@ const AddMemberForm = ({ onComplete }: { onComplete: () => void }) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log(e)
     const memberIds = Object.keys(userSelectProps.users).map(Number)
     if (!memberIds.length) {
       return toast({ title: 'Select at least one member', severity: 'error' })

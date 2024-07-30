@@ -86,51 +86,55 @@ export const registerSocketEvents = (io: TypedIOServer) => {
       await emitTypingUsers(socket, { chatId, mode })
     })
 
-    socket.on('createMessage', async ({ groupId, receiverId, text }, cb) => {
-      try {
-        if (!groupId && !receiverId) {
-          throw new Error('Please provide either group id or receiver id')
-        }
+    socket.on(
+      'createMessage',
+      async ({ groupId, receiverId, text, parentMessageId }, cb) => {
+        try {
+          if (!groupId && !receiverId) {
+            throw new Error('Please provide either group id or receiver id')
+          }
 
-        const message = await insertMessage({
-          groupId,
-          receiverId,
-          content: text,
-          senderId: socket.data.user.id,
-        })
-
-        const newMessage = {
-          ...message,
-          username: socket.data.user.username,
-        }
-
-        // group message
-        if (message.groupId) {
-          io.to(roomKeys.GROUP_KEY(message.groupId)).emit(
-            'newMessage',
-            newMessage,
-          )
-        }
-
-        // direct message
-        if (message.receiverId) {
-          // emit event to sender
-          io.to(roomKeys.USER_KEY(socket.data.user.id)).emit(
-            'newMessage',
-            newMessage,
-          )
-
-          // emit event to receiver
-          io.to(roomKeys.USER_KEY(message.receiverId)).emit('newMessage', {
-            ...newMessage,
-            chatName: newMessage.username,
+          const message = await insertMessage({
+            groupId,
+            receiverId,
+            content: text,
+            senderId: socket.data.user.id,
+            parentMessageId,
           })
+
+          const newMessage = {
+            ...message,
+            username: socket.data.user.username,
+          }
+
+          // group message
+          if (message.groupId) {
+            io.to(roomKeys.GROUP_KEY(message.groupId)).emit(
+              'newMessage',
+              newMessage,
+            )
+          }
+
+          // direct message
+          if (message.receiverId) {
+            // emit event to sender
+            io.to(roomKeys.USER_KEY(socket.data.user.id)).emit(
+              'newMessage',
+              newMessage,
+            )
+
+            // emit event to receiver
+            io.to(roomKeys.USER_KEY(message.receiverId)).emit('newMessage', {
+              ...newMessage,
+              chatName: newMessage.username,
+            })
+          }
+          cb({ message })
+        } catch (error) {
+          cb({ error })
         }
-        cb({ message })
-      } catch (error) {
-        cb({ error })
-      }
-    })
+      },
+    )
 
     socket.on('markMessageAsRead', async messageId => {
       const messageSenderId = await markMessageAsRead(

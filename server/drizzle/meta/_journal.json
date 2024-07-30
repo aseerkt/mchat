@@ -15,6 +15,20 @@
       "when": 1721039070174,
       "tag": "0001_melodic_black_crow",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1722240925314,
+      "tag": "0002_dizzy_donald_blake",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1722252325916,
+      "tag": "0003_brave_liz_osborn",
+      "breakpoints": true
     }
   ]
 }

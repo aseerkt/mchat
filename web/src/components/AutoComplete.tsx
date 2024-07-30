@@ -1,7 +1,6 @@
-import { cn } from '@/utils/style'
-import React, { useMemo, useRef } from 'react'
-import { createPortal } from 'react-dom'
+import React, { useRef } from 'react'
 import { Alert } from './Alert'
+import { Menu, MenuItem } from './Menu'
 import { Skeleton } from './Skeleton'
 
 type AutoCompleteProps<TSuggestion, TError> = {
@@ -20,14 +19,6 @@ type AutoCompleteProps<TSuggestion, TError> = {
   placeholder?: string
   label?: React.ReactNode
   error?: TError
-}
-
-type SuggestionListProps<TSuggestion> = {
-  wrapperRef: React.RefObject<HTMLDivElement>
-  suggestions: TSuggestion[]
-  suggestionLabel: keyof TSuggestion
-  highlightedIndex: number
-  onSelect: (suggestion: TSuggestion) => void
 }
 
 export const AutoComplete = <
@@ -70,13 +61,24 @@ export const AutoComplete = <
     )
   } else if (isDropdownVisible && suggestions.length > 0) {
     content = (
-      <SuggestionList
-        wrapperRef={wrapperRef}
-        suggestions={suggestions}
-        suggestionLabel={suggestionLabel}
-        highlightedIndex={highlightedIndex}
-        onSelect={handleSelect}
-      />
+      <Menu
+        id='suggestion-list'
+        className='z-10 overflow-hidden rounded-md'
+        anchorRef={wrapperRef}
+        anchorFullWidth
+        role='listbox'
+      >
+        {suggestions.map((suggestion, index) => (
+          <MenuItem
+            key={suggestion.id}
+            role='option'
+            isHighlighted={highlightedIndex === index}
+            onSelect={() => handleSelect(suggestion)}
+          >
+            {suggestion[suggestionLabel] as string}
+          </MenuItem>
+        ))}
+      </Menu>
     )
   } else if (isDropdownVisible) {
     content = (
@@ -115,53 +117,5 @@ export const AutoComplete = <
         {content}
       </div>
     </>
-  )
-}
-
-const SuggestionList = <TSuggestion extends { id: number }>({
-  wrapperRef,
-  suggestions,
-  suggestionLabel,
-  highlightedIndex,
-  onSelect,
-}: SuggestionListProps<TSuggestion>) => {
-  const styles = useMemo(() => {
-    const wrapperRect = wrapperRef.current?.getBoundingClientRect()
-    return wrapperRect
-      ? {
-          top: wrapperRect.bottom,
-          left: wrapperRect.left,
-          width: wrapperRect.width,
-        }
-      : {}
-  }, [wrapperRef])
-
-  return createPortal(
-    <ul
-      id='suggestion-list'
-      className='absolute z-10 overflow-hidden rounded-md border bg-white shadow-lg'
-      style={styles}
-      role='listbox'
-    >
-      {suggestions.map((suggestion, index) => (
-        <li
-          key={suggestion.id}
-          className={cn(
-            `cursor-pointer px-3 py-2 hover:bg-gray-200`,
-            highlightedIndex === index && 'bg-gray-200',
-          )}
-          role='option'
-          aria-selected={highlightedIndex === index}
-          onMouseDown={e => {
-            e.stopPropagation()
-            onSelect(suggestion)
-          }}
-          tabIndex={-1}
-        >
-          {suggestion[suggestionLabel] as string}
-        </li>
-      ))}
-    </ul>,
-    document.body,
   )
 }

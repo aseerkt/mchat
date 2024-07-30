@@ -1,5 +1,13 @@
 import { baseSchema } from '@/database/constants'
-import { bigint, index, pgTable, text, unique } from 'drizzle-orm/pg-core'
+import {
+  AnyPgColumn,
+  bigint,
+  boolean,
+  index,
+  pgTable,
+  text,
+  unique,
+} from 'drizzle-orm/pg-core'
 import { groupsTable } from '../groups/groups.schema'
 import { usersTable } from '../users/users.schema'
 
@@ -18,6 +26,10 @@ export const messagesTable = pgTable(
       { onDelete: 'cascade' },
     ),
     content: text('content').notNull(),
+    parentMessageId: bigint('parent_message_id', { mode: 'number' }).references(
+      (): AnyPgColumn => messagesTable.id,
+    ),
+    isDeleted: boolean('is_deleted').default(false),
   },
   table => ({
     groupIdIndex: index().on(table.groupId),
