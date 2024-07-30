@@ -117,7 +117,7 @@ export const MessageList = ({
   } else if (data?.pages[0].data.length) {
     content = Object.keys(dateWiseMessages).map(dateStr => (
       <div className='relative'>
-        <div className='top sticky top-0 z-10 mx-auto my-3 w-max rounded-full border bg-gray-600 p-2 px-4 text-sm font-semibold text-white shadow-md'>
+        <div className='top sticky top-0 z-10 mx-auto my-3 w-max rounded-lg border bg-gray-500 px-4 py-2 text-sm font-semibold text-white shadow-md'>
           {dateStr}
         </div>
         <div className='flex flex-col-reverse gap-2'>

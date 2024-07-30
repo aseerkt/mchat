@@ -36,7 +36,7 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
         role='listitem'
         tabIndex={0}
         className={cn(
-          'group/block flex w-full items-center gap-4 px-3',
+          'group/block flex w-full items-center gap-4 px-3 py-1 hover:bg-gray-100',
           isCurrentUser && 'flex-row-reverse',
         )}
       >
