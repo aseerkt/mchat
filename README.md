@@ -116,8 +116,11 @@ pnpm --filter web test
 - [x] delete group
 - [x] alert component
 - [x] direct message 
-- [ ] confirm dialog
-- [ ] read receipts
+- [x] delete message
+- [x] reply to message
+- [x] date separator   
+- [x] confirm dialog
+- [x] message receipts
 - [ ] e2e encryption
 
 ### extras
