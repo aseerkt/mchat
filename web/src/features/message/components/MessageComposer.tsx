@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast'
 import { getSocketIO } from '@/utils/socket'
 import { useRef, useState } from 'react'
 import { IMessage } from '../message.interface'
+import { MessageReplyItem } from './MessageReplyItem'
 
 interface MessageComposerProps {
   groupId?: number
@@ -100,13 +101,10 @@ export const MessageComposer = ({
         <div className='flex flex-col'>
           <p className='mb-1 text-sm font-semibold text-blue-500'>Reply</p>
           <div className='flex w-full items-center gap-2'>
-            <div className='flex flex-1 gap-2 overflow-hidden rounded-md border pr-3'>
-              <div className='min-h-full w-1 bg-gray-400'> </div>
-              <div className='py-1'>
-                <b>{replyMessage.username}</b>
-                <p>{replyMessage.content}</p>
-              </div>
-            </div>
+            <MessageReplyItem
+              username={replyMessage.username}
+              content={replyMessage.content}
+            />
             <Button
               size='sm'
               variant='secondary'

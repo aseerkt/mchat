@@ -25,51 +25,67 @@ export const insertMessage = async ({
     }
   }
 
-  const [message] = await db
-    .insert(messagesTable)
-    .values({
-      groupId,
-      receiverId,
-      content,
-      senderId,
-      parentMessageId,
-    })
-    .returning()
-
-  let chatName = ''
-
-  if (groupId) {
-    const [group] = await db
-      .select({ name: groupsTable.name })
-      .from(groupsTable)
-      .where(eq(groupsTable.id, groupId))
-    chatName = group.name
-  }
-
-  if (receiverId) {
-    const [receiver] = await db
-      .select({ username: usersTable.username })
-      .from(usersTable)
-      .where(eq(usersTable.id, receiverId))
-    chatName = receiver.username
-  }
-
-  let parentMessage
-
-  if (message.parentMessageId) {
-    const result = await db
-      .select({
-        ...getTableColumns(messagesTable),
-        username: usersTable.username,
+  return db.transaction(async tx => {
+    const [message] = await tx
+      .insert(messagesTable)
+      .values({
+        groupId,
+        receiverId,
+        content,
+        senderId,
+        parentMessageId,
       })
-      .from(messagesTable)
-      .where(eq(messagesTable.id, message.parentMessageId))
-      .innerJoin(usersTable, eq(usersTable.id, messagesTable.senderId))
-      .limit(1)
-    parentMessage = result[0]
-  }
+      .returning()
 
-  return { ...message, chatName, parentMessage }
+    let parentMessage
+
+    if (message.parentMessageId) {
+      const result = await tx
+        .select({
+          ...getTableColumns(messagesTable),
+          username: usersTable.username,
+        })
+        .from(messagesTable)
+        .where(eq(messagesTable.id, message.parentMessageId))
+        .innerJoin(usersTable, eq(usersTable.id, messagesTable.senderId))
+        .limit(1)
+
+      parentMessage = result[0]
+
+      if (
+        parentMessage.groupId !== groupId &&
+        parentMessage.receiverId !== receiverId
+      ) {
+        throw new Error(
+          'createMessage: parent message does not belong to current group or dm',
+        )
+      }
+
+      if (parentMessage.isDeleted) {
+        throw new Error('createMessage: parent message is deleted')
+      }
+    }
+
+    let chatName = ''
+
+    if (groupId) {
+      const [group] = await tx
+        .select({ name: groupsTable.name })
+        .from(groupsTable)
+        .where(eq(groupsTable.id, groupId))
+      chatName = group.name
+    }
+
+    if (receiverId) {
+      const [receiver] = await tx
+        .select({ username: usersTable.username })
+        .from(usersTable)
+        .where(eq(usersTable.id, receiverId))
+      chatName = receiver.username
+    }
+
+    return { ...message, chatName, parentMessage }
+  })
 }
 
 export const markMessageAsRead = async (

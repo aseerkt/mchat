@@ -15,3 +15,20 @@ export const debounce = <TFnArgs extends unknown[], TFnResult>(
     }, ms)
   }
 }
+
+export const memoize = <TFnArgs extends unknown[], TFnResult>(
+  fn: (...args: TFnArgs) => TFnResult,
+) => {
+  const cache = new Map<string, TFnResult>()
+
+  return (...args: TFnArgs) => {
+    const key = JSON.stringify(args)
+
+    if (cache.has(key)) {
+      return cache.get(key)!
+    }
+    const result = fn(...args)
+    cache.set(key, result)
+    return result
+  }
+}

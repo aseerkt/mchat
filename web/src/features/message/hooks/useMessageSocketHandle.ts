@@ -54,7 +54,9 @@ export const useMessageSocketHandle = ({
 
       if (
         message.receiverId === auth?.id ||
-        (groupId && message.groupId === groupId)
+        (groupId &&
+          message.groupId === groupId &&
+          message.senderId !== auth?.id)
       ) {
         socket.emit('markMessageAsRead', message.id)
       }
@@ -67,7 +69,7 @@ export const useMessageSocketHandle = ({
             page.data.forEach(message => {
               if (message.id === messageId) {
                 message.isDeleted = true
-                message.content = 'this message is deleted'
+                message.content = 'this message has been deleted'
               }
             })
           })

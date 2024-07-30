@@ -108,7 +108,7 @@ export const deleteMessage: RequestHandler = async (req, res, next) => {
 
     await db
       .update(messagesTable)
-      .set({ isDeleted: true, content: 'this message is deleted' })
+      .set({ isDeleted: true, content: 'this message has been deleted' })
       .where(eq(messagesTable.id, messageId))
 
     const io: TypedIOServer = req.app.get('io')

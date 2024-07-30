@@ -22,6 +22,7 @@ export const MessageList = ({
   onReplyAction,
 }: MessageListProps) => {
   const { auth } = useAuth()
+  const messageRefs = useRef<Record<number, HTMLDivElement | null>>({})
   const [messageAnchor, setMessageAnchor] = useState<{
     message: IMessage
     anchorRef: React.RefObject<HTMLButtonElement>
@@ -44,7 +45,9 @@ export const MessageList = ({
 
   const listRef = useRef<HTMLDivElement>(null)
 
-  function scrollToBottom() {
+  const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
+
+  const scrollToBottom = () => {
     setTimeout(() => {
       listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
     }, 100)
@@ -56,6 +59,13 @@ export const MessageList = ({
     afterNewMessage: scrollToBottom,
   })
 
+  const scrollIntoParentMessage = useCallback((messageId: number) => {
+    if (messageRefs.current[messageId]) {
+      messageRefs.current[messageId]?.scrollIntoView({ behavior: 'smooth' })
+      messageRefs.current[messageId]?.focus()
+    }
+  }, [])
+
   const handleMessageAction = useCallback(
     (message: IMessage, anchorRef: React.RefObject<HTMLButtonElement>) => {
       setMessageAnchor({ message, anchorRef })
@@ -64,8 +74,6 @@ export const MessageList = ({
   )
 
   const resetMessageAction = useCallback(() => setMessageAnchor(null), [])
-
-  const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 
   let content
 
@@ -80,12 +88,14 @@ export const MessageList = ({
       <Fragment key={i}>
         {page.data.map(message => (
           <MessageItem
+            ref={ref => (messageRefs.current[message.id] = ref)}
             key={message.id}
             message={message}
             isCurrentUser={message.senderId === auth?.id}
             onMessageAction={handleMessageAction}
             hasActionAnchor={message.id === messageAnchor?.message.id}
             onReplyAction={onReplyAction}
+            scrollMessageIntoView={scrollIntoParentMessage}
           />
         ))}
       </Fragment>
