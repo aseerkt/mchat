@@ -1,3 +1,4 @@
+import { useClickOutside } from '@/hooks/useClickOutside'
 import { cn } from '@/utils/style'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -118,11 +119,14 @@ export const Menu = <T extends HTMLElement>({
   anchorOrigin?: MenuOrigin
   transformOrigin?: MenuOrigin
   anchorFullWidth?: boolean
+  onBlur?: () => void
 }) => {
   const menuRef = useRef<HTMLUListElement>(null)
   const [menuStyles, setMenuStyles] = useState<React.CSSProperties>(
     getMenuStyles(anchorRef, anchorOrigin, transformOrigin, anchorFullWidth),
   )
+
+  useClickOutside(menuRef, props.onBlur)
 
   useEffect(() => {
     if (!anchorRef.current) return
@@ -150,6 +154,7 @@ export const Menu = <T extends HTMLElement>({
   return createPortal(
     <ul
       ref={menuRef}
+      tabIndex={0}
       role='listbox'
       {...props}
       style={{ ...menuStyles, ...style }}

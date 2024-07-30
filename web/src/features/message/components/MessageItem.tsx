@@ -40,10 +40,7 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
           isCurrentUser && 'flex-row-reverse',
         )}
       >
-        <div
-          className='group relative'
-          style={{ maxWidth: 'calc(100% - 2rem)' }}
-        >
+        <div className='relative' style={{ maxWidth: 'calc(100% - 2rem)' }}>
           <div
             className={cn(
               'rounded-lg border px-3 py-2 shadow group-focus-within/block:ring group-focus/block:ring',
@@ -97,7 +94,7 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
               ref={messageAnchorRef}
               aria-label='message action'
               className={cn(
-                'invisible absolute -right-1 -top-1 rounded border bg-white px-2 text-gray-500 shadow group-hover:visible',
+                'invisible absolute -right-1 -top-1 rounded border bg-white px-2 text-gray-500 shadow group-hover/block:visible',
                 hasActionAnchor ? 'visible' : 'invisible',
               )}
               onClick={() => onMessageAction(message, messageAnchorRef)}

@@ -42,7 +42,7 @@ type CreateChatComponentsKey = keyof typeof createChatComponents
 const NewChatMenu = () => {
   const {
     isOpen: isMenuOpen,
-    toggle: toggleMenu,
+    open: openMenu,
     close: closeMenu,
   } = useDisclosure()
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -62,7 +62,7 @@ const NewChatMenu = () => {
         type='button'
         className='inline-flex items-center gap-2'
         ref={buttonRef}
-        onClick={toggleMenu}
+        onClick={openMenu}
       >
         <PlusCircle />
         New chat

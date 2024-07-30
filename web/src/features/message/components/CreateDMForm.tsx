@@ -7,9 +7,11 @@ import { useQueryAutoComplete } from '@/hooks/useQueryAutoComplete'
 import { useToast } from '@/hooks/useToast'
 import { getSocketIO } from '@/utils/socket'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export const CreateDMForm = ({ onComplete }: { onComplete: () => void }) => {
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [dmUser, setDmUser] = useState<IUser>()
   const { suggestions, ...autoComplete } = useQueryAutoComplete(
     {
@@ -28,17 +30,21 @@ export const CreateDMForm = ({ onComplete }: { onComplete: () => void }) => {
     e.preventDefault()
 
     if (!dmUser) {
-      toast({ title: 'Select user to direct message', severity: 'error' })
+      return toast({
+        title: 'Select user to direct message',
+        severity: 'error',
+      })
     }
 
     try {
       const socket = getSocketIO()
 
       const result = await socket.emitWithAck('createMessage', {
-        receiverId: dmUser?.id,
+        receiverId: dmUser.id,
         text: `Hi`,
       })
       if (result.message) {
+        navigate(`/chat/direct/${dmUser.id}`)
         onComplete()
       } else if (result.error) {
         toast({
