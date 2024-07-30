@@ -3,12 +3,26 @@ import { Skeleton } from '@/components/Skeleton'
 import { IMessage } from '@/features/message/message.interface'
 import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
+import { isToday, isYesterday } from '@/utils/date'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { Fragment, useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useMessageSocketHandle } from '../hooks/useMessageSocketHandle'
 import { fetchMessages } from '../message.service'
 import { MessageActions } from './MessageActions'
 import { MessageItem } from './MessageItem'
+
+function getDateStampStr(date: Date) {
+  let dateStr = ''
+
+  if (isToday(date)) {
+    dateStr = 'Today'
+  } else if (isYesterday(date)) {
+    dateStr = 'Yesterday'
+  } else {
+    dateStr = date.toDateString()
+  }
+  return dateStr
+}
 
 interface MessageListProps {
   groupId?: number
@@ -75,6 +89,23 @@ export const MessageList = ({
 
   const resetMessageAction = useCallback(() => setMessageAnchor(null), [])
 
+  const dateWiseMessages = useMemo(() => {
+    const dateMessageMap: Record<string, IMessage[]> = {}
+    if (data?.pages[0].data.length) {
+      data.pages.forEach(page => {
+        page.data.forEach(message => {
+          const messageDate = new Date(message.createdAt)
+          const dateStr = getDateStampStr(messageDate)
+
+          dateMessageMap[dateStr] = (dateMessageMap[dateStr] || []).concat(
+            message,
+          )
+        })
+      })
+    }
+    return dateMessageMap
+  }, [data])
+
   let content
 
   if (error) {
@@ -84,21 +115,26 @@ export const MessageList = ({
       <Skeleton key={index} className='h-10' />
     ))
   } else if (data?.pages[0].data.length) {
-    content = data.pages.map((page, i) => (
-      <Fragment key={i}>
-        {page.data.map(message => (
-          <MessageItem
-            ref={ref => (messageRefs.current[message.id] = ref)}
-            key={message.id}
-            message={message}
-            isCurrentUser={message.senderId === auth?.id}
-            onMessageAction={handleMessageAction}
-            hasActionAnchor={message.id === messageAnchor?.message.id}
-            onReplyAction={onReplyAction}
-            scrollMessageIntoView={scrollIntoParentMessage}
-          />
-        ))}
-      </Fragment>
+    content = Object.keys(dateWiseMessages).map(dateStr => (
+      <div className='relative'>
+        <div className='top sticky top-0 z-10 mx-auto my-3 w-max rounded-full border bg-gray-600 p-2 px-4 text-sm font-semibold text-white shadow-md'>
+          {dateStr}
+        </div>
+        <div className='flex flex-col-reverse gap-2'>
+          {dateWiseMessages[dateStr].map(message => (
+            <MessageItem
+              ref={ref => (messageRefs.current[message.id] = ref)}
+              key={message.id}
+              message={message}
+              isCurrentUser={message.senderId === auth?.id}
+              onMessageAction={handleMessageAction}
+              hasActionAnchor={message.id === messageAnchor?.message.id}
+              onReplyAction={onReplyAction}
+              scrollMessageIntoView={scrollIntoParentMessage}
+            />
+          ))}
+        </div>
+      </div>
     ))
   } else if (isSuccess) {
     content = <Alert severity='info'>Be the first to message</Alert>

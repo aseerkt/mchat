@@ -1,25 +1,26 @@
+export const isToday = (date: Date) => {
+  const now = new Date()
+
+  return (
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  )
+}
+
+export const isYesterday = (date: Date) => {
+  const now = new Date()
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  return (
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear()
+  )
+}
 export const formateChatDate = (date: string | number | Date) => {
   const dateObj =
     typeof date === 'number' || typeof date === 'string' ? new Date(date) : date
-  const now = new Date()
-
-  const isToday = (date: Date) => {
-    return (
-      date.getDate() === now.getDate() &&
-      date.getMonth() === now.getMonth() &&
-      date.getFullYear() === now.getFullYear()
-    )
-  }
-
-  const isYesterday = (date: Date) => {
-    const yesterday = new Date(now)
-    yesterday.setDate(now.getDate() - 1)
-    return (
-      date.getDate() === yesterday.getDate() &&
-      date.getMonth() === yesterday.getMonth() &&
-      date.getFullYear() === yesterday.getFullYear()
-    )
-  }
 
   if (isToday(dateObj)) {
     return (
