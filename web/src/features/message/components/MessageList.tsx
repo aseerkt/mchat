@@ -98,7 +98,7 @@ export const MessageList = ({
     <main className='flex-1 overflow-hidden'>
       <div
         ref={listRef}
-        className='flex h-full flex-col-reverse justify-start gap-2 overflow-y-auto py-3'
+        className='flex h-full flex-col-reverse justify-start gap-2 overflow-y-auto scroll-smooth py-3'
       >
         {content}
         {scrollElement}

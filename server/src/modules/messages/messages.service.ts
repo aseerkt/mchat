@@ -1,5 +1,5 @@
 import { db } from '@/database'
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, getTableColumns, isNull } from 'drizzle-orm'
 import { groupsTable } from '../groups/groups.schema'
 import { checkPermission } from '../members/members.service'
 import { usersTable } from '../users/users.schema'
@@ -18,12 +18,27 @@ export const insertMessage = async ({
   senderId: number
   parentMessageId?: number
 }) => {
-  let chatName = ''
   if (groupId) {
     const { isAllowed } = await checkPermission(groupId, senderId, 'member')
     if (!isAllowed) {
       throw new Error('createMessage: Not authorized')
     }
+  }
+
+  const [message] = await db
+    .insert(messagesTable)
+    .values({
+      groupId,
+      receiverId,
+      content,
+      senderId,
+      parentMessageId,
+    })
+    .returning()
+
+  let chatName = ''
+
+  if (groupId) {
     const [group] = await db
       .select({ name: groupsTable.name })
       .from(groupsTable)
@@ -39,17 +54,22 @@ export const insertMessage = async ({
     chatName = receiver.username
   }
 
-  const [message] = await db
-    .insert(messagesTable)
-    .values({
-      groupId,
-      receiverId,
-      content,
-      senderId,
-      parentMessageId,
-    })
-    .returning()
-  return { ...message, chatName }
+  let parentMessage
+
+  if (message.parentMessageId) {
+    const result = await db
+      .select({
+        ...getTableColumns(messagesTable),
+        username: usersTable.username,
+      })
+      .from(messagesTable)
+      .where(eq(messagesTable.id, message.parentMessageId))
+      .innerJoin(usersTable, eq(usersTable.id, messagesTable.senderId))
+      .limit(1)
+    parentMessage = result[0]
+  }
+
+  return { ...message, chatName, parentMessage }
 }
 
 export const markMessageAsRead = async (
