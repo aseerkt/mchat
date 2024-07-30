@@ -110,7 +110,7 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
           <button
             onClick={() => onReplyAction(message)}
             aria-label='reply to message'
-            className='invisible h-10 rounded-full px-2 hover:bg-gray-100 group-hover/block:visible'
+            className='invisible h-10 rounded-full px-2 hover:bg-gray-200 group-hover/block:visible'
           >
             <Reply
               size={32}

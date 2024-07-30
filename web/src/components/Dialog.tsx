@@ -17,9 +17,9 @@ export const Dialog = ({ isOpen, onClose, children }: DialogProps) => {
   return isOpen
     ? createPortal(
         <div
-          aria-label='dialog_overlay'
+          aria-label='dialog_overlay '
           className={cn(
-            'fixed top-0 flex h-screen w-screen items-center justify-center bg-black bg-opacity-80',
+            'fixed top-0 z-30 flex h-screen w-screen items-center justify-center bg-black bg-opacity-80',
             !isOpen && 'hidden',
           )}
         >

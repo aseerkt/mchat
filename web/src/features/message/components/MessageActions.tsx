@@ -73,7 +73,7 @@ export const MessageActions = ({
         }}
         className='min-w-[120px]'
         role='menu'
-        onClickAway={onClose}
+        onBlur={onClose}
       >
         <MenuItem onSelect={openInfoDialog}>Info</MenuItem>
         <MenuItem onSelect={confirmDelete}>Delete</MenuItem>

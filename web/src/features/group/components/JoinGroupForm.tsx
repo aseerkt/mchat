@@ -1,6 +1,4 @@
 import { Button } from '@/components/Button'
-import { Dialog } from '@/components/Dialog'
-import { useDisclosure } from '@/hooks/useDisclosure'
 import { useToast } from '@/hooks/useToast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -8,22 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { joinGroups } from '../group.service'
 import { JoinGroupList } from './JoinGroupList'
 
-export const JoinGroup = () => {
-  const { isOpen, toggle } = useDisclosure()
-
-  return (
-    <>
-      <Button className='min-w-fit' onClick={toggle}>
-        Join group
-      </Button>
-      <Dialog isOpen={isOpen} onClose={toggle}>
-        <JoinGroupsForm onClose={toggle} />
-      </Dialog>
-    </>
-  )
-}
-
-const JoinGroupsForm = ({ onClose }: { onClose: () => void }) => {
+export const JoinGroupsForm = ({ onComplete }: { onComplete: () => void }) => {
   const { toast } = useToast()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -36,7 +19,7 @@ const JoinGroupsForm = ({ onClose }: { onClose: () => void }) => {
         toast({ title: 'Joined groups successfully', severity: 'success' })
         queryClient.invalidateQueries({ queryKey: ['userGroups'] })
         queryClient.invalidateQueries({ queryKey: ['groupsToJoin'] })
-        onClose()
+        onComplete()
       }
     },
     onError: error => {

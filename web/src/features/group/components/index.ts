@@ -1,4 +1,4 @@
-export { CreateGroup } from './CreateGroup'
-export { JoinGroup } from './JoinGroup'
+export { CreateGroupForm } from './CreateGroupForm'
+export { JoinGroupsForm } from './JoinGroupForm'
 export { UserChatItem as UserGroupItem } from './UserChatItem'
 export { UserChatList as UserGroupList } from './UserChatList'

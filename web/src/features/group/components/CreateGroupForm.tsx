@@ -1,21 +1,17 @@
 import { Button } from '@/components/Button'
-import { Dialog } from '@/components/Dialog'
 import { Input } from '@/components/Input'
 import { UserAutoComplete } from '@/features/user/components'
 import { useUsersSelect } from '@/features/user/hooks/useUsersSelect'
-import { useAutoFocus } from '@/hooks/useAutoFocus'
-import { useDisclosure } from '@/hooks/useDisclosure'
 import { useToast } from '@/hooks/useToast'
 import { useMutation } from '@tanstack/react-query'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createNewGroup } from '../group.service'
 
-const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
+export const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
   const [name, setName] = useState('')
   const { toast } = useToast()
   const navigate = useNavigate()
-  const inputRef = useRef<HTMLInputElement>(null)
   const userSelectProps = useUsersSelect()
 
   const { mutate: createGroup, isPending } = useMutation({
@@ -31,8 +27,6 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
       toast({ title: (error as Error).message, severity: 'error' })
     },
   })
-
-  useAutoFocus(inputRef, [])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -53,7 +47,6 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
     <form onSubmit={handleSubmit} className='w-full'>
       <h4 className='mb-3 text-xl font-semibold'>Create group</h4>
       <Input
-        ref={inputRef}
         name='name'
         value={name}
         label='Group name'
@@ -65,20 +58,5 @@ const CreateGroupForm = ({ onComplete }: { onComplete: () => void }) => {
       </div>
       <Button disabled={isPending}>Create</Button>
     </form>
-  )
-}
-
-export const CreateGroup = () => {
-  const { isOpen, toggle } = useDisclosure()
-
-  return (
-    <>
-      <Button variant='secondary' className='min-w-fit' onClick={toggle}>
-        New group
-      </Button>
-      <Dialog isOpen={isOpen} onClose={toggle}>
-        <CreateGroupForm onComplete={toggle} />
-      </Dialog>
-    </>
   )
 }

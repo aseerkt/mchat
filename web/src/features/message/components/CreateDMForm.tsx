@@ -1,16 +1,14 @@
 import { AutoComplete } from '@/components/AutoComplete'
 import { Button } from '@/components/Button'
 import Chip from '@/components/Chip'
-import { Dialog } from '@/components/Dialog'
 import { IUser } from '@/features/user/user.interface'
 import { fetchUsers } from '@/features/user/user.service'
-import { useDisclosure } from '@/hooks/useDisclosure'
 import { useQueryAutoComplete } from '@/hooks/useQueryAutoComplete'
 import { useToast } from '@/hooks/useToast'
 import { getSocketIO } from '@/utils/socket'
 import { useState } from 'react'
 
-const CreateDMForm = ({ onComplete }: { onComplete: () => void }) => {
+export const CreateDMForm = ({ onComplete }: { onComplete: () => void }) => {
   const { toast } = useToast()
   const [dmUser, setDmUser] = useState<IUser>()
   const { suggestions, ...autoComplete } = useQueryAutoComplete(
@@ -74,20 +72,5 @@ const CreateDMForm = ({ onComplete }: { onComplete: () => void }) => {
       </div>
       <Button>Say hi</Button>
     </form>
-  )
-}
-
-export const CreateDM = () => {
-  const { isOpen, open, close } = useDisclosure()
-
-  return (
-    <>
-      <Button title='New direct message' onClick={open}>
-        New DM
-      </Button>
-      <Dialog isOpen={isOpen} onClose={close}>
-        <CreateDMForm onComplete={close} />
-      </Dialog>
-    </>
   )
 }

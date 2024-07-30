@@ -1,4 +1,5 @@
 import { cva, VariantProps } from 'cva'
+import { forwardRef } from 'react'
 import { cn } from '../utils/style'
 
 const buttonVariants = cva(
@@ -63,17 +64,14 @@ const buttonVariants = cva(
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants>
 
-export const Button = ({
-  className,
-  variant,
-  size,
-  color,
-  ...props
-}: ButtonProps) => {
-  return (
-    <button
-      className={cn(buttonVariants({ variant, size, color }), className)}
-      {...props}
-    />
-  )
-}
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, color, ...props }, ref) => {
+    return (
+      <button
+        ref={ref}
+        className={cn(buttonVariants({ variant, size, color }), className)}
+        {...props}
+      />
+    )
+  },
+)
