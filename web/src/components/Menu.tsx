@@ -153,7 +153,7 @@ export const Menu = <T extends HTMLElement>({
       role='listbox'
       {...props}
       style={{ ...menuStyles, ...style }}
-      className={cn('fixed rounded border bg-white shadow', className)}
+      className={cn('absolute z-30 rounded border bg-white shadow', className)}
     >
       {children}
     </ul>,
@@ -194,8 +194,8 @@ export const MenuItem = ({
         }
       }}
       className={cn(
-        'cursor-pointer px-2 py-1 hover:bg-gray-400',
-        isSelected && 'bg-gray-300',
+        'inline-flex min-h-10 w-full cursor-pointer items-center border-b px-2 py-1 last:border-none hover:bg-gray-300',
+        isSelected && 'bg-gray-200',
         isDisabled && 'cursor-not-allowed text-gray-400',
         isHighlighted && 'bg-gray-400',
         className,

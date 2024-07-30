@@ -63,7 +63,7 @@ export const AutoComplete = <
     content = (
       <Menu
         id='suggestion-list'
-        className='z-10 overflow-hidden rounded-md'
+        className='overflow-hidden rounded-md'
         anchorRef={wrapperRef}
         anchorFullWidth
         role='listbox'
