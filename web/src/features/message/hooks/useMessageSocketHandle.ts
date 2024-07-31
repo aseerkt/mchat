@@ -8,11 +8,11 @@ import { IMessage, TMessageInfiniteData } from '../message.interface'
 export const useMessageSocketHandle = ({
   groupId,
   partnerId,
-  afterNewMessage,
+  onAfterNewMessage,
 }: {
   groupId?: number
   partnerId?: number
-  afterNewMessage: () => void
+  onAfterNewMessage: (message: IMessage) => void
 }) => {
   const queryClient = useQueryClient()
   const { auth } = useAuth()
@@ -50,7 +50,7 @@ export const useMessageSocketHandle = ({
           draft.pages[0].data.unshift(message)
         })
       })
-      afterNewMessage()
+      onAfterNewMessage(message)
 
       if (
         message.receiverId === auth?.id ||

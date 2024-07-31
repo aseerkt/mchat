@@ -1,4 +1,3 @@
-import { formateChatDate } from '@/utils/date'
 import { cn, stringToColor } from '@/utils/style'
 import { Check, CircleSlash, Ellipsis, Reply } from 'lucide-react'
 import { forwardRef, useRef } from 'react'
@@ -36,14 +35,14 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
         role='listitem'
         tabIndex={0}
         className={cn(
-          'group/block flex w-full items-center gap-4 px-3 py-1 hover:bg-gray-100',
+          'group/block flex w-full items-center gap-4 px-3 py-1 outline-none hover:bg-gray-100',
           isCurrentUser && 'flex-row-reverse',
         )}
       >
         <div className='relative' style={{ maxWidth: 'calc(100% - 2rem)' }}>
           <div
             className={cn(
-              'rounded-lg border px-3 py-2 shadow group-focus-within/block:ring group-focus/block:ring',
+              'min-w-36 rounded-lg border p-2 pb-1 shadow group-focus-within/block:ring group-focus/block:ring',
               isCurrentUser && 'bg-cyan-100',
               message.isDeleted && 'bg-gray-100',
             )}
@@ -82,9 +81,13 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
               )}
               <p>{message.content}</p>
             </div>
-            <div className='inline-flex w-full items-center justify-end gap-2 text-xs'>
+            <div className='inline-flex w-full items-center justify-end gap-1 text-xs'>
               <small className='text-gray-500'>
-                {formateChatDate(message.createdAt)}
+                {new Date(message.createdAt).toLocaleTimeString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                })}
               </small>
               {isCurrentUser && <Check size={14} className='text-gray-500' />}
             </div>

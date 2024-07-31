@@ -39,11 +39,7 @@ export const formateChatDate = (date: string | number | Date) => {
       })
     )
   } else {
-    return dateObj.toLocaleDateString([], {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    }) // e.g., "June 18, 2023"
+    return dateObj.toTimeString() // e.g., "June 18, 2023"
   }
 }
 

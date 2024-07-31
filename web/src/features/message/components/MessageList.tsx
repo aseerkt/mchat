@@ -2,14 +2,18 @@ import { Alert } from '@/components/Alert'
 import { Skeleton } from '@/components/Skeleton'
 import { IMessage } from '@/features/message/message.interface'
 import { useAuth } from '@/hooks/useAuth'
+import { useDisclosure } from '@/hooks/useDisclosure'
 import { useInView } from '@/hooks/useInView'
 import { isToday, isYesterday } from '@/utils/date'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { ArrowDown } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useMessageSocketHandle } from '../hooks/useMessageSocketHandle'
 import { fetchMessages } from '../message.service'
 import { MessageActions } from './MessageActions'
 import { MessageItem } from './MessageItem'
+
+const MESSAGE_LIST_OFFSET = -200
 
 function getDateStampStr(date: Date) {
   let dateStr = ''
@@ -57,20 +61,59 @@ export const MessageList = ({
         lastPage.cursor ? lastPage.cursor : undefined,
     })
 
-  const listRef = useRef<HTMLDivElement>(null)
+  const dateWiseMessages = useMemo(() => {
+    const dateMessageMap: Record<string, IMessage[]> = {}
+    if (data?.pages[0].data.length) {
+      data.pages.forEach(page => {
+        page.data.forEach(message => {
+          const messageDate = new Date(message.createdAt)
+          const dateStr = getDateStampStr(messageDate)
+
+          dateMessageMap[dateStr] = (dateMessageMap[dateStr] || []).concat(
+            message,
+          )
+        })
+      })
+    }
+    return dateMessageMap
+  }, [data])
+
+  const listRef = useRef<HTMLUListElement>(null)
+  const {
+    isOpen: hasNewMessage,
+    open: showNewMessageBtn,
+    close: hideNewMessageBtn,
+  } = useDisclosure()
 
   const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 
   const scrollToBottom = () => {
-    setTimeout(() => {
-      listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
-    }, 100)
+    listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
+  }
+
+  function handleAfterNewMessage(message: IMessage) {
+    if (!listRef.current) return
+
+    if (
+      message.senderId === auth?.id ||
+      listRef.current.scrollTop > MESSAGE_LIST_OFFSET
+    ) {
+      setTimeout(scrollToBottom, 100)
+    } else if (!hasNewMessage) {
+      showNewMessageBtn()
+    }
+  }
+
+  function handleListScroll() {
+    if (listRef.current!.scrollTop > MESSAGE_LIST_OFFSET && hasNewMessage) {
+      hideNewMessageBtn()
+    }
   }
 
   useMessageSocketHandle({
     groupId,
     partnerId,
-    afterNewMessage: scrollToBottom,
+    onAfterNewMessage: handleAfterNewMessage,
   })
 
   const scrollIntoParentMessage = useCallback((messageId: number) => {
@@ -89,23 +132,6 @@ export const MessageList = ({
 
   const resetMessageAction = useCallback(() => setMessageAnchor(null), [])
 
-  const dateWiseMessages = useMemo(() => {
-    const dateMessageMap: Record<string, IMessage[]> = {}
-    if (data?.pages[0].data.length) {
-      data.pages.forEach(page => {
-        page.data.forEach(message => {
-          const messageDate = new Date(message.createdAt)
-          const dateStr = getDateStampStr(messageDate)
-
-          dateMessageMap[dateStr] = (dateMessageMap[dateStr] || []).concat(
-            message,
-          )
-        })
-      })
-    }
-    return dateMessageMap
-  }, [data])
-
   let content
 
   if (error) {
@@ -116,11 +142,11 @@ export const MessageList = ({
     ))
   } else if (data?.pages[0].data.length) {
     content = Object.keys(dateWiseMessages).map(dateStr => (
-      <div className='relative' key={dateStr}>
+      <li className='relative' key={dateStr}>
         <div className='top sticky top-0 z-10 mx-auto my-3 w-max rounded-lg border bg-gray-500 px-2 py-1 text-xs font-semibold text-white shadow-md'>
           {dateStr}
         </div>
-        <div className='flex flex-col-reverse gap-2'>
+        <ul className='flex flex-col-reverse gap-2'>
           {dateWiseMessages[dateStr].map(message => (
             <MessageItem
               key={message.id}
@@ -133,18 +159,20 @@ export const MessageList = ({
               scrollMessageIntoView={scrollIntoParentMessage}
             />
           ))}
-        </div>
-      </div>
+        </ul>
+      </li>
     ))
   } else if (isSuccess) {
     content = <Alert severity='info'>Be the first to message</Alert>
   }
 
   return (
-    <main className='flex-1 overflow-hidden'>
-      <div
+    <main className='relative flex-1 overflow-hidden'>
+      <ul
+        id='message-list'
         ref={listRef}
-        className='flex h-full flex-col-reverse justify-start gap-2 overflow-y-auto scroll-smooth py-3'
+        className='relative flex h-full flex-col-reverse justify-start gap-2 overflow-y-auto scroll-smooth py-3'
+        onScroll={handleListScroll}
       >
         {content}
         {scrollElement}
@@ -155,7 +183,16 @@ export const MessageList = ({
             onClose={resetMessageAction}
           />
         )}
-      </div>
+      </ul>
+      {hasNewMessage && (
+        <button
+          className='absolute inset-x-0 bottom-5 z-10 mx-auto inline-flex w-fit animate-bounce items-center gap-2 rounded-full bg-blue-950 py-1 pl-2 pr-3 text-sm text-white shadow-lg ring'
+          onClick={scrollToBottom}
+        >
+          <ArrowDown size={12} />
+          New message
+        </button>
+      )}
     </main>
   )
 }
