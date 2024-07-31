@@ -20,7 +20,7 @@ export const useKeyboardListNavigation = ({
   const resetHighlightedIndex = useCallback(() => setHighlightedIndex(-1), [])
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
+    (e: KeyboardEvent) => {
       e.stopPropagation()
 
       if (!listLength) return

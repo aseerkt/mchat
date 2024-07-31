@@ -24,7 +24,6 @@ export const useQueryAutoComplete = <
   const [inputValue, setInputValue] = useState('')
   const search = useDebounce(inputValue)
 
-  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
   const {
     isOpen: isDropdownVisible,
     open: openDropdown,
@@ -68,43 +67,15 @@ export const useQueryAutoComplete = <
     setInputValue('')
     onSelect(suggestion)
     closeDropdown()
-    setHighlightedIndex(-1)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      e.stopPropagation()
-      if (suggestions && suggestions.length > 0) {
-        if (e.key === 'ArrowDown') {
-          setHighlightedIndex(prevIndex =>
-            prevIndex === suggestions.length - 1 ? 0 : prevIndex + 1,
-          )
-          openDropdown()
-        } else if (e.key === 'ArrowUp') {
-          setHighlightedIndex(prevIndex =>
-            prevIndex === 0 ? suggestions.length - 1 : prevIndex - 1,
-          )
-          openDropdown()
-        } else if (e.key === 'Enter' && highlightedIndex >= 0) {
-          handleSelect(suggestions[highlightedIndex])
-        } else if (e.key === 'Tab') {
-          closeDropdown()
-        }
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [highlightedIndex, suggestions],
-  )
 
   return {
     inputValue,
     handleInputChange,
     handleInputBlur,
-    handleKeyDown,
     isDropdownVisible,
     handleSelect,
-    highlightedIndex,
     suggestions,
     isFetching,
     isError,

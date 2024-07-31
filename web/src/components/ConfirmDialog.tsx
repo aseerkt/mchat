@@ -22,12 +22,12 @@ export const ConfirmDialogProvider = ({
   const [state, setState] = useState<ConfirmDialogState | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const confirm = useCallback(
-    (state: ConfirmDialogState) => setState(state),
-    [],
-  )
-
   const closeConfirm = useCallback(() => setState(null), [])
+  const confirm = useCallback((state: ConfirmDialogState) => {
+    setState(state)
+    return closeConfirm
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

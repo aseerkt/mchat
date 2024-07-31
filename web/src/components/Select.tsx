@@ -1,5 +1,4 @@
 import { useDisclosure } from '@/hooks/useDisclosure'
-import { useKeyboardListNavigation } from '@/hooks/useKeyboardListNavigation'
 import { cn } from '@/utils/style'
 import { useRef } from 'react'
 import { Menu, MenuItem } from './Menu'
@@ -28,13 +27,6 @@ export const Select = <TValue extends number | string>(props: {
   const { isOpen, toggle, close } = useDisclosure()
   const anchorRef = useRef<HTMLDivElement>(null)
 
-  const { handleKeyDown, highlightedIndex } = useKeyboardListNavigation({
-    listLength: options.length,
-    onEnter(highlightedIndex) {
-      handleSelect(options[highlightedIndex])
-    },
-  })
-
   const handleSelect = (option: (typeof options)[0]) => {
     if (!option.disabled || option.value === value) {
       onSelect(option.value)
@@ -51,7 +43,6 @@ export const Select = <TValue extends number | string>(props: {
       )}
       onClick={toggle}
       onBlur={close}
-      onKeyDown={handleKeyDown}
       role='combobox'
       aria-disabled={disabled}
       ref={anchorRef}
@@ -71,8 +62,15 @@ export const Select = <TValue extends number | string>(props: {
         </span>
       </div>
       {isOpen && !disabled && (
-        <Menu anchorRef={anchorRef} anchorFullWidth role='listbox'>
-          {options.map((option, index) => (
+        <Menu
+          anchorRef={anchorRef}
+          anchorFullWidth
+          role='listbox'
+          onEnter={highlightedIndex => {
+            handleSelect(options[highlightedIndex])
+          }}
+        >
+          {options.map(option => (
             <MenuItem
               key={option.value}
               role='option'
@@ -81,7 +79,6 @@ export const Select = <TValue extends number | string>(props: {
               }}
               isSelected={option.value === value}
               isDisabled={option.disabled}
-              isHighlighted={highlightedIndex === index}
             >
               {option.label}
             </MenuItem>

@@ -1,6 +1,6 @@
 export const debounce = <TFnArgs extends unknown[], TFnResult>(
   fn: (...args: TFnArgs) => TFnResult,
-  ms: number,
+  ms = 300,
 ): ((...args: TFnArgs) => void) => {
   let timeout: NodeJS.Timeout | null = null
 

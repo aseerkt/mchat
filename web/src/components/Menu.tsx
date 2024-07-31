@@ -1,6 +1,8 @@
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { useKeyboardListNavigation } from '@/hooks/useKeyboardListNavigation'
+import { debounce } from '@/utils/lodash'
 import { cn } from '@/utils/style'
-import { useEffect, useRef, useState } from 'react'
+import { Children, cloneElement, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 type MenuVerticalPosition = 'top' | 'center' | 'bottom'
@@ -113,18 +115,33 @@ export const Menu = <T extends HTMLElement>({
   anchorOrigin = { vertical: 'bottom', horizontal: 'left' },
   transformOrigin = { vertical: 'top', horizontal: 'left' },
   anchorFullWidth = false,
+  onArrowUp,
+  onArrowDown,
+  onEscape,
+  onEnter,
+  onTab,
+
   ...props
-}: React.HTMLAttributes<HTMLUListElement> & {
-  anchorRef: React.RefObject<T>
-  anchorOrigin?: MenuOrigin
-  transformOrigin?: MenuOrigin
-  anchorFullWidth?: boolean
-  onBlur?: () => void
-}) => {
+}: React.HTMLAttributes<HTMLUListElement> &
+  Omit<Parameters<typeof useKeyboardListNavigation>[0], 'listLength'> & {
+    anchorRef: React.RefObject<T>
+    anchorOrigin?: MenuOrigin
+    transformOrigin?: MenuOrigin
+    anchorFullWidth?: boolean
+    onBlur?: () => void
+  }) => {
   const menuRef = useRef<HTMLUListElement>(null)
   const [menuStyles, setMenuStyles] = useState<React.CSSProperties>(
     getMenuStyles(anchorRef, anchorOrigin, transformOrigin, anchorFullWidth),
   )
+  const { highlightedIndex, handleKeyDown } = useKeyboardListNavigation({
+    listLength: Children.count(children),
+    onArrowUp,
+    onArrowDown,
+    onEscape,
+    onEnter,
+    onTab,
+  })
 
   useClickOutside(menuRef, props.onBlur)
 
@@ -132,7 +149,7 @@ export const Menu = <T extends HTMLElement>({
     if (!anchorRef.current) return
 
     disableScroll()
-    function updateMenuStyles() {
+    const updateMenuStyles = debounce(() => {
       setMenuStyles(
         getMenuStyles(
           anchorRef,
@@ -141,12 +158,16 @@ export const Menu = <T extends HTMLElement>({
           anchorFullWidth,
         ),
       )
-    }
+    })
+
     window.addEventListener('resize', updateMenuStyles)
+    const anchor = anchorRef.current
+    anchor.addEventListener('keydown', handleKeyDown)
 
     return () => {
       enableScroll()
       window.removeEventListener('resize', updateMenuStyles)
+      anchor?.removeEventListener('keydown', handleKeyDown)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anchorRef])
@@ -154,13 +175,16 @@ export const Menu = <T extends HTMLElement>({
   return createPortal(
     <ul
       ref={menuRef}
-      tabIndex={0}
       role='listbox'
       {...props}
       style={{ ...menuStyles, ...style }}
       className={cn('absolute z-30 rounded border bg-white shadow', className)}
     >
-      {children}
+      {Children.map(children, (child, index) =>
+        cloneElement(child as React.ReactElement<MenuItemProps>, {
+          isHighlighted: index === highlightedIndex,
+        }),
+      )}
     </ul>,
     document.body,
   )
@@ -172,8 +196,8 @@ type MenuItemProps = Omit<
 > & {
   onSelect: () => void
   isSelected?: boolean
-  isHighlighted?: boolean
   isDisabled?: boolean
+  isHighlighted?: boolean
 }
 
 export const MenuItem = ({
@@ -181,8 +205,8 @@ export const MenuItem = ({
   className,
   onSelect,
   isSelected = false,
-  isHighlighted = false,
   isDisabled = false,
+  isHighlighted,
   ...props
 }: MenuItemProps) => {
   return (
@@ -190,7 +214,7 @@ export const MenuItem = ({
       role='option'
       aria-selected={isSelected}
       aria-disabled={isDisabled}
-      tabIndex={-1}
+      tabIndex={-1} // keyboard arrow up/down instead of tab
       {...props}
       onMouseDown={e => {
         e.stopPropagation()
@@ -199,7 +223,7 @@ export const MenuItem = ({
         }
       }}
       className={cn(
-        'inline-flex min-h-10 w-full cursor-pointer items-center border-b px-2 py-1 last:border-none hover:bg-gray-300',
+        'inline-flex min-h-10 w-full cursor-pointer items-center border-b px-2 py-1 text-sm last:border-none hover:bg-gray-300',
         isSelected && 'bg-gray-200',
         isDisabled && 'cursor-not-allowed text-gray-400',
         isHighlighted && 'bg-gray-400',

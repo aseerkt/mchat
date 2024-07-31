@@ -11,9 +11,7 @@ type AutoCompleteProps<TSuggestion, TError> = {
   children: React.ReactNode
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleSelect: (suggestion: TSuggestion) => void
-  handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
   handleInputBlur: (e: React.FocusEvent<HTMLInputElement>) => void
-  highlightedIndex: number
   isFetching: boolean
   isError: boolean
   placeholder?: string
@@ -32,9 +30,7 @@ export const AutoComplete = <
   children,
   handleInputChange,
   handleSelect,
-  handleKeyDown,
   handleInputBlur,
-  highlightedIndex,
   isFetching,
   isError,
   error,
@@ -67,12 +63,14 @@ export const AutoComplete = <
         anchorRef={wrapperRef}
         anchorFullWidth
         role='listbox'
+        onEnter={highlightedIndex =>
+          handleSelect(suggestions[highlightedIndex])
+        }
       >
-        {suggestions.map((suggestion, index) => (
+        {suggestions.map(suggestion => (
           <MenuItem
             key={suggestion.id}
             role='option'
-            isHighlighted={highlightedIndex === index}
             onSelect={() => handleSelect(suggestion)}
           >
             {suggestion[suggestionLabel] as string}
@@ -107,11 +105,9 @@ export const AutoComplete = <
             placeholder={placeholder}
             value={inputValue}
             onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
             onBlur={handleInputBlur}
             aria-autocomplete='list'
             aria-controls='suggestion-list'
-            aria-activedescendant={`suggestion-${highlightedIndex}`}
           />
         </div>
         {content}

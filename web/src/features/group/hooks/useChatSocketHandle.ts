@@ -79,6 +79,7 @@ export const useChatSocketHandle = () => {
         const updatedData = produce(data, draft => {
           draft.pages[0].data.unshift({
             ...group,
+            groupId: group.id,
             chatName: group.name,
             lastActivity: group.createdAt,
             unreadCount: 0,

@@ -116,15 +116,15 @@ export const MessageList = ({
     ))
   } else if (data?.pages[0].data.length) {
     content = Object.keys(dateWiseMessages).map(dateStr => (
-      <div className='relative'>
-        <div className='top sticky top-0 z-10 mx-auto my-3 w-max rounded-lg border bg-gray-500 px-4 py-2 text-sm font-semibold text-white shadow-md'>
+      <div className='relative' key={dateStr}>
+        <div className='top sticky top-0 z-10 mx-auto my-3 w-max rounded-lg border bg-gray-500 px-2 py-1 text-xs font-semibold text-white shadow-md'>
           {dateStr}
         </div>
         <div className='flex flex-col-reverse gap-2'>
           {dateWiseMessages[dateStr].map(message => (
             <MessageItem
-              ref={ref => (messageRefs.current[message.id] = ref)}
               key={message.id}
+              ref={ref => (messageRefs.current[message.id] = ref)}
               message={message}
               isCurrentUser={message.senderId === auth?.id}
               onMessageAction={handleMessageAction}

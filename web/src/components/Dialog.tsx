@@ -1,7 +1,4 @@
-import { useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useClickOutside } from '../hooks/useClickOutside'
-import { cn } from '../utils/style'
 
 interface DialogProps {
   isOpen: boolean
@@ -10,26 +7,25 @@ interface DialogProps {
 }
 
 export const Dialog = ({ isOpen, onClose, children }: DialogProps) => {
-  const dialogRef = useRef<HTMLDivElement>(null)
-
-  useClickOutside(dialogRef, onClose)
-
   return isOpen
     ? createPortal(
-        <div
-          aria-label='dialog_overlay '
-          className={cn(
-            'fixed top-0 z-20 flex h-screen w-screen items-center justify-center bg-black bg-opacity-80',
-            !isOpen && 'hidden',
-          )}
-        >
+        <div role='presentation' className='fixed inset-0 z-10'>
           <div
-            ref={dialogRef}
-            role='dialog'
-            aria-modal='true'
-            className='border-3 my-auto min-h-60 w-full max-w-[500px] shrink-0 rounded bg-white p-6 shadow-md'
+            aria-hidden='true'
+            className='fixed inset-0 bg-black bg-opacity-80'
+            onClick={onClose}
+          ></div>
+          <div
+            role='presentation'
+            className='flex h-full w-full items-center justify-center'
           >
-            {children}
+            <div
+              role='dialog'
+              aria-modal='true'
+              className='z-20 min-h-60 w-full max-w-[500px] shrink-0 rounded border bg-white p-6 shadow-md'
+            >
+              {children}
+            </div>
           </div>
         </div>,
         document.body,
