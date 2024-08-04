@@ -5,10 +5,10 @@ const orderedId = (id1: number, id2: number, separator = ':') =>
   [id1, id2].sort().join(separator)
 
 export const roomKeys = {
-  GROUP_KEY: (groupId: number) => `group:${groupId}`,
-  CURRENT_GROUP_KEY: (groupId: number) =>
+  GROUP_KEY: (groupId: number | string) => `group:${groupId}`,
+  CURRENT_GROUP_KEY: (groupId: number | string) =>
     `${currentGroupRoomPrefix}:${groupId}`,
   CURRENT_DM_KEY: (senderId: number, receiverId: number) =>
     `${currentDmRoomPrefix}:${orderedId(senderId, receiverId)}`,
-  USER_KEY: (userId: number) => `user:${userId}`,
+  USER_KEY: (userId: number | string) => `user:${userId}`,
 }

@@ -35,6 +35,7 @@ import {
 } from '../messages/messages.schema'
 import { usersTable } from '../users/users.schema'
 import { groupsTable } from './groups.schema'
+import { handleMemberDelete } from './groups.service'
 
 // CREATE
 
@@ -452,9 +453,13 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
       await deleteGroupRoles(groupId)
     })
 
-    // TODO: send socket io event to kick active members away from group
     const io = req.app.get('io') as TypedIOServer
-    io.to(req.params.groupId).emit('groupDeleted', groupId)
+    io.to(roomKeys.GROUP_KEY(groupId)).emit('groupDeleted', groupId)
+    const roomsToDelete = [
+      roomKeys.GROUP_KEY(groupId),
+      roomKeys.CURRENT_GROUP_KEY(groupId),
+    ]
+    io.in(roomsToDelete).socketsLeave(roomsToDelete)
 
     res.json({ message: 'Group deleted' })
   } catch (error) {
@@ -498,13 +503,7 @@ export const leaveGroup: RequestHandler = async (req, res, next) => {
         )
       await deleteMemberRole(groupId, req.user!.id)
     })
-    // TODO: send socket io event to existing members
-    const io = req.app.get('io') as TypedIOServer
-
-    io.to(req.params.memberId).emit('memberLeft', {
-      memberId: req.user!.id,
-      groupId,
-    })
+    handleMemberDelete(req, groupId, req.user!.id)
 
     res.json({ message: 'Left the room successfully' })
   } catch (error) {
@@ -528,10 +527,7 @@ export const kickMember: RequestHandler = async (req, res, next) => {
         ),
       )
     await deleteMemberRole(groupId, memberId)
-    // TODO: send socket io event to kicked member as well existing members
-    const io = req.app.get('io') as TypedIOServer
-
-    io.to(req.params.memberId).emit('memberLeft', { memberId, groupId })
+    handleMemberDelete(req, groupId, memberId)
 
     res.json({ message: 'Kicked member successfully' })
   } catch (error) {
