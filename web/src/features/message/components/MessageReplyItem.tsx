@@ -11,7 +11,7 @@ export const MessageReplyItem = ({
   isDeleted?: boolean
 }) => {
   return (
-    <div className='flex flex-1 gap-2 overflow-hidden rounded-md border bg-gray-100 pr-3 shadow-inner'>
+    <div className='flex flex-1 gap-2 overflow-hidden rounded-md border bg-gray-100 pr-2 shadow-inner'>
       <div className='min-h-full w-1 bg-gray-500'></div>
       <div className='py-2'>
         <b style={{ color: stringToColor(username).bgColor }}>{username}</b>

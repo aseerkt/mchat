@@ -18,29 +18,18 @@ export const isYesterday = (date: Date) => {
     date.getFullYear() === yesterday.getFullYear()
   )
 }
-export const formateChatDate = (date: string | number | Date) => {
-  const dateObj =
-    typeof date === 'number' || typeof date === 'string' ? new Date(date) : date
 
-  if (isToday(dateObj)) {
-    return (
-      'Today ' +
-      dateObj.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    ) // e.g., "14:23"
-  } else if (isYesterday(dateObj)) {
-    return (
-      'Yesterday ' +
-      dateObj.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    )
+export function getDateStampStr(date: Date) {
+  let dateStr = ''
+
+  if (isToday(date)) {
+    dateStr = 'Today'
+  } else if (isYesterday(date)) {
+    dateStr = 'Yesterday'
   } else {
-    return dateObj.toTimeString() // e.g., "June 18, 2023"
+    dateStr = date.toDateString()
   }
+  return dateStr
 }
 
 export const formatGroupDate = (date: string | number | Date) => {

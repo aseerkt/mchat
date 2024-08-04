@@ -2,9 +2,8 @@ import { Alert } from '@/components/Alert'
 import { Skeleton } from '@/components/Skeleton'
 import { IMessage } from '@/features/message/message.interface'
 import { useAuth } from '@/hooks/useAuth'
-import { useDisclosure } from '@/hooks/useDisclosure'
 import { useInView } from '@/hooks/useInView'
-import { isToday, isYesterday } from '@/utils/date'
+import { getDateStampStr } from '@/utils/date'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { ArrowDown } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -12,21 +11,6 @@ import { useMessageSocketHandle } from '../hooks/useMessageSocketHandle'
 import { fetchMessages } from '../message.service'
 import { MessageActions } from './MessageActions'
 import { MessageItem } from './MessageItem'
-
-const MESSAGE_LIST_OFFSET = -200
-
-function getDateStampStr(date: Date) {
-  let dateStr = ''
-
-  if (isToday(date)) {
-    dateStr = 'Today'
-  } else if (isYesterday(date)) {
-    dateStr = 'Yesterday'
-  } else {
-    dateStr = date.toDateString()
-  }
-  return dateStr
-}
 
 interface MessageListProps {
   groupId?: number
@@ -79,42 +63,15 @@ export const MessageList = ({
   }, [data])
 
   const listRef = useRef<HTMLUListElement>(null)
-  const {
-    isOpen: hasNewMessage,
-    open: showNewMessageBtn,
-    close: hideNewMessageBtn,
-  } = useDisclosure()
 
   const scrollElement = useInView(listRef, fetchNextPage, hasNextPage)
 
-  const scrollToBottom = () => {
-    listRef.current?.scrollTo(0, listRef.current?.scrollHeight)
-  }
-
-  function handleAfterNewMessage(message: IMessage) {
-    if (!listRef.current) return
-
-    if (
-      message.senderId === auth?.id ||
-      listRef.current.scrollTop > MESSAGE_LIST_OFFSET
-    ) {
-      setTimeout(scrollToBottom, 100)
-    } else if (!hasNewMessage) {
-      showNewMessageBtn()
-    }
-  }
-
-  function handleListScroll() {
-    if (listRef.current!.scrollTop > MESSAGE_LIST_OFFSET && hasNewMessage) {
-      hideNewMessageBtn()
-    }
-  }
-
-  useMessageSocketHandle({
-    groupId,
-    partnerId,
-    onAfterNewMessage: handleAfterNewMessage,
-  })
+  const { scrollToBottom, hasNewMessage, handleListScroll } =
+    useMessageSocketHandle({
+      groupId,
+      partnerId,
+      listRef,
+    })
 
   const scrollIntoParentMessage = useCallback((messageId: number) => {
     if (messageRefs.current[messageId]) {
