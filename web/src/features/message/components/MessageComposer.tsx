@@ -25,9 +25,9 @@ export const MessageComposer = ({
   const [disabled, setDisabled] = useState(false)
   const socketRef = useRef(getSocketIO())
   const timeoutRef = useRef<NodeJS.Timeout>()
-  const textAreaRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  useAutoFocus(textAreaRef, [groupId, receiverId, replyMessage])
+  useAutoFocus(inputRef, [groupId, receiverId, replyMessage])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value)
@@ -80,17 +80,17 @@ export const MessageComposer = ({
     handleComposeMessage()
   }
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()
-    }
-    if (event.key === 'Enter') {
-      if (!event.shiftKey) {
-        event.preventDefault()
-        handleComposeMessage()
-      }
-    }
-  }
+  // const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (event.key === 'Enter' && !event.shiftKey) {
+  //     event.preventDefault()
+  //   }
+  //   if (event.key === 'Enter') {
+  //     if (!event.shiftKey) {
+  //       event.preventDefault()
+  //       handleComposeMessage()
+  //     }
+  //   }
+  // }
 
   return (
     <form
@@ -106,6 +106,7 @@ export const MessageComposer = ({
               content={replyMessage.content}
             />
             <Button
+              type='button'
               size='sm'
               variant='secondary'
               className='text-xs font-semibold'
@@ -119,12 +120,12 @@ export const MessageComposer = ({
       )}
       <div className='flex gap-2'>
         <input
-          ref={textAreaRef}
+          ref={inputRef}
           className='w-full flex-1 rounded border p-3'
           value={text}
           autoFocus
           placeholder='Send message...'
-          onKeyDown={handleKeyDown}
+          // onKeyDown={handleKeyDown}
           onChange={handleChange}
         />
         <Button disabled={disabled} aria-label='send message'>
