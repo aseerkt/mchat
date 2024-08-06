@@ -189,12 +189,16 @@ export const useChatSocketHandle = () => {
       groupId: number
       memberId: number
     }) {
-      updateChatList(data => {
-        if (auth?.id === memberId) {
+      if (auth?.id === memberId) {
+        updateChatList(data => {
           return deleteGroupEntry(data, groupId)
+          return data
+        })
+
+        if (params.groupId === groupId.toString()) {
+          navigate('/chat', { replace: true })
         }
-        return data
-      })
+      }
     }
 
     socket.on('newGroup', handleNewGroup)
