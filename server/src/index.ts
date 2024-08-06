@@ -1,7 +1,10 @@
+import 'module-alias/register'
+
 import { createAdapter } from '@socket.io/redis-streams-adapter'
 import 'colors'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
@@ -10,7 +13,7 @@ import path from 'node:path'
 import { Server } from 'socket.io'
 import swaggerUi from 'swagger-ui-express'
 import { config } from './config'
-import { connectDB } from './database'
+import { connectDB, db } from './database'
 import { errorHandler } from './middlewares'
 import { getRedisClient } from './redis'
 import rootRouter from './routes'
@@ -26,6 +29,9 @@ import swaggerDocument from './swagger-output.json'
 
 const createApp = async () => {
   await connectDB()
+
+  await migrate(db, { migrationsFolder: './drizzle' })
+
   const redisClient = getRedisClient()
 
   const app = express()
@@ -65,9 +71,10 @@ const createApp = async () => {
   app.use(errorHandler)
 
   if (config.isProd) {
-    app.use(express.static(path.join('../../web/dist')))
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, '../../web/dist/index.html'))
+    const webStaticPath = path.join(__dirname, '..', 'web', 'dist')
+    app.use(express.static(webStaticPath))
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(webStaticPath, 'index.html'))
     })
   }
 

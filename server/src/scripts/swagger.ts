@@ -1,3 +1,5 @@
+import 'module-alias/register'
+
 import swaggerAutogen from 'swagger-autogen'
 
 const doc = {

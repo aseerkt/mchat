@@ -1,3 +1,5 @@
+import 'module-alias/register'
+
 import 'colors'
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { client, connectDB, db } from '../database'

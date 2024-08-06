@@ -23,16 +23,12 @@
 ```bash
 pnpm docker:up
 ```
-> Make sure ports `6379`,`5432`,`5000` and `3000` are not occupied
-- Run migrations
-```bash
-pnpm docker:db:migrate
-```
+> Make sure the ports `6379`,`5432` and `5000` are not occupied
 - Seed database
 ```bash
 pnpm docker:db:seed
 ```
-- Go to [http://localhost:3000](http://localhost:3000)
+- Go to [http://localhost:5000](http://localhost:5000)
 
 - Stop docker containers
 ```bash

@@ -1,3 +1,5 @@
+import 'module-alias/register'
+
 import { connectDB, db } from '@/database'
 import { NewGroup, groupsTable } from '@/modules/groups/groups.schema'
 import { NewMember, membersTable } from '@/modules/members/members.schema'

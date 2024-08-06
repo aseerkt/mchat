@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16-alpine
@@ -29,26 +27,13 @@ services:
       timeout: 10s
       retries: 5
 
-  web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000'
-    environment:
-      VITE_BACKEND_URL: http://localhost:5000
-    depends_on:
-      - server
-
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: mchat-server
+  app:
+    build: .
+    container_name: mchat-app
     ports:
       - '5000:5000'
     depends_on:
       db:
         condition: service_healthy
-      redis:
+      dragonfly:
         condition: service_healthy

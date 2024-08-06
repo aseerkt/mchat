@@ -10,8 +10,8 @@
     "prepare": "husky install",
     "commitlint": "commitlint --edit",
     "docker:up": "docker compose -f docker-compose.prod.yml up --build -d",
-    "docker:db:migrate": "docker exec -it mchat-server pnpm migrate:run",
-    "docker:db:seed": "docker exec -it mchat-server pnpm seed",
+    "docker:db:migrate": "docker exec -it mchat-app pnpm migrate:run",
+    "docker:db:seed": "docker exec -it mchat-app pnpm seed",
     "docker:down": "docker compose -f docker-compose.prod.yml down",
     "e2e:test": "pnpm --filter e2e test"
   },
@@ -34,5 +34,6 @@
   "workspaces": [
     "client",
     "server"
-  ]
+  ],
+  "packageManager": "pnpm@9.6.0+sha512.38dc6fba8dba35b39340b9700112c2fe1e12f10b17134715a4aa98ccf7bb035e76fd981cf0bb384dfa98f8d6af5481c2bef2f4266a24bfa20c34eb7147ce0b5e"
 }
