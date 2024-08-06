@@ -43,7 +43,7 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
           <div
             className={cn(
               'min-w-36 rounded-lg border p-2 pb-1 shadow group-focus-within/block:ring group-focus/block:ring',
-              isCurrentUser && 'bg-cyan-100',
+              isCurrentUser ? 'bg-cyan-100' : 'bg-white',
               message.isDeleted && 'bg-gray-100',
             )}
           >
@@ -52,7 +52,7 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
                 {message.username}
               </b>
             )}
-            {message.parentMessage?.id && (
+            {message.parentMessage?.id && !message.isDeleted && (
               <div
                 role='button'
                 onClick={() =>
