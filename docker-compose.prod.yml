@@ -16,7 +16,7 @@ services:
   dragonfly:
     image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
     restart: unless-stopped
-    command: dragonfly --proactor_threads=4
+    command: dragonfly --proactor_threads=1
     ports:
       - 6379:6379
     ulimits:
