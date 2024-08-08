@@ -34,6 +34,5 @@
   "workspaces": [
     "client",
     "server"
-  ],
-  "packageManager": "pnpm@9.6.0"
+  ]
 }
