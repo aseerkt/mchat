@@ -1,2 +1,2 @@
-build:
-	sudo docker compose -f docker-compose.prod.yml up --build -d 
+deploy:
+	sudo docker compose -f docker-compose.prod.yml up --build -d
