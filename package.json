@@ -9,10 +9,10 @@
     "lint": "pnpm run -r lint",
     "prepare": "husky install",
     "commitlint": "commitlint --edit",
-    "docker:up": "docker compose -f docker-compose.prod.yml up --build -d",
+    "docker:up": "docker compose -f docker-compose.dev.yml up --build -d",
     "docker:db:migrate": "docker exec -it mchat-app pnpm migrate:run",
     "docker:db:seed": "docker exec -it mchat-app pnpm seed",
-    "docker:down": "docker compose -f docker-compose.prod.yml down",
+    "docker:down": "docker compose -f docker-compose.dev.yml down",
     "e2e:test": "pnpm --filter e2e test"
   },
   "keywords": [
