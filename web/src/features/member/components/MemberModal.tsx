@@ -4,10 +4,6 @@ import { useGetMember, useHasPermission } from '../hooks'
 import { ChangeMemberRole } from './ChangeMemberRole'
 import { KickMember } from './KickMember'
 
-function gravatarImage(hashHex: string) {
-  return `https://gravatar.com/avatar/${hashHex}?d=mp&f=y`
-}
-
 export const MemberModal = ({
   groupId,
   userId,
@@ -39,7 +35,7 @@ export const MemberModal = ({
         <div className='flex items-center justify-center'>
           <img
             className='h-20 w-20 animate-pulse rounded-full bg-gray-200 ring-4'
-            src={gravatarImage(member.username)}
+            src='/gravatar.png'
             alt='avatar'
           />
         </div>
