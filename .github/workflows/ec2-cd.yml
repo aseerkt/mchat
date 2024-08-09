@@ -31,6 +31,8 @@ jobs:
         run: pnpm i
 
       - name: Build packages
+        env:
+          VITE_BACKEND_URL: https://${{ secrets.APP_DOMAIN }}
         run: pnpm build
 
       - name: Upload build files
@@ -53,8 +55,19 @@ jobs:
           name: mchat_build
 
       - name: Move static files
-        run: sudo mv web/dist /var/www/html
+        run: |
+          sudo rm -rf /var/www/html/*
+          sudo mv web/dist/* /var/www/html/
+          sudo rm -rf web/dist
 
+      - name: Reload caddy service
+        run: |
+          sudo systemctl reload caddy
+
+      # - name: Set server env file
+      #   run:
+      #     cd server && cp .env.example .env
+        
       - name: Restart application
         run: pm2 restart mchat
 

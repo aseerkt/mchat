@@ -23,16 +23,3 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-
-  caddy:
-    image: caddy:2.8.4-alpine
-    container_name: mchat_caddy
-    restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-    ports:
-      - '80:80'
-      - '443:443'
-      - '443:443/udp'
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile

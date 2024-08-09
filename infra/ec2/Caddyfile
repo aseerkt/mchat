@@ -1,5 +1,6 @@
 mchat.aseerkt.com {
+  root * /var/www/html
   encode zstd gzip
-  file_server /dist/*
+  file_server 
   reverse_proxy /api/* 127.0.0.1:5000
 }

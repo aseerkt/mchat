@@ -1,4 +1,4 @@
-# INSTALL NODE.JS
+## INSTALL NODE.JS
 
 # installs nvm (Node Version Manager)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
@@ -12,9 +12,11 @@ node -v # should print `v20.16.0`
 # verifies the right npm version is in the environment
 npm -v # should print `10.8.1`
 
+## INSTALL PM2
+
 npm i -g pm2
 
-# INSTALL DOCKER
+## INSTALL DOCKER
 
 # Add Docker's official GPG key:
 sudo apt-get update
@@ -31,3 +33,19 @@ echo \
 sudo apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+## INSTAL CADDY
+
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy
+
+sudo mkdir /srv
+
+cp ./Caddyfile /etc/caddy/Caddyfile
+
+./reload-caddy.sh
+
+./docker-up.sh
