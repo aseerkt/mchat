@@ -24,7 +24,7 @@ export const Component = () => {
       <div className='relative flex h-[610px] w-full max-w-[350px] items-center overflow-hidden rounded-lg shadow-md md:h-[510px] md:max-w-[700px]'>
         <img
           className='absolute h-full w-full'
-          src='https://images.pexels.com/photos/911738/pexels-photo-911738.jpeg?auto=compress&cs=tinysrgb&w=720&h=530&dpr=1'
+          src='patterns.webp'
           alt='patterns'
         />
         <section

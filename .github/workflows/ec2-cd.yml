@@ -56,7 +56,7 @@ jobs:
 
       - name: Move static files
         run: |
-          sudo rm -rf server/web/dist
+          sudo rm -rf server/web/dist/*
           sudo mv web/dist/* server/web/dist
           rm -rf server/src
         
