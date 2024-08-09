@@ -49,3 +49,5 @@ cp ./Caddyfile /etc/caddy/Caddyfile
 ./reload-caddy.sh
 
 ./docker-up.sh
+
+# configure env file by hand

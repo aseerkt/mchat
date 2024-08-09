@@ -39,10 +39,14 @@ const createApp = async () => {
   app.use(
     express.urlencoded({ extended: true }),
     express.json(),
-    cors({ origin: config.corsOrigin, credentials: true }),
     helmet(),
     morgan(config.isProd ? 'combined' : 'dev'),
   )
+
+  if (!config.isProd) {
+    app.use(cors({ origin: config.corsOrigin, credentials: true }))
+  }
+
   app.use(cookieParser())
 
   const server = createServer(app)
@@ -53,7 +57,9 @@ const createApp = async () => {
     InterServerEvents,
     SocketData
   >(server, {
-    cors: { origin: config.corsOrigin, credentials: true },
+    cors: config.isProd
+      ? undefined
+      : { origin: config.corsOrigin, credentials: true },
     adapter: createAdapter(redisClient),
   })
 

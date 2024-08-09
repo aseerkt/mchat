@@ -49,24 +49,15 @@ jobs:
     runs-on: self-hosted
     needs: build
     steps:
-      - name: Download math result for job 1
+      - name: Download build files
         uses: actions/download-artifact@v4
         with:
           name: mchat_build
 
       - name: Move static files
         run: |
-          sudo rm -rf /var/www/html/*
-          sudo mv web/dist/* /var/www/html/
-          sudo rm -rf web/dist
-
-      - name: Reload caddy service
-        run: |
-          sudo systemctl reload caddy
-
-      # - name: Set server env file
-      #   run:
-      #     cd server && cp .env.example .env
+          sudo mv web/dist server/
+          rm -rf server/src
         
       - name: Restart application
         run: pm2 restart mchat
