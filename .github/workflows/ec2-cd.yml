@@ -53,7 +53,7 @@ jobs:
           name: mchat_build
 
       - name: Move static files
-        run: mv web/dist /var/www/html
+        run: sudo mv web/dist /var/www/html
 
       - name: Restart application
         run: pm2 restart mchat
