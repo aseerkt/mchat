@@ -12,19 +12,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9.6
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
+        
+      - name: Replace pnpm workspace file
+        run: cp pnpm-workspace.prod.yml pnpm-workspace.yml
 
-      - name: Spin up the app
-        run: |
-          make deploy
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Restart application
+        run: pm2 restart mchat
 
       
         
