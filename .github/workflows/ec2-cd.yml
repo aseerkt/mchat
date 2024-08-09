@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout
@@ -33,9 +33,30 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: mchat_build
+          path: |
+            server
+            web/dist
+            infra/ec2
+
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Download math result for job 1
+        uses: actions/download-artifact@v4
+        with:
+          name: mchat_build
+
+      - name: Move static files
+        run: mv web/dist /var/www/html
+
       - name: Restart application
         run: pm2 restart mchat
 
-      
         
     
