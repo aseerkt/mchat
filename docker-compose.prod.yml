@@ -13,7 +13,7 @@ services:
       timeout: 10s
       retries: 5
 
-  dragonfly:
+  redis:
     image: redis:7.4-alpine
     restart: unless-stopped
     ports:
