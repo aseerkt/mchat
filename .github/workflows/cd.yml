@@ -25,7 +25,7 @@ jobs:
           cache: 'pnpm'
         
       - name: Replace pnpm workspace file
-        run: cp pnpm-workspace.prod.yml pnpm-workspace.yml
+        run: cp pnpm-workspace.prod.yaml pnpm-workspace.yaml
 
       - name: Install dependencies
         run: pnpm i
