@@ -3,7 +3,7 @@ import { forwardRef } from 'react'
 import { cn } from '../utils/style'
 
 const buttonVariants = cva(
-  'rounded-lg  border-2 border-black disabled:bg-gray-300',
+  'rounded-lg  border-2 border-black disabled:bg-gray-300 disabled:border-gray-300',
   {
     variants: {
       variant: {
