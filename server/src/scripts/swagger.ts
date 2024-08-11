@@ -1,4 +1,4 @@
-import 'module-alias/register'
+import '../utils/loadModules'
 
 import swaggerAutogen from 'swagger-autogen'
 

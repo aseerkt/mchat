@@ -1,4 +1,4 @@
-import 'module-alias/register'
+import './utils/loadModules'
 
 import { createAdapter } from '@socket.io/redis-streams-adapter'
 import 'colors'
@@ -41,13 +41,12 @@ const createApp = async () => {
     express.json(),
     helmet(),
     morgan(config.isProd ? 'combined' : 'dev'),
+    cookieParser(),
   )
 
   if (!config.isProd) {
     app.use(cors({ origin: config.corsOrigin, credentials: true }))
   }
-
-  app.use(cookieParser())
 
   const server = createServer(app)
 

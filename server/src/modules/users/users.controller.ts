@@ -46,6 +46,7 @@ export const signUpUser: RequestHandler = async (req, res, next) => {
 
 export const loginUser: RequestHandler = async (req, res, next) => {
   try {
+    console.log('got into login controller')
     const { username, password } = req.body
     const [user] = await db
       .select()

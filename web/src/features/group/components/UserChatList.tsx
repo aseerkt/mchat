@@ -6,6 +6,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { Fragment, useRef } from 'react'
 import { fetchUserGroups } from '../group.service'
 import { useChatSocketHandle } from '../hooks/useChatSocketHandle'
+import { JoinGroupsForm } from './JoinGroupForm'
 import { UserChatItem } from './UserChatItem'
 
 export const UserChatList = () => {
@@ -55,7 +56,11 @@ export const UserChatList = () => {
       </ul>
     )
   } else if (isSuccess) {
-    content = <Alert severity='info'>Join or create group</Alert>
+    content = (
+      <div className='px-3 py-4'>
+        <JoinGroupsForm />
+      </div>
+    )
   }
 
   return <aside className='flex-1 overflow-hidden'>{content}</aside>

@@ -1,4 +1,4 @@
-import 'module-alias/register'
+import '../utils/loadModules'
 
 import { connectDB, db } from '@/database'
 import { NewGroup, groupsTable } from '@/modules/groups/groups.schema'

@@ -1,4 +1,4 @@
-import 'module-alias/register'
+import '../utils/loadModules'
 
 import 'colors'
 import { migrate } from 'drizzle-orm/node-postgres/migrator'

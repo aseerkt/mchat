@@ -6,7 +6,11 @@ import { useNavigate } from 'react-router-dom'
 import { joinGroups } from '../group.service'
 import { JoinGroupList } from './JoinGroupList'
 
-export const JoinGroupsForm = ({ onComplete }: { onComplete: () => void }) => {
+export const JoinGroupsForm = ({
+  onComplete = () => {},
+}: {
+  onComplete?: () => void
+}) => {
   const { toast } = useToast()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -42,10 +46,7 @@ export const JoinGroupsForm = ({ onComplete }: { onComplete: () => void }) => {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className='flex h-[400px] min-w-[350px] flex-col'
-    >
+    <form onSubmit={handleSubmit} className='flex h-[400px] flex-col'>
       <header className='mb-3 px-6'>
         <h3 className='text-xl font-semibold'>Select groups to join</h3>
       </header>
