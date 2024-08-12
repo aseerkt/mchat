@@ -1,10 +1,4 @@
-import { faker } from '@faker-js/faker'
 import { Page } from '@playwright/test'
-
-export const user = {
-  username: faker.internet.userName(),
-  password: faker.internet.password(),
-}
 
 export const authFile = 'playwright/.auth/user.json'
 export const authTokenLsKey = 'jwt'

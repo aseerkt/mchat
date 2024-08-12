@@ -24,9 +24,19 @@ async function createGroup(page: Page) {
   ).toBeVisible()
 }
 
+async function sendMessage(page: Page) {
+  const message = faker.word.words(3)
+  await page.getByPlaceholder('Send message...').fill(message)
+  await page.getByPlaceholder('Send message...').press('Enter')
+
+  await page.waitForTimeout(2000)
+
+  await expect(page.getByText(`${message}Today`)).toBeVisible()
+}
+
 test.describe('chat flow', () => {
   test('create group', async ({ page }) => {
-    await page.goto('http://localhost:3000/chat')
+    await page.goto('/chat')
 
     for (let i = 0; i < groupCount; i++) {
       await createGroup(page)
@@ -34,27 +44,17 @@ test.describe('chat flow', () => {
   })
 
   test('send message', async ({ page }) => {
-    await page.goto('http://localhost:3000/chat')
+    await page.goto('/chat')
 
     await createGroup(page)
 
-    async function sendMessage() {
-      const message = faker.word.words(3)
-      await page.getByPlaceholder('Send message...').fill(message)
-      await page.getByPlaceholder('Send message...').press('Enter')
-
-      await page.waitForTimeout(2000)
-
-      await expect(page.getByText(`${message}Today`)).toBeVisible()
-    }
-
     for (let i = 0; i < messageCount; i++) {
-      await sendMessage()
+      await sendMessage(page)
     }
   })
 
   test('join group', async ({ page }) => {
-    await page.goto('http://localhost:3000/chat')
+    await page.goto('/chat')
 
     await page.getByRole('button', { name: 'Join group' }).click()
     const groupLabels = await page.locator('label').all()
@@ -76,7 +76,7 @@ test.describe('chat flow', () => {
   })
 
   test('member list drawer', async ({ page }) => {
-    await page.goto('http://localhost:3000/chat')
+    await page.goto('/chat')
 
     const auth = await getAuthFromPageContext(page)
 

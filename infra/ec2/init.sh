@@ -51,3 +51,4 @@ cp ./Caddyfile /etc/caddy/Caddyfile
 ./docker-up.sh
 
 # configure env file by hand
+# make pm2 available in github actions - https://stackoverflow.com/a/72030074/10240723
