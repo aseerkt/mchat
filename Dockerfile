@@ -27,7 +27,7 @@ FROM base AS app
 WORKDIR /prod/app
 
 COPY --from=build /prod/server .
-COPY --from=build /prod/web/dist ./web/dist
+COPY --from=build /prod/web .
 
 RUN pnpm swag:gen
 

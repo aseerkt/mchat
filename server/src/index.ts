@@ -76,7 +76,7 @@ const createApp = async () => {
   app.use(errorHandler)
 
   if (config.isProd) {
-    const webStaticPath = path.join(__dirname, '..', 'web', 'dist')
+    const webStaticPath = path.join(__dirname, '..', '..', 'web', 'dist')
     app.use(express.static(webStaticPath))
     app.get('*', (_req, res) => {
       res.sendFile(path.join(webStaticPath, 'index.html'))
