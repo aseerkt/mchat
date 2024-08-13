@@ -3,7 +3,7 @@ import { getPaginationParams, withPagination } from '@/database/helpers'
 import { roomKeys } from '@/socket/helpers'
 import { TypedIOServer } from '@/socket/socket.interface'
 import { notAuthorized } from '@/utils/api'
-import { and, desc, eq, getTableColumns, lt, or } from 'drizzle-orm'
+import { and, desc, eq, getTableColumns, isNull, lt, or } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { RequestHandler } from 'express'
 import { usersTable } from '../users/users.schema'
@@ -46,11 +46,19 @@ export const listMessages: RequestHandler = async (req, res, next) => {
         cursorSelect: 'id',
         orderBy: [desc(messagesTable.id)],
         where: and(
-          groupId ? eq(messagesTable.groupId, groupId) : undefined,
+          groupId
+            ? and(
+                eq(messagesTable.groupId, groupId),
+                isNull(messagesTable.receiverId),
+              )
+            : undefined,
           partnerId
-            ? or(
-                eq(messagesTable.receiverId, partnerId),
-                eq(messagesTable.senderId, partnerId),
+            ? and(
+                or(
+                  eq(messagesTable.receiverId, partnerId),
+                  eq(messagesTable.senderId, partnerId),
+                ),
+                isNull(messagesTable.groupId),
               )
             : undefined,
           cursor ? lt(messagesTable.id, cursor as number) : undefined,
