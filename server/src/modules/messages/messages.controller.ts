@@ -46,19 +46,14 @@ export const listMessages: RequestHandler = async (req, res, next) => {
         cursorSelect: 'id',
         orderBy: [desc(messagesTable.id)],
         where: and(
-          groupId
-            ? and(
-                eq(messagesTable.groupId, groupId),
-                isNull(messagesTable.receiverId),
-              )
-            : undefined,
+          groupId ? eq(messagesTable.groupId, groupId) : undefined,
           partnerId
-            ? and(
-                or(
-                  eq(messagesTable.receiverId, partnerId),
+            ? or(
+                eq(messagesTable.receiverId, partnerId),
+                and(
                   eq(messagesTable.senderId, partnerId),
+                  isNull(messagesTable.groupId),
                 ),
-                isNull(messagesTable.groupId),
               )
             : undefined,
           cursor ? lt(messagesTable.id, cursor as number) : undefined,
