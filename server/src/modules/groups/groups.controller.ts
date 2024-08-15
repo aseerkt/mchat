@@ -20,12 +20,13 @@ import {
   isNull,
   like,
   lt,
+  ne,
   notExists,
   notInArray,
   or,
   sql,
 } from 'drizzle-orm'
-import { unionAll } from 'drizzle-orm/pg-core'
+import { union } from 'drizzle-orm/pg-core'
 import { RequestHandler } from 'express'
 import { membersTable } from '../members/members.schema'
 import { addMembers } from '../members/members.service'
@@ -146,12 +147,23 @@ export const listGroups: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const listUserGroups: RequestHandler = async (req, res, next) => {
+export const listUserChats: RequestHandler = async (req, res, next) => {
   try {
+    const userGroups = db
+      .$with('user_groups')
+      .as(
+        db
+          .select(getTableColumns(groupsTable))
+          .from(groupsTable)
+          .innerJoin(membersTable, eq(membersTable.groupId, groupsTable.id))
+          .where(eq(membersTable.userId, req.user!.id)),
+      )
+
     const groupMessagesWithRowNumber = db
       .$with('group_messages_with_row_number')
       .as(
         db
+          .with(userGroups)
           .select({
             ...getTableColumns(messagesTable),
             rowNumber: rowNumber().over<number>({
@@ -161,14 +173,14 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
             }),
           })
           .from(messagesTable)
+          .innerJoin(userGroups, eq(userGroups.id, messagesTable.groupId))
           .where(isNotNull(messagesTable.groupId)),
       )
 
-    const groupsWithLastMessage = db.$with('groups_with_last_message').as(
+    const userGroupsWithLastMessage = db.$with('groups_with_last_message').as(
       db
-        .with(groupMessagesWithRowNumber)
         .select({
-          chatName: groupsTable.name,
+          chatName: userGroups.name,
           groupId: groupMessagesWithRowNumber.groupId,
           partnerId: groupMessagesWithRowNumber.receiverId,
           lastMessage: {
@@ -177,19 +189,17 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
           },
           lastActivity: coalesce(
             groupMessagesWithRowNumber.createdAt,
-            groupsTable.createdAt,
+            userGroups.createdAt,
           ).as('last_activity'),
         })
-        .from(groupsTable)
+        .from(userGroups)
         .leftJoin(
           groupMessagesWithRowNumber,
           and(
-            eq(groupsTable.id, groupMessagesWithRowNumber.groupId),
+            eq(userGroups.id, groupMessagesWithRowNumber.groupId),
             eq(groupMessagesWithRowNumber.rowNumber, 1),
           ),
-        )
-        .innerJoin(membersTable, eq(membersTable.groupId, groupsTable.id))
-        .where(eq(membersTable.userId, req.user!.id)),
+        ),
     )
 
     const directMessagesWithPartner = db
@@ -231,7 +241,6 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       .$with('direct_messages_with_last_activity')
       .as(
         db
-          .with(directMessagesWithPartner)
           .select({
             chatName: usersTable.username,
             groupId: directMessagesWithPartner.groupId,
@@ -251,15 +260,21 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       )
 
     const unreadCounts = db.$with('unread_counts').as(
-      unionAll(
+      union(
         db
           .select({
-            groupId: sql`${groupsTable.id}`.as('unread_group_id'),
-            receiverId: nullAs('unread_receiver_id'),
+            groupId: sql`${userGroups.id}`.as('unread_group_id'),
+            partnerId: nullAs('unread_partner_id'),
             unreadCount: count(messagesTable.id).as('unread_count'),
           })
-          .from(groupsTable)
-          .leftJoin(messagesTable, eq(groupsTable.id, messagesTable.groupId))
+          .from(userGroups)
+          .leftJoin(
+            messagesTable,
+            and(
+              eq(messagesTable.groupId, userGroups.id),
+              ne(messagesTable.senderId, req.user!.id),
+            ),
+          )
           .leftJoin(
             messageRecipientsTable,
             and(
@@ -268,13 +283,11 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
             ),
           )
           .where(isNull(messageRecipientsTable.messageId))
-          .groupBy(groupsTable.id),
+          .groupBy(userGroups.id),
         db
           .select({
             groupId: nullAs('unread_group_id'),
-            receiverId: sql`${messagesTable.receiverId}`.as(
-              'unread_receiver_id',
-            ),
+            partnerId: sql`${messagesTable.senderId}`.as('unread_partner_id'),
             unreadCount: count(messagesTable.id).as('unread_count'),
           })
           .from(messagesTable)
@@ -295,24 +308,29 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
               ),
             ),
           )
-          .groupBy(messagesTable.receiverId),
+          .groupBy(messagesTable.senderId),
       ),
     )
 
     const combinedChats = db
       .$with('combined_chats')
       .as(
-        unionAll(
-          db.with(groupsWithLastMessage).select().from(groupsWithLastMessage),
-          db
-            .with(directMessagesWithLastActivity)
-            .select()
-            .from(directMessagesWithLastActivity),
+        union(
+          db.select().from(userGroupsWithLastMessage),
+          db.select().from(directMessagesWithLastActivity),
         ),
       )
 
     const qb = db
-      .with(combinedChats, unreadCounts)
+      .with(
+        userGroups,
+        groupMessagesWithRowNumber,
+        userGroupsWithLastMessage,
+        directMessagesWithPartner,
+        directMessagesWithLastActivity,
+        combinedChats,
+        unreadCounts,
+      )
       .select({
         groupId: combinedChats.groupId,
         partnerId: combinedChats.partnerId,
@@ -326,9 +344,9 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
       .from(combinedChats)
       .leftJoin(
         unreadCounts,
-        and(
+        or(
           eq(combinedChats.groupId, unreadCounts.groupId),
-          eq(combinedChats.partnerId, unreadCounts.receiverId),
+          eq(combinedChats.partnerId, unreadCounts.partnerId),
         ),
       )
       .$dynamic()
@@ -337,9 +355,9 @@ export const listUserGroups: RequestHandler = async (req, res, next) => {
 
     const result = await withPagination(qb, {
       cursorSelect: 'lastActivity',
-      orderBy: [desc(groupsWithLastMessage.lastActivity)],
+      orderBy: [desc(userGroupsWithLastMessage.lastActivity)],
       where: cursor
-        ? lt(groupsWithLastMessage.lastActivity, cursor)
+        ? lt(userGroupsWithLastMessage.lastActivity, cursor)
         : undefined,
       limit,
     })

@@ -15,7 +15,7 @@ export interface ServerToClientEvents {
   groupDeleted: (groupId: number) => void
   messageRead: (messageId: number) => void
   messageDeleted: (messageId: number) => void
-  chatMarkedAsRead: (args: { groupId?: number; receiverId?: number }) => void
+  chatMarkedAsRead: (args: { groupId?: number; partnerId?: number }) => void
   typingUsers: (users: { id: number; username: string }[]) => void
 }
 
@@ -34,7 +34,7 @@ export interface ClientToServerEvents {
   markMessageAsRead: (messageId: number) => void
   markChatMessagesAsRead: (args: {
     groupId?: number
-    receiverId?: number
+    partnerId?: number
   }) => void
   typing: (args: { chatId: number; mode: ChatMode; isTyping: boolean }) => void
 }

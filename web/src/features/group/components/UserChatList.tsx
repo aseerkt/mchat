@@ -1,38 +1,18 @@
 import { Alert } from '@/components/Alert'
 import { Skeleton } from '@/components/Skeleton'
-import { useAuth } from '@/hooks/useAuth'
 import { useInView } from '@/hooks/useInView'
-import { useInfiniteQuery } from '@tanstack/react-query'
 import { Fragment, useRef } from 'react'
-import { fetchUserGroups } from '../group.service'
 import { useChatSocketHandle } from '../hooks/useChatSocketHandle'
 import { JoinGroupsForm } from './JoinGroupForm'
 import { UserChatItem } from './UserChatItem'
 
 export const UserChatList = () => {
-  const { auth } = useAuth()
   const { data, isLoading, isSuccess, hasNextPage, fetchNextPage, error } =
-    useInfiniteQuery({
-      queryKey: ['userGroups', auth],
-      queryFn: async ({ pageParam }) => {
-        return fetchUserGroups({
-          userId: auth!.id,
-          limit: 15,
-          cursor: pageParam,
-        })
-      },
-      initialPageParam: null as number | null,
-      getNextPageParam(lastPage) {
-        return lastPage.cursor ? lastPage.cursor : undefined
-      },
-      enabled: Boolean(auth?.id),
-    })
+    useChatSocketHandle()
 
   const listRef = useRef<HTMLUListElement>(null)
 
   const watchElement = useInView(listRef, fetchNextPage, hasNextPage)
-
-  useChatSocketHandle()
 
   let content
 

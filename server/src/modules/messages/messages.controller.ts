@@ -49,8 +49,12 @@ export const listMessages: RequestHandler = async (req, res, next) => {
           groupId ? eq(messagesTable.groupId, groupId) : undefined,
           partnerId
             ? or(
-                eq(messagesTable.receiverId, partnerId),
                 and(
+                  eq(messagesTable.receiverId, partnerId),
+                  eq(messagesTable.senderId, req.user!.id),
+                ),
+                and(
+                  eq(messagesTable.receiverId, req.user!.id),
                   eq(messagesTable.senderId, partnerId),
                   isNull(messagesTable.groupId),
                 ),

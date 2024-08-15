@@ -145,17 +145,17 @@ export const registerSocketEvents = (io: TypedIOServer) => {
       io.to(roomKeys.USER_KEY(messageSenderId)).emit('messageRead', messageId)
     })
 
-    socket.on('markChatMessagesAsRead', async ({ groupId, receiverId }) => {
+    socket.on('markChatMessagesAsRead', async ({ groupId, partnerId }) => {
       const unreadMessages = await markChatMessagesAsRead({
         groupId,
-        receiverId,
+        partnerId,
         recipientId: socket.data.user.id,
       })
 
       // let the current user know that the unread messages of the group is marked as read
       io.to(roomKeys.USER_KEY(socket.data.user.id)).emit('chatMarkedAsRead', {
         groupId,
-        receiverId,
+        partnerId,
       })
       // let the message senders know their message is read
       for (const message of unreadMessages) {

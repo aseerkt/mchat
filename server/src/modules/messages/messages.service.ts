@@ -134,14 +134,14 @@ export const markMessageAsRead = async (
 
 export const markChatMessagesAsRead = async ({
   groupId,
-  receiverId,
+  partnerId,
   recipientId,
 }: {
   groupId?: number
-  receiverId?: number
+  partnerId?: number
   recipientId: number
 }) => {
-  if (!groupId && !receiverId) {
+  if (!groupId && !partnerId) {
     throw new Error(
       'markChatMessagesAsRead: message does not belongs to either group or dm',
     )
@@ -169,7 +169,12 @@ export const markChatMessagesAsRead = async ({
     .where(
       and(
         groupId ? eq(messagesTable.groupId, groupId) : undefined,
-        receiverId ? eq(messagesTable.receiverId, receiverId) : undefined,
+        partnerId
+          ? and(
+              eq(messagesTable.senderId, partnerId),
+              eq(messagesTable.receiverId, recipientId),
+            )
+          : undefined,
         isNull(messageRecipientsTable.messageId),
       ),
     )

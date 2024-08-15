@@ -12,7 +12,7 @@ import {
   TGetUserGroupsQueryVariables,
 } from './group.interface'
 
-export const fetchUserGroups = async ({
+export const fetchUserChats = async ({
   userId,
   ...params
 }: TGetUserGroupsQueryVariables): Promise<IPaginatedResult<IChat>> =>

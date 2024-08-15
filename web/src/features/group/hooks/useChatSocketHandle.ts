@@ -1,28 +1,41 @@
 import { IMessage } from '@/features/message/message.interface'
-import { useAuth } from '@/hooks/useAuth'
 import { getSocketIO } from '@/utils/socket'
 import { useQueryClient } from '@tanstack/react-query'
 import { produce } from 'immer'
 import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { IChat, IGroup, IPaginatedInfiniteChats } from '../group.interface'
+import { useChats } from './useChats'
 
 export const useChatSocketHandle = () => {
-  const { auth } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const params = useParams()
 
+  const {
+    auth,
+    data,
+    isLoading,
+    isSuccess,
+    hasNextPage,
+    fetchNextPage,
+    error,
+  } = useChats()
+
   function getUnreadCount(checker: (chat: IChat) => boolean) {
     if (!auth) return 0
+
     const chatListData = queryClient.getQueryData<IPaginatedInfiniteChats>([
-      'userGroups',
+      'userChats',
       auth,
     ])
     let unreadCount = 0
+
+    console.log(chatListData)
     chatListData?.pages.forEach(page =>
       page.data.forEach(chat => {
         if (checker(chat)) {
+          console.log('made it here')
           unreadCount = chat.unreadCount
         }
       }),
@@ -30,48 +43,41 @@ export const useChatSocketHandle = () => {
     return unreadCount
   }
 
+  function updateChatList(
+    dataUpdater: (data: IPaginatedInfiniteChats) => IPaginatedInfiniteChats,
+  ) {
+    if (!auth) return
+    queryClient.setQueryData<IPaginatedInfiniteChats>(
+      ['userChats', auth],
+      data => {
+        if (!data) return
+        return dataUpdater(data)
+      },
+    )
+  }
+
   useEffect(() => {
+    if (!auth || !isSuccess) return
+
+    const socket = getSocketIO()
+
     const partnerId = Number(params.partnerId)
+    const groupId = Number(params.groupId)
     if (partnerId) {
-      const socket = getSocketIO()
       socket.emit('joinDm', partnerId)
 
       const unreadCount = getUnreadCount(chat => chat.partnerId === partnerId)
       if (unreadCount) {
-        socket.emit('markChatMessagesAsRead', { receiverId: partnerId })
+        socket.emit('markChatMessagesAsRead', { partnerId })
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.partnerId])
 
-  useEffect(() => {
-    const groupId = Number(params.groupId)
     if (groupId) {
-      const socket = getSocketIO()
       socket.emit('joinGroup', groupId)
       const unreadCount = getUnreadCount(chat => chat.groupId === groupId)
       if (unreadCount) {
         socket.emit('markChatMessagesAsRead', { groupId })
       }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.groupId])
-
-  useEffect(() => {
-    if (!auth) return
-
-    const socket = getSocketIO()
-
-    function updateChatList(
-      dataUpdater: (data: IPaginatedInfiniteChats) => IPaginatedInfiniteChats,
-    ) {
-      queryClient.setQueryData<IPaginatedInfiniteChats>(
-        ['userGroups', auth],
-        data => {
-          if (!data) return
-          return dataUpdater(data)
-        },
-      )
     }
 
     function handleNewGroup(group: IGroup) {
@@ -137,18 +143,16 @@ export const useChatSocketHandle = () => {
 
     function handleGroupMarkedAsRead({
       groupId,
-      receiverId,
+      partnerId,
     }: {
       groupId?: number
-      receiverId?: number
+      partnerId?: number
     }) {
       updateChatList(data => {
         return produce(data, draft => {
           draft.pages.forEach(page => {
             const chat = page.data.find(chat =>
-              groupId
-                ? chat.groupId === groupId
-                : chat.partnerId === receiverId,
+              groupId ? chat.groupId === groupId : chat.partnerId === partnerId,
             )
             if (chat) {
               chat.unreadCount = 0
@@ -215,5 +219,14 @@ export const useChatSocketHandle = () => {
       socket.off('memberLeft', handleMemberLeft)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth, params.groupId, params.partnerId])
+  }, [auth, isSuccess, params.groupId, params.partnerId])
+
+  return {
+    data,
+    isLoading,
+    isSuccess,
+    hasNextPage,
+    fetchNextPage,
+    error,
+  }
 }
