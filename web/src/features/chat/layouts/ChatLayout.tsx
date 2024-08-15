@@ -85,7 +85,7 @@ const NewChatMenu = () => {
             Create Group
           </MenuItem>
           <MenuItem onSelect={setActiveChatDialog('create:dm')}>
-            Create DM
+            Direct message
           </MenuItem>
           <MenuItem onSelect={setActiveChatDialog('join:group')}>
             Join Group
