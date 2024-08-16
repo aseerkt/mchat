@@ -1,6 +1,9 @@
 import backArrow from '@/assets/back-svgrepo-com.svg'
-import usersSvg from '@/assets/users-svgrepo-com.svg'
 import { Alert } from '@/components/Alert'
+import { Dialog } from '@/components/Dialog'
+import { MediaCaller } from '@/features/webrtc/components'
+import { useDisclosure } from '@/hooks/useDisclosure'
+import { Phone, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 interface ChatHeaderProps {
@@ -8,30 +11,45 @@ interface ChatHeaderProps {
   chatId?: number
   chatName?: string
   toggleGroupInfo?: () => void
+  chatType: 'group' | 'dm'
 }
 
 export const ChatHeader = ({
   error,
   chatId,
   chatName,
+  chatType,
   toggleGroupInfo,
 }: ChatHeaderProps) => {
+  const { isOpen: isMediaCallerOpen, toggle: toggleMediaCaller } =
+    useDisclosure()
+
   let content
 
   if (chatId) {
     content = (
       <>
         <h3 className='text-lg font-bold'>{chatName}</h3>
-        {toggleGroupInfo && (
-          <button onClick={toggleGroupInfo} className='ml-auto'>
-            <img
-              src={usersSvg}
-              alt='open member drawer'
-              height={24}
-              width={24}
-            />
-          </button>
-        )}
+        <div className='ml-auto flex items-center gap-4'>
+          {chatType === 'group' && (
+            <>
+              <button
+                onClick={toggleMediaCaller}
+                aria-label='open media caller'
+              >
+                <Phone />
+              </button>
+              <Dialog isOpen={isMediaCallerOpen} onClose={toggleMediaCaller}>
+                <MediaCaller onCancel={toggleMediaCaller} />
+              </Dialog>
+            </>
+          )}
+          {toggleGroupInfo && (
+            <button onClick={toggleGroupInfo}>
+              <Users />
+            </button>
+          )}
+        </div>
       </>
     )
   } else if (error) {

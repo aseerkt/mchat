@@ -49,6 +49,7 @@ export const Component = () => {
         <ChatHeader
           chatId={group?.id}
           chatName={group?.name}
+          chatType='group'
           error={error}
           toggleGroupInfo={toggle}
         />

@@ -30,6 +30,7 @@ export const Component = () => {
         <ChatHeader
           chatId={receiver?.id}
           chatName={receiver?.username}
+          chatType='dm'
           error={error}
         />
         <MessageContainer partnerId={partnerId} />
