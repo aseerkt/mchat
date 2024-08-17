@@ -6,14 +6,14 @@ import { InfiniteData } from '@tanstack/react-query'
 
 export interface IMessage {
   id: number
-  groupId?: number
-  receiverId?: number
+  groupId: number | null
+  receiverId: number | null
   senderId: number
   username: string
   content: string
-  createdAt: string
-  isDeleted: boolean
-  parentMessageId?: number
+  createdAt: Date
+  isDeleted: boolean | null
+  parentMessageId?: number | null
   parentMessage?: Pick<IMessage, 'id' | 'content' | 'username' | 'isDeleted'>
 }
 

@@ -1,6 +1,6 @@
+import { MemberRole } from 'common/tables'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { config } from './config'
-import { MemberRole } from './modules/members/members.schema'
 import { checkPermission } from './modules/members/members.service'
 import { badRequest, notAuthenticated, notAuthorized } from './utils/api'
 import { verifyAccessToken } from './utils/jwt'

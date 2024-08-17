@@ -2,12 +2,11 @@ import { db } from '@/database'
 import { getPaginationParams, withPagination } from '@/database/helpers'
 import { checkOnlineUsers, setGroupMemberRoleTxn } from '@/redis/handlers'
 import { roomKeys } from '@/socket/helpers'
-import { TypedIOServer } from '@/socket/socket.interface'
 import { badRequest, notFound } from '@/utils/api'
+import { TypedIOServer } from 'common/socket'
+import { MemberRole, membersTable, usersTable } from 'common/tables'
 import { and, asc, eq, getTableColumns, gt, like } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { usersTable } from '../users/users.schema'
-import { MemberRole, membersTable } from './members.schema'
 
 export const joinRooms: RequestHandler = async (req, res, next) => {
   try {

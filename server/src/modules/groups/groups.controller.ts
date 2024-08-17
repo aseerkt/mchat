@@ -8,8 +8,15 @@ import {
 } from '@/database/helpers'
 import { deleteGroupRoles, deleteMemberRole } from '@/redis/handlers'
 import { roomKeys } from '@/socket/helpers'
-import { TypedIOServer } from '@/socket/socket.interface'
 import { badRequest, notAuthorized, notFound } from '@/utils/api'
+import { TypedIOServer } from 'common/socket'
+import {
+  groupsTable,
+  membersTable,
+  messageRecipientsTable,
+  messagesTable,
+  usersTable,
+} from 'common/tables'
 import {
   and,
   count,
@@ -28,14 +35,7 @@ import {
 } from 'drizzle-orm'
 import { union } from 'drizzle-orm/pg-core'
 import { RequestHandler } from 'express'
-import { membersTable } from '../members/members.schema'
 import { addMembers } from '../members/members.service'
-import {
-  messageRecipientsTable,
-  messagesTable,
-} from '../messages/messages.schema'
-import { usersTable } from '../users/users.schema'
-import { groupsTable } from './groups.schema'
 import { handleMemberDelete } from './groups.service'
 
 // CREATE

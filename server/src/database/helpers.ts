@@ -10,7 +10,8 @@ import {
 } from 'drizzle-orm'
 import { PgColumn, PgSelect } from 'drizzle-orm/pg-core'
 import get from 'lodash/get'
-import { defaultLimit } from './constants'
+
+export const defaultLimit = 15
 
 export const getPaginationParams = (
   query: Record<string, unknown>,

@@ -1,6 +1,4 @@
 import { db } from '@/database'
-import { groupsTable } from '@/modules/groups/groups.schema'
-import { membersTable } from '@/modules/members/members.schema'
 import {
   insertMessage,
   markChatMessagesAsRead,
@@ -13,6 +11,8 @@ import {
   removeTypingUser,
   setTypingUser,
 } from '@/redis/handlers'
+import { ChatMode, TypedIOServer, TypedSocket } from 'common/socket'
+import { groupsTable, membersTable } from 'common/tables'
 import { eq } from 'drizzle-orm'
 import { Socket } from 'socket.io'
 import { config } from '../config'
@@ -21,7 +21,6 @@ import {
   currentGroupRoomPrefix,
   roomKeys,
 } from './helpers'
-import { ChatMode, TypedIOServer, TypedSocket } from './socket.interface'
 
 function leavePreviousChat(socket: Socket) {
   const rooms = Array.from(socket.rooms)

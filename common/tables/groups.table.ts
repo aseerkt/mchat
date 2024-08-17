@@ -1,6 +1,6 @@
-import { baseSchema } from '@/database/constants'
-import { usersTable } from '@/modules/users/users.schema'
 import { bigint, pgTable, varchar } from 'drizzle-orm/pg-core'
+import { baseSchema } from './base'
+import { usersTable } from './users.table'
 
 export const groupsTable = pgTable('groups', {
   ...baseSchema,

@@ -1,13 +1,19 @@
 import '../utils/loadModules'
 
 import { connectDB, db } from '@/database'
-import { NewGroup, groupsTable } from '@/modules/groups/groups.schema'
-import { NewMember, membersTable } from '@/modules/members/members.schema'
-import { NewMessage, messagesTable } from '@/modules/messages/messages.schema'
-import { NewUser, usersTable } from '@/modules/users/users.schema'
 import { faker } from '@faker-js/faker'
 import { hash } from 'argon2'
 import 'colors'
+import {
+  NewGroup,
+  NewMember,
+  NewMessage,
+  NewUser,
+  groupsTable,
+  membersTable,
+  messagesTable,
+  usersTable,
+} from 'common/tables'
 
 const USER_PASSWORD = 'bob@123'
 const USER_COUNT = 100

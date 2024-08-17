@@ -3,9 +3,9 @@ import { notFound } from '@/utils/api'
 import { signTokens } from '@/utils/jwt'
 import { removeAttrFromObject } from '@/utils/object'
 import { hash, verify } from 'argon2'
+import { usersTable } from 'common/tables'
 import { and, eq, getTableColumns, like, ne } from 'drizzle-orm'
 import { RequestHandler } from 'express'
-import { usersTable } from './users.schema'
 
 export const signUpUser: RequestHandler = async (req, res, next) => {
   try {

@@ -1,7 +1,7 @@
-import { Group } from '@/modules/groups/groups.schema'
-import { Member } from '@/modules/members/members.schema'
-import { Message } from '@/modules/messages/messages.schema'
 import { Server, Socket } from 'socket.io'
+import { Group } from '../tables/groups.table'
+import { Member } from '../tables/members.table'
+import { Message } from '../tables/messages.table'
 
 export type ChatMode = 'group' | 'direct'
 

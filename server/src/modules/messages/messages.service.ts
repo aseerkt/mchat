@@ -1,9 +1,12 @@
 import { db } from '@/database'
+import {
+  groupsTable,
+  messageRecipientsTable,
+  messagesTable,
+  usersTable,
+} from 'common/tables'
 import { and, eq, getTableColumns, isNull } from 'drizzle-orm'
-import { groupsTable } from '../groups/groups.schema'
 import { checkPermission } from '../members/members.service'
-import { usersTable } from '../users/users.schema'
-import { messageRecipientsTable, messagesTable } from './messages.schema'
 
 export const insertMessage = async ({
   groupId,

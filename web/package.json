@@ -21,7 +21,8 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.1",
     "socket.io-client": "^4.7.5",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "common": "workspace:*"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.47.0",

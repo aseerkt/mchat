@@ -1,4 +1,3 @@
-import { baseSchema } from '@/database/constants'
 import {
   AnyPgColumn,
   bigint,
@@ -6,10 +5,10 @@ import {
   index,
   pgTable,
   text,
-  unique,
 } from 'drizzle-orm/pg-core'
-import { groupsTable } from '../groups/groups.schema'
-import { usersTable } from '../users/users.schema'
+import { baseSchema } from './base'
+import { groupsTable } from './groups.table'
+import { usersTable } from './users.table'
 
 export const messagesTable = pgTable(
   'messages',
@@ -34,25 +33,6 @@ export const messagesTable = pgTable(
   table => ({
     groupIdIndex: index().on(table.groupId),
     createdAtIndex: index().on(table.createdAt),
-  }),
-)
-
-export const messageRecipientsTable = pgTable(
-  'message_recipients',
-  {
-    ...baseSchema,
-    messageId: bigint('message_id', { mode: 'number' })
-      .references(() => messagesTable.id, { onDelete: 'cascade' })
-      .notNull(),
-    recipientId: bigint('recipient_id', { mode: 'number' })
-      .references(() => usersTable.id)
-      .notNull(),
-  },
-  table => ({
-    uniqueMessageRecipientIndex: unique().on(
-      table.messageId,
-      table.recipientId,
-    ),
   }),
 )
 

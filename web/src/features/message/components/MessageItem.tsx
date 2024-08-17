@@ -66,7 +66,7 @@ export const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
                 <MessageReplyItem
                   username={message.parentMessage.username}
                   content={message.parentMessage.content}
-                  isDeleted={message.parentMessage.isDeleted}
+                  isDeleted={Boolean(message.parentMessage.isDeleted)}
                 />
               </div>
             )}

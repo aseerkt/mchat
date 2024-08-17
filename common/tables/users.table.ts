@@ -1,6 +1,6 @@
-import { baseSchema } from '@/database/constants'
 import { sql } from 'drizzle-orm'
 import { pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { baseSchema } from './base'
 
 export const usersTable = pgTable('users', {
   ...baseSchema,

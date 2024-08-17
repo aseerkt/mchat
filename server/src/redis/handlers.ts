@@ -1,5 +1,5 @@
-import { MemberRole } from '@/modules/members/members.schema'
-import { ChatMode } from '@/socket/socket.interface'
+import { ChatMode } from 'common/socket'
+import { MemberRole } from 'common/tables'
 import { getRedisClient } from '.'
 
 const redisClient = getRedisClient()

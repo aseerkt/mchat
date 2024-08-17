@@ -1,7 +1,7 @@
-import { baseSchema } from '@/database/constants'
 import { bigint, index, pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
-import { groupsTable } from '../groups/groups.schema'
-import { usersTable } from '../users/users.schema'
+import { baseSchema } from './base'
+import { groupsTable } from './groups.table'
+import { usersTable } from './users.table'
 
 // order of roles shows auth precedence
 export const memberRoleEnum = pgEnum('member_role', [

@@ -1,13 +1,16 @@
 import { db } from '@/database'
 import { getPaginationParams, withPagination } from '@/database/helpers'
 import { roomKeys } from '@/socket/helpers'
-import { TypedIOServer } from '@/socket/socket.interface'
 import { notAuthorized } from '@/utils/api'
+import { TypedIOServer } from 'common/socket'
+import {
+  messageRecipientsTable,
+  messagesTable,
+  usersTable,
+} from 'common/tables'
 import { and, desc, eq, getTableColumns, isNull, lt, or } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { RequestHandler } from 'express'
-import { usersTable } from '../users/users.schema'
-import { messageRecipientsTable, messagesTable } from './messages.schema'
 import { checkMessageOwnerShip } from './messages.service'
 
 export const listMessages: RequestHandler = async (req, res, next) => {

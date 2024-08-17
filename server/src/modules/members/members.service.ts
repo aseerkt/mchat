@@ -1,16 +1,16 @@
 import { db } from '@/database'
 import { getMemberRole, setMemberRolesForAGroup } from '@/redis/handlers'
 import { roomKeys } from '@/socket/helpers'
-import { TypedIOServer } from '@/socket/socket.interface'
-import { and, eq } from 'drizzle-orm'
-import { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import { Group } from '../groups/groups.schema'
+import { TypedIOServer } from 'common/socket'
 import {
+  Group,
   MemberRole,
   NewMember,
   memberRoles,
   membersTable,
-} from './members.schema'
+} from 'common/tables'
+import { and, eq } from 'drizzle-orm'
+import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 export const checkPermission = async (
   groupId: number,

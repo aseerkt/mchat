@@ -2,6 +2,12 @@ import './utils/loadModules'
 
 import { createAdapter } from '@socket.io/redis-streams-adapter'
 import 'colors'
+import {
+  ClientToServerEvents,
+  InterServerEvents,
+  ServerToClientEvents,
+  SocketData,
+} from 'common/socket'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
@@ -19,12 +25,6 @@ import { getRedisClient } from './redis'
 import rootRouter from './routes'
 import { registerSocketEvents } from './socket/events'
 import { socketAuthMiddleware } from './socket/middlewares'
-import {
-  ClientToServerEvents,
-  InterServerEvents,
-  ServerToClientEvents,
-  SocketData,
-} from './socket/socket.interface'
 import swaggerDocument from './swagger-output.json'
 
 const createApp = async () => {

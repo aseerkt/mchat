@@ -8,19 +8,19 @@ export interface IGroup {
   id: number
   name: string
   ownerId: number
-  createdAt: string
+  createdAt: Date
 }
 
 export interface IChat {
-  groupId?: number
-  partnerId?: number
+  groupId: number | null
+  partnerId?: number | null
   chatName: string
   lastMessage?: {
     messageId: number
     content: string
   }
   unreadCount: number
-  lastActivity: string
+  lastActivity: Date
 }
 
 export type IPaginatedInfiniteChats = InfiniteData<IPaginatedResult<IChat>>

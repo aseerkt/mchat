@@ -1,5 +1,5 @@
 import { roomKeys } from '@/socket/helpers'
-import { TypedIOServer } from '@/socket/socket.interface'
+import { TypedIOServer } from 'common/socket'
 import { Request } from 'express'
 
 export const handleMemberDelete = (
