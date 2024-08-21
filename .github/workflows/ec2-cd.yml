@@ -45,6 +45,7 @@ jobs:
             web/dist
             infra/ec2
             pnpm-workspace.yaml
+            package.json
 
 
   deploy:
