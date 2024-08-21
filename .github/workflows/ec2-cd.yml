@@ -56,7 +56,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: mchat_build
-        
+
+      - name: Install packages
+        run: pnpm i
+
       - name: Restart application
         run: pm2 restart mchat
 

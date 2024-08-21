@@ -1,8 +1,23 @@
 {
   "name": "common",
   "version": "1.0.0",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "drizzle-orm": "^0.31.2",
     "socket.io": "^4.7.5"
+  },
+  "exports": {
+    "./tables": {
+      "import": "./tables/index.ts",
+      "types": "./tables/index.ts",
+      "require": "./dist/tables/index.js"
+    },
+    "./socket": {
+      "import": "./socket/index.ts",
+      "types": "./socket/index.ts",
+      "require": "./dist/socket/index.js"
+    }
   }
 }
