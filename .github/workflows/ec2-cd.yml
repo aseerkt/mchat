@@ -40,9 +40,11 @@ jobs:
         with:
           name: mchat_build
           path: |
+            common
             server
             web/dist
             infra/ec2
+            pnpm-workspace.yaml
 
 
   deploy:
